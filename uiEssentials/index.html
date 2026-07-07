@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Text:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="16" cy="16" r="16" fill="url(#logoGrad)"/>
+        <path d="M11 20c0-4 2.5-7 5-9M16 10v12" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#DAA0FF"/>
+            <stop offset="0.5" stop-color="#FDA214"/>
+            <stop offset="1" stop-color="#FF9585"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="brand-name">Character&nbsp;counter</span>
+    </div>
+
+    <button class="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg class="icon icon-moon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M17.5 11.5A7.5 7.5 0 1 1 8.5 2.5a6 6 0 0 0 9 9Z" fill="currentColor"/>
+      </svg>
+    </button>
+  </header>
+
+  <main>
+    <h1 class="hero-title">Analyze your text<br>in real-time.</h1>
+
+    <div class="editor-card">
+      <textarea
+        class="editor-textarea"
+        placeholder="Start typing here… (or paste your text)"
+        aria-label="Text to analyze"
+        rows="6"
+      >Design is the silent ambassador of your brand. Simplicity is key to effective communication, creating clarity in every interaction. A great design transforms complex ideas into elegant solutions, making them easy to understand. It blends aesthetics and functionality seamlessly.</textarea>
+    </div>
+
+    <div class="options-row">
+      <div class="options-left">
+        <label class="checkbox">
+          <input type="checkbox">
+          <span class="checkbox-box" aria-hidden="true"></span>
+          <span class="checkbox-label">Exclude Spaces</span>
+        </label>
+
+        <label class="checkbox">
+          <input type="checkbox">
+          <span class="checkbox-box" aria-hidden="true"></span>
+          <span class="checkbox-label">Set Character Limit</span>
+        </label>
+
+        <input
+          type="number"
+          class="limit-input"
+          min="1"
+          value="300"
+          aria-label="Character limit"
+          disabled
+        >
+      </div>
+
+      <p class="reading-time">Approx. reading time: &lt;1 minute</p>
+    </div>
+
+    <section class="stats-grid" aria-label="Text statistics">
+      <div class="stat-card stat-purple">
+        <span class="stat-number">508</span>
+        <span class="stat-label">Total Characters</span>
+      </div>
+      <div class="stat-card stat-orange">
+        <span class="stat-number">86</span>
+        <span class="stat-label">Word Count</span>
+      </div>
+      <div class="stat-card stat-coral">
+        <span class="stat-number">06</span>
+        <span class="stat-label">Line Count</span>
+      </div>
+    </section>
+
+    <section class="density-section" aria-label="Letter density">
+      <h2 class="density-heading">Letter Density</h2>
+
+      <div class="density-list">
+        <div class="density-row">
+          <span class="density-letter">E</span>
+          <span class="density-track"><span class="density-fill" style="width:100%"></span></span>
+          <span class="density-count">59 (13.85%)</span>
+        </div>
+        <div class="density-row">
+          <span class="density-letter">I</span>
+          <span class="density-track"><span class="density-fill" style="width:69.5%"></span></span>
+          <span class="density-count">41 (9.63%)</span>
+        </div>
+        <div class="density-row">
+          <span class="density-letter">T</span>
+          <span class="density-track"><span class="density-fill" style="width:64.4%"></span></span>
+          <span class="density-count">38 (8.92%)</span>
+        </div>
+        <div class="density-row">
+          <span class="density-letter">O</span>
+          <span class="density-track"><span class="density-fill" style="width:57.6%"></span></span>
+          <span class="density-count">34 (7.98%)</span>
+        </div>
+        <div class="density-row">
+          <span class="density-letter">C</span>
+          <span class="density-track"><span class="density-fill" style="width:5.1%"></span></span>
+          <span class="density-count">3 (4%)</span>
+        </div>
+      </div>
+
+<!--      <button class="see-more" type="button">-->
+<!--        <span>See more</span>-->
+<!--        <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">-->
+<!--          <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>-->
+<!--        </svg>-->
+<!--      </button>-->
+    </section>
+  </main>
+</div>
+
+</body>
+</html>
