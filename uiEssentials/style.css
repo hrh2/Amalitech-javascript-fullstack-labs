@@ -533,8 +533,8 @@ button, input {
 
 /* ===== Letter density ===== */
 .density-section {
-    background: var(--surface);
-    border: 1px solid var(--surface-border);
+    /*background: var(--surface);*/
+    /*border: 1px solid var(--surface-border);*/
     border-radius: 16px;
     padding: 28px 24px;
 }
@@ -1085,8 +1085,8 @@ button, input {
 
     /* ===== Letter density ===== */
     .density-section {
-        background: var(--surface);
-        border: 1px solid var(--surface-border);
+        /*background: var(--surface);*/
+        /*border: 1px solid var(--surface-border);*/
         border-radius: 16px;
         padding: 28px 24px;
     }
