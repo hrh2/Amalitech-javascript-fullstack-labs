@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Counter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- full-page grain texture, swapped per theme in CSS via --bg-noise -->
+<div class="bg-noise" aria-hidden="true"></div>
+
+<div class="page">
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-logo">
+                <div class="brand-logo-left"></div>
+                <div class="brand-logo-right"></div>
+            </div>
+            <span class="brand-name">Character&nbsp;counter</span>
+        </div>
+
+        <button class="theme-toggle" type="button" aria-label="Toggle theme" data-theme-toggle>
+            <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                 viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+            </svg>
+            <svg class="icon icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                 viewBox="0 0 16 16" aria-hidden="true" hidden>
+                <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71a8.19 8.19 0 0 1 5.418-7.665.75.75 0 0 1 .582.233"/>
+            </svg>
+        </button>
+    </header>
+
+    <main>
+        <h1 class="hero-title">Analyze your text<br>in real-time.</h1>
+
+        <div class="editor-card">
+      <textarea
+              id="textInput"
+              class="editor-textarea"
+              placeholder="Start typing here… (or paste your text)"
+              aria-label="Text to analyze"
+              rows="6"
+      >Design is the silent ambassador of your brand. Simplicity is key to effective communication, creating clarity in every interaction. A great design transforms complex ideas into elegant solutions, making them easy to understand. It blends aesthetics and functionality seamlessly.</textarea>
+        </div>
+        <p class="limit-warning" id="limitWarning" hidden></p>
+
+        <div class="options-row">
+            <div class="options-left">
+                <label class="checkbox">
+                    <input type="checkbox" id="excludeSpaces">
+                    <span class="checkbox-box" aria-hidden="true"></span>
+                    <span class="checkbox-label">Exclude Spaces</span>
+                </label>
+
+                <label class="checkbox">
+                    <input type="checkbox" id="enableLimit">
+                    <span class="checkbox-box" aria-hidden="true"></span>
+                    <span class="checkbox-label">Set Character Limit</span>
+                </label>
+
+                <input
+                        type="number"
+                        id="limitInput"
+                        class="limit-input"
+                        min="1"
+                        value="300"
+                        aria-label="Character limit"
+                        disabled
+                >
+            </div>
+
+            <p class="reading-time" id="readingTime">Approx. reading time: &lt;1 minute</p>
+        </div>
+
+        <!-- Stat cards: colors + shapes stay identical between light and dark mode -->
+        <section class="stats-grid" aria-label="Text statistics">
+            <div class="stat-card stat-purple">
+                <span class="stat-number" id="statTotal">508</span>
+                <span class="stat-label">Total Characters</span>
+            </div>
+            <div class="stat-card stat-yellow">
+                <span class="stat-number" id="statWords">86</span>
+                <span class="stat-label">Word Count</span>
+            </div>
+            <div class="stat-card stat-orange">
+                <span class="stat-number" id="statLines">06</span>
+                <span class="stat-label">Line Count</span>
+            </div>
+        </section>
+
+        <section class="density-section" aria-label="Letter density">
+            <h2 class="density-heading">Letter Density</h2>
+
+            <div class="density-list" id="densityList">
+                <!-- rows injected by script.js -->
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
