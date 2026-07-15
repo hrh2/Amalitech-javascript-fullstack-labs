@@ -123,7 +123,12 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after{
+    box-sizing:border-box;
 }
 
 html, body {
@@ -298,16 +303,12 @@ button, input, textarea {
     box-shadow: 0 0 10px 0 var(--blue-400);
 }
 
-[data-theme="light"] {
+[data-theme="light"] .editor-card:hover {
+    background: var(--neutral-200);
+}
 
-    .editor-card:hover {
-        background: var(--neutral-200);
-    }
-
-    .editor-card:focus-within {
-        background: var(--neutral-200);
-    }
-
+[data-theme="light"] .editor-card:focus-within {
+    background: var(--neutral-200);
 }
 
 

@@ -1,0 +1,22 @@
+{
+  "name": "task-manager-api-client",
+  "version": "1.0.0",
+  "description": "Advanced JavaScript Task Manager API Client using JSONPlaceholder API",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Hope HIRWA RUKUNDO",
+  "license": "MIT",
+  "keywords": [
+    "javascript",
+    "es6",
+    "async",
+    "oop",
+    "task-manager"
+  ]
+}
