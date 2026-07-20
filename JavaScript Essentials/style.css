@@ -61,7 +61,7 @@
 
     --card-ink: var(--neutral-900);
 
-    --bg-noise: url("../uiEssentials/assets/BG_Noise.png");
+    --bg-noise: url("./assets/BG_Noise.png");
     --bg-noise-opacity: 1;
 }
 
@@ -77,7 +77,7 @@
     --icon-bg: var(--neutral-200);
     --icon-color: var(--neutral-900);
     --logo-accent: var(--blue-500);
-    --bg-noise: url("../uiEssentials/assets/BG_Noise_white.png");
+    --bg-noise: url("./assets/BG_Noise_white.png");
 }
 
 .text-preset-1 {
@@ -504,7 +504,7 @@ button, input, textarea {
 }
 
 .stat-purple::after {
-    background-image: url("../uiEssentials/assets/Shape-01.svg");
+    background-image: url("./assets/Shape-01.svg");
 }
 
 .stat-yellow {
@@ -512,7 +512,7 @@ button, input, textarea {
 }
 
 .stat-yellow::after {
-    background-image: url("../uiEssentials/assets/Shape-02.svg");
+    background-image: url("./assets/Shape-02.svg");
 }
 
 .stat-orange {
@@ -520,7 +520,7 @@ button, input, textarea {
 }
 
 .stat-orange::after {
-    background-image: url("../uiEssentials/assets/Shape-03.svg");
+    background-image: url("./assets/Shape-03.svg");
 }
 
 .stat-number {
