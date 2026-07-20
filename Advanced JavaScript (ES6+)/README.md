@@ -80,3 +80,5 @@ Arrow functions, destructuring, template literals, spread/rest operators,
 default parameters, optional chaining, `Map`/`Set`, ES modules
 (`import`/`export`), classes with inheritance, `Promise.all()`, and
 `async/await` throughout.
+
+>by **Hope HIRWA RUKUNDO**
