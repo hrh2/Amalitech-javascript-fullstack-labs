@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     excludeSpacesBox.addEventListener('change', updateStats);
 
     enableLimitBox.addEventListener('change', () => {
-        limitInput.disabled = !enableLimitBox.checked;
+        enableLimitBox.checked ? limitInput.removeAttribute('hidden'):limitInput.setAttribute('hidden', 'true');
         updateStats();
     });
 
