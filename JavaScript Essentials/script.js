@@ -63,10 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return text === '' ? 0 : text.split(/\n/).length;
   }
 
-  function  countSentences(text) {
-    //   Tobe implemented
-  }
-
   /**
    * Builds a sorted letter-frequency table (A-Z only, case-insensitive).
    */

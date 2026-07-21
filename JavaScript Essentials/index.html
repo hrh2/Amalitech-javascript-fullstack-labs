@@ -46,10 +46,11 @@
               class="editor-textarea"
               placeholder="Start typing here… (or paste your text)"
               aria-label="Text to analyze"
+              aria-describedby="limitWarning"
               rows="6"
       >Design is the silent ambassador of your brand. Simplicity is key to effective communication, creating clarity in every interaction. A great design transforms complex ideas into elegant solutions, making them easy to understand. It blends aesthetics and functionality seamlessly.</textarea>
         </div>
-        <p class="limit-warning" id="limitWarning" hidden></p>
+        <p class="limit-warning" id="limitWarning" role="alert" hidden></p>
 
         <div class="options-row">
             <div class="options-left">
@@ -76,20 +77,20 @@
                 >
             </div>
 
-            <p class="reading-time" id="readingTime">Approx. reading time: &lt;1 minute</p>
+            <p class="reading-time" id="readingTime" role="status">Approx. reading time: &lt;1 minute</p>
         </div>
 
         <!-- Stat cards: colors + shapes stay identical between light and dark mode -->
         <section class="stats-grid" aria-label="Text statistics">
-            <div class="stat-card stat-purple">
+            <div class="stat-card stat-purple" role="status" aria-atomic="true">
                 <span class="stat-number" id="statTotal">508</span>
                 <span class="stat-label">Total Characters</span>
             </div>
-            <div class="stat-card stat-yellow">
+            <div class="stat-card stat-yellow" role="status" aria-atomic="true">
                 <span class="stat-number" id="statWords">86</span>
                 <span class="stat-label">Word Count</span>
             </div>
-            <div class="stat-card stat-orange">
+            <div class="stat-card stat-orange" role="status" aria-atomic="true">
                 <span class="stat-number" id="statLines">06</span>
                 <span class="stat-label">Line Count</span>
             </div>
@@ -98,7 +99,7 @@
         <section class="density-section" aria-label="Letter density">
             <h2 class="density-heading">Letter Density</h2>
 
-            <div class="density-list" id="densityList">
+            <div class="density-list" id="densityList" aria-live="polite" aria-atomic="false">
                 <!-- rows injected by script.js -->
             </div>
         </section>
