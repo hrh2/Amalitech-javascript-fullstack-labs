@@ -64,6 +64,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Count sentences
+     */
+    function countSentences(text) {
+        if (!text.trim()) return 0;
+
+        return text
+            .split(/[.!?]+/)
+            .filter(sentence => sentence.trim() !== "")
+            .length;
+    }
+
+    /**
      * If a limit is enabled and the text exceeds it, trims the text back
      * down to the limit (respecting the "exclude spaces" setting).
      */
@@ -220,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     excludeSpacesBox.addEventListener('change', updateStats);
 
     enableLimitBox.addEventListener('change', () => {
-        enableLimitBox.checked ? limitInput.removeAttribute('hidden'):limitInput.setAttribute('hidden', 'true');
+        enableLimitBox.checked ? limitInput.removeAttribute('hidden') : limitInput.setAttribute('hidden', 'true');
         updateStats();
     });
 
