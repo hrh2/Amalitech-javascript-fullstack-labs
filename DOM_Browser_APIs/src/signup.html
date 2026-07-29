@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Account — Notes</title>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-brand"><span aria-hidden="true">🖋️</span> Notes</div>
+    <h1 class="auth-title">Create Your Account</h1>
+    <p class="auth-subtitle">Sign up to start organizing your notes and boost your productivity.</p>
+
+    <p class="auth-error" id="form-error" role="alert"></p>
+
+    <form class="auth-form" id="signup-form" novalidate>
+      <div class="field">
+        <label class="field-label" for="email">Email Address</label>
+        <div class="field-input-wrap">
+          <input class="field-input" type="email" id="email" placeholder="email@example.com" required autocomplete="email">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="password">Password</label>
+        <div class="field-input-wrap">
+          <input class="field-input" type="password" id="password" required minlength="8" autocomplete="new-password">
+          <button type="button" class="field-icon-btn" id="toggle-password" aria-label="Show password"></button>
+        </div>
+        <p class="field-hint"><span data-icon="info"></span> At least 8 characters.</p>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sign up</button>
+    </form>
+
+    <div class="auth-divider">Or log in with:</div>
+    <button type="button" class="google-btn"><span data-icon="google"></span> Google</button>
+
+    <p class="auth-footer">Already have an account? <a href="login.html">Login</a></p>
+  </div>
+</main>
+<script type="module">
+  import { signup, redirectIfLoggedIn } from "./js/auth.js";
+  import { icons } from "./js/icons.js";
+  redirectIfLoggedIn();
+
+  document.querySelectorAll("[data-icon]").forEach(el => {
+    el.innerHTML = icons[el.dataset.icon] || "";
+  });
+  const toggleBtn = document.getElementById("toggle-password");
+  toggleBtn.innerHTML = icons.eye;
+  const pwField = document.getElementById("password");
+  toggleBtn.addEventListener("click", () => {
+    const show = pwField.type === "password";
+    pwField.type = show ? "text" : "password";
+    toggleBtn.innerHTML = show ? icons.eyeOff : icons.eye;
+    toggleBtn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  });
+
+  const form = document.getElementById("signup-form");
+  const errorEl = document.getElementById("form-error");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = pwField.value;
+    if (password.length < 8) {
+      errorEl.textContent = "Password must be at least 8 characters.";
+      errorEl.classList.add("visible");
+      return;
+    }
+    const result = signup(email, password);
+    if (!result.ok) {
+      errorEl.textContent = result.error;
+      errorEl.classList.add("visible");
+      return;
+    }
+    window.location.href = "index.html";
+  });
+</script>
+</body>
+</html>

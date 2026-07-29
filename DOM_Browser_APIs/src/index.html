@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes — All Notes</title>
+<meta name="description" content="A note-taking app to create, tag, search, and archive your notes.">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/layout.css">
+</head>
+<body data-font="sans">
+<a class="skip-link" href="#main-content">Skip to note content</a>
+
+<div class="app" id="app" data-view="list">
+
+  <!-- ============ Sidebar (desktop) ============ -->
+  <aside class="sidebar" aria-label="Primary">
+    <div class="brand" aria-hidden="false">
+      <span aria-hidden="true">🖋️</span> Notes
+    </div>
+
+    <nav class="nav-primary" aria-label="Note views">
+      <button type="button" class="nav-link" data-nav="all" aria-current="page">
+        <span data-icon="home"></span> All Notes
+      </button>
+      <button type="button" class="nav-link" data-nav="archived">
+        <span data-icon="archive"></span> Archived Notes
+      </button>
+    </nav>
+
+    <h2 class="nav-section-title" id="tags-heading">Tags</h2>
+    <ul class="tag-nav-list" id="tag-nav-list" aria-labelledby="tags-heading"></ul>
+
+    <div style="margin-top:auto; padding-top: 16px;">
+      <div class="dropdown" id="settings-dropdown-desktop">
+        <button type="button" class="nav-link" id="settings-toggle-desktop" aria-haspopup="true" aria-expanded="false">
+          <span data-icon="settings"></span> Settings
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ Note list column ============ -->
+  <section class="note-list-col" aria-label="Notes list">
+    <div class="header-top">
+      <form class="search-box" role="search" id="search-form">
+        <span data-icon="search"></span>
+        <label for="search-input" class="sr-only">Search by title, content, or tags</label>
+        <input type="search" id="search-input" placeholder="Search by title, content, or tags…" autocomplete="off">
+      </form>
+      <div class="dropdown" id="settings-dropdown">
+        <button type="button" class="gear-btn" id="settings-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
+          <span data-icon="settings"></span>
+        </button>
+        <div class="dropdown-panel" id="settings-panel" hidden role="menu" aria-label="Settings menu">
+          <div class="dropdown" style="position:static;">
+            <button type="button" class="dropdown-item" id="color-theme-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false">
+              <span data-icon="sun"></span> Color Theme <span class="chevron" data-icon="chevronRight"></span>
+            </button>
+            <div class="submenu-panel" id="color-theme-submenu" hidden role="menu" aria-label="Color theme options">
+              <button type="button" class="submenu-item" data-theme-choice="light" role="menuitemradio" aria-checked="true">Light</button>
+              <button type="button" class="submenu-item" data-theme-choice="dark" role="menuitemradio" aria-checked="false">Dark</button>
+            </div>
+          </div>
+          <div class="dropdown" style="position:static;">
+            <button type="button" class="dropdown-item" id="font-theme-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false">
+              <span data-icon="type"></span> Font Theme <span class="chevron" data-icon="chevronRight"></span>
+            </button>
+            <div class="submenu-panel" id="font-theme-submenu" hidden role="menu" aria-label="Font theme options">
+              <button type="button" class="submenu-item" data-font-choice="sans" role="menuitemradio" aria-checked="true">Sans-serif</button>
+              <button type="button" class="submenu-item" data-font-choice="serif" role="menuitemradio" aria-checked="false">Serif</button>
+              <button type="button" class="submenu-item" data-font-choice="mono" role="menuitemradio" aria-checked="false">Monospace</button>
+            </div>
+          </div>
+          <button type="button" class="dropdown-item" id="change-password-btn" role="menuitem">
+            <span data-icon="lock"></span> Change Password
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item" id="logout-btn" role="menuitem">
+            <span data-icon="logout"></span> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-list-header">
+      <h1 id="list-title">All Notes</h1>
+      <button type="button" class="btn btn-primary btn-block" id="create-note-btn">
+        <span data-icon="plus"></span> Create New Note
+      </button>
+    </div>
+
+    <ul class="note-list-scroll" id="note-list" aria-labelledby="list-title"></ul>
+  </section>
+
+  <!-- ============ Detail / editor column ============ -->
+  <section class="note-detail-col" id="main-content" aria-label="Note editor">
+    <div class="detail-header">
+      <button type="button" class="back-btn" id="back-btn">
+        <span data-icon="arrowLeft"></span> Go Back
+      </button>
+      <div class="spacer"></div>
+      <div class="icon-actions" id="icon-actions">
+        <button type="button" class="btn-icon danger" id="delete-icon-btn" aria-label="Delete note" hidden><span data-icon="trash"></span></button>
+        <button type="button" class="btn-icon" id="archive-icon-btn" aria-label="Archive note" hidden><span data-icon="archive"></span></button>
+      </div>
+      <button type="button" class="btn btn-secondary" id="cancel-btn" hidden>Cancel</button>
+      <button type="button" class="btn-link" id="save-btn" hidden>Save Note</button>
+    </div>
+
+    <div class="detail-body" id="detail-body">
+      <div class="empty-state" id="empty-state">
+        <span data-icon="feather" style="width:48px;height:48px;"></span>
+        <h3>No note selected</h3>
+        <p>Choose a note from the list, or create a new one to get started.</p>
+      </div>
+
+      <form id="note-form" novalidate hidden>
+        <label for="note-title" class="sr-only">Note title</label>
+        <input type="text" id="note-title" class="title-input" placeholder="Untitled note" required minlength="1" maxlength="120" aria-describedby="title-error">
+        <p class="field-hint" id="title-error" role="alert" style="display:none; color: var(--color-danger); margin-top:4px;">
+          <span data-icon="info"></span> Give your note a title before saving.
+        </p>
+
+        <div class="meta-row">
+          <div class="meta-item" style="flex-direction:column; align-items:stretch; gap:8px; flex:1;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span data-icon="tag"></span>
+              <label for="tag-input" class="sr-only">Add a tag</label>
+              <input type="text" id="tag-input" placeholder="Add a tag and press Enter" style="border:none; background:transparent; font-size: var(--text-5-size); flex:1; padding:2px 0;">
+            </div>
+            <ul class="tag-list" id="tag-editor-list" aria-label="Note tags"></ul>
+          </div>
+        </div>
+
+        <div class="meta-row" id="meta-secondary">
+          <p class="meta-item"><span data-icon="clock"></span> <span id="last-edited-text">Not saved yet</span></p>
+          <p class="meta-item" id="location-meta" hidden><span data-icon="mapPin"></span> <span id="location-text"></span></p>
+          <button type="button" class="btn btn-border" id="add-location-btn">
+            <span data-icon="mapPin"></span> Add my location
+          </button>
+        </div>
+
+        <hr>
+
+        <label for="note-content" class="sr-only">Note content</label>
+        <textarea id="note-content" class="field-textarea" style="border:none; padding:0; min-height:320px;" placeholder="Start writing…"></textarea>
+      </form>
+    </div>
+
+    <div class="detail-footer" id="mobile-footer" hidden>
+      <button type="button" class="btn btn-secondary" id="cancel-btn-mobile">Cancel</button>
+      <button type="button" class="btn btn-primary btn-block" id="save-btn-mobile">Save Note</button>
+    </div>
+  </section>
+
+  <!-- ============ Right actions column (desktop) ============ -->
+  <aside class="actions-col" aria-label="Note actions" id="actions-col">
+    <button type="button" class="btn btn-border btn-block" id="archive-btn" hidden>
+      <span data-icon="archive"></span> <span id="archive-btn-label">Archive Note</span>
+    </button>
+    <button type="button" class="btn btn-danger btn-block" id="delete-btn" hidden>
+      <span data-icon="trash"></span> Delete Note
+    </button>
+  </aside>
+
+</div>
+
+<!-- ============ Mobile tags panel ============ -->
+<section class="tags-panel" id="tags-panel" aria-label="Tags">
+  <h1 class="text-preset-2" style="margin-bottom:16px;">Tags</h1>
+  <ul class="tag-nav-list" id="tag-nav-list-mobile"></ul>
+</section>
+
+<!-- ============ Mobile bottom navigation ============ -->
+<nav class="bottom-nav" aria-label="Mobile navigation">
+  <ul>
+    <li><button type="button" data-mobile-nav="list" aria-current="true"><span data-icon="home"></span>Home</button></li>
+    <li><button type="button" data-mobile-nav="search"><span data-icon="search"></span>Search</button></li>
+    <li><button type="button" data-mobile-nav="archived"><span data-icon="archive"></span>Archived</button></li>
+    <li><button type="button" data-mobile-nav="tags"><span data-icon="tag"></span>Tags</button></li>
+    <li><button type="button" data-mobile-nav="settings"><span data-icon="settings"></span>Settings</button></li>
+  </ul>
+</nav>
+<button type="button" class="fab" id="fab-create" aria-label="Create new note"><span data-icon="plus"></span></button>
+
+<!-- ============ Modals ============ -->
+<div class="modal-overlay" id="delete-modal" hidden>
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-modal-title" aria-describedby="delete-modal-desc">
+    <div class="modal-icon danger"><span data-icon="trash"></span></div>
+    <h2 class="modal-title" id="delete-modal-title">Delete Note</h2>
+    <p class="modal-desc" id="delete-modal-desc">Are you sure you want to permanently delete this note? This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" data-modal-cancel="delete-modal">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="archive-modal" hidden>
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="archive-modal-title" aria-describedby="archive-modal-desc">
+    <div class="modal-icon info"><span data-icon="archive"></span></div>
+    <h2 class="modal-title" id="archive-modal-title">Archive Note</h2>
+    <p class="modal-desc" id="archive-modal-desc">Are you sure you want to archive this note? You can find it in the Archived Notes section and restore it anytime.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" data-modal-cancel="archive-modal">Cancel</button>
+      <button type="button" class="btn btn-primary" id="confirm-archive-btn">Archive Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="restore-modal" hidden>
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="restore-modal-title" aria-describedby="restore-modal-desc">
+    <div class="modal-icon info"><span data-icon="archive"></span></div>
+    <h2 class="modal-title" id="restore-modal-title">Restore Note</h2>
+    <p class="modal-desc" id="restore-modal-desc">Move this note back to All Notes?</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" data-modal-cancel="restore-modal">Cancel</button>
+      <button type="button" class="btn btn-primary" id="confirm-restore-btn">Restore Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="password-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
+    <div class="modal-icon info"><span data-icon="lock"></span></div>
+    <h2 class="modal-title" id="password-modal-title">Change Password</h2>
+    <form id="password-form" novalidate>
+      <div class="field" style="margin-bottom:12px;">
+        <label class="field-label" for="current-password">Current password</label>
+        <div class="field-input-wrap">
+          <input class="field-input" type="password" id="current-password" required autocomplete="current-password">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:16px;">
+        <label class="field-label" for="new-password">New password</label>
+        <div class="field-input-wrap">
+          <input class="field-input" type="password" id="new-password" required minlength="8" autocomplete="new-password">
+        </div>
+        <p class="field-hint"><span data-icon="info"></span> At least 8 characters.</p>
+      </div>
+      <p class="field-hint" id="password-error" role="alert" style="display:none; color:var(--color-danger); margin-bottom:12px;"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-modal-cancel="password-modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Update Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ Toast region ============ -->
+<div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="false"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
