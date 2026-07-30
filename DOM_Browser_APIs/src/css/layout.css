@@ -274,6 +274,11 @@ html, body {
 .settings-subtitle { color: var(--color-text-muted); margin-bottom: var(--spacing-200); }
 .settings-apply-row { display: flex; justify-content: flex-end; margin-top: var(--spacing-200); }
 
+/* ---- Mobile tags panel: hidden on desktop/tablet, only used <=860px ---- */
+.tags-panel {
+  display: none;
+}
+
 /* ---- Bottom nav (mobile / tablet) ---- */
 .bottom-nav {
   display: none;
@@ -369,6 +374,7 @@ html, body {
   .app[data-view="tags"] .note-detail-col,
   .app[data-view="tags"] .settings-list-col,
   .app[data-view="tags"] .settings-detail-col { display: none; }
+  .app[data-view="tags"] .tags-panel { display: block; }
 
   .app[data-view="settings-menu"] .note-list-col,
   .app[data-view="settings-menu"] .note-detail-col,
