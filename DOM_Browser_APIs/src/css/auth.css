@@ -18,13 +18,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-100);
-  font-family: "Segoe Script", "Brush Script MT", cursive;
-  font-size: var(--text-2-size);
-  font-weight: 700;
   margin-bottom: var(--spacing-300);
 }
-.auth-brand svg { color: var(--color-accent); }
+.auth-brand img { height: 32px; width: auto; }
 .auth-title { text-align: center; font-size: var(--text-2-size); font-weight: 700; margin-bottom: var(--spacing-100); }
 .auth-subtitle { text-align: center; color: var(--color-text-muted); font-size: var(--text-5-size); margin-bottom: var(--spacing-400); }
 .auth-form { display: flex; flex-direction: column; gap: var(--spacing-200); }

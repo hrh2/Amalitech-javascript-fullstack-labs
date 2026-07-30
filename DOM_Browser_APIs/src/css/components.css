@@ -361,3 +361,52 @@ mark {
   border-radius: 3px;
   padding: 0 1px;
 }
+
+/* =========================================================
+   Settings radio cards (Color Theme / Font Theme pickers)
+   ========================================================= */
+.radio-card-list { display: flex; flex-direction: column; gap: var(--spacing-150); margin: var(--spacing-200) 0 var(--spacing-300); }
+.radio-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-12);
+  background: var(--color-bg);
+  padding: var(--spacing-200);
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease;
+}
+.radio-card:hover { background: var(--color-bg-muted); }
+.radio-card[aria-checked="true"] {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+}
+.radio-card-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-8);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+.radio-card-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.radio-card-title { font-size: var(--text-4-size); font-weight: 600; color: var(--color-text); }
+.radio-card-desc { font-size: var(--text-5-size); color: var(--color-text-muted); }
+.radio-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+  flex-shrink: 0;
+  position: relative;
+}
+.radio-card[aria-checked="true"] .radio-dot { border-color: var(--color-accent); }
+.radio-card[aria-checked="true"] .radio-dot::after {
+  content: "";
+  position: absolute; inset: 3px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}

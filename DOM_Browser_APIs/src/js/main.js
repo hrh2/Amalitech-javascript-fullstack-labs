@@ -26,6 +26,12 @@ const state = {
   pendingDeleteId: null,
   pendingArchiveId: null,
   pendingRestoreId: null,
+
+  inSettings: false,           // top-level: are we viewing the Settings section?
+  settingsSubpage: "color-theme", // which sub-page the settings detail pane shows
+  settingsDrilledOnMobile: false, // mobile only: showing a sub-page vs. the menu list
+  pendingThemeChoice: "light",
+  pendingFontChoice: "sans",
 };
 
 const els = {
@@ -35,10 +41,10 @@ const els = {
   contentInput: document.getElementById("note-content"),
   tagInput: document.getElementById("tag-input"),
   saveBtn: document.getElementById("save-btn"),
-  saveBtnMobile: document.getElementById("save-btn-mobile"),
+  saveBtnDesktop: document.getElementById("save-btn-desktop"),
   cancelBtn: document.getElementById("cancel-btn"),
-  cancelBtnMobile: document.getElementById("cancel-btn-mobile"),
-  mobileFooter: document.getElementById("mobile-footer"),
+  cancelBtnDesktop: document.getElementById("cancel-btn-desktop"),
+  desktopFooter: document.getElementById("desktop-footer"),
   archiveBtn: document.getElementById("archive-btn"),
   deleteBtn: document.getElementById("delete-btn"),
   archiveIconBtn: document.getElementById("archive-icon-btn"),
@@ -53,7 +59,12 @@ const els = {
   contentHeader: document.getElementById("content-header"),
   editTagsBtn: document.getElementById("edit-tags-btn"),
   tagEditor: document.getElementById("tag-editor"),
-  mobileSearchClose: document.getElementById("mobile-search-close"),
+  noteListCol: document.getElementById("note-list-col"),
+  noteDetailCol: document.getElementById("main-content"),
+  actionsCol: document.getElementById("actions-col"),
+  settingsListCol: document.getElementById("settings-list-col"),
+  settingsDetailCol: document.getElementById("settings-detail-col"),
+  settingsPageTitle: document.getElementById("settings-page-title"),
 };
 
 let draftTags = [];
@@ -64,7 +75,9 @@ let draftTags = [];
 function init() {
   ui.hydrateIcons();
   themes.initTheme();
-  syncThemeMenuState();
+  state.pendingThemeChoice = themes.getThemePref();
+  state.pendingFontChoice = themes.getFontPref();
+  syncRadioCards();
   noteManager.initNotes();
   renderSidebarTags();
   renderList();
@@ -123,7 +136,7 @@ function renderEmptyDetail() {
   els.noteForm.hidden = true;
   els.saveBtn.hidden = true;
   els.cancelBtn.hidden = true;
-  els.mobileFooter.hidden = true;
+  els.desktopFooter.hidden = true;
   els.archiveBtn.hidden = true;
   els.deleteBtn.hidden = true;
   els.archiveIconBtn.hidden = true;
@@ -143,7 +156,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.noteForm.hidden = false;
   els.saveBtn.hidden = false;
   els.cancelBtn.hidden = false;
-  els.mobileFooter.hidden = false;
+  els.desktopFooter.hidden = false;
 
   els.titleInput.value = note.title;
   els.contentInput.value = note.content;
@@ -219,6 +232,7 @@ function maybeRestoreDraft() {
       els.contentInput.value = draft.content;
       draftTags = draft.tags || [];
       ui.renderTagEditor(draftTags);
+      ui.renderTagsSummary(draftTags);
     }
   }
 }
@@ -228,6 +242,7 @@ function maybeRestoreDraft() {
  * ------------------------------------------------------- */
 function startNewNote(draft = null) {
   exitMobileSearch();
+  exitSettings();
   const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null);
   blank.id = draft?.id || blank.id;
   renderNoteDetail(blank, { editing: true, isNew: true });
@@ -235,6 +250,7 @@ function startNewNote(draft = null) {
 
 function selectNote(id) {
   exitMobileSearch();
+  exitSettings();
   const note = noteManager.getNoteById(id);
   if (!note) return;
   storage.clearDraft();
@@ -353,6 +369,7 @@ function confirmRestore() {
  * ------------------------------------------------------- */
 function setFilterMode(mode, tag = null) {
   exitMobileSearch();
+  exitSettings();
   state.filterMode = mode;
   state.activeTag = tag;
   state.query = "";
@@ -360,7 +377,7 @@ function setFilterMode(mode, tag = null) {
   renderSidebarTags();
   renderList();
   renderEmptyDetail();
-  ui.setMobileView("list");
+  ui.setMobileView(mode === "archived" ? "archived" : "list");
 }
 
 let searchDebounce = null;
@@ -438,40 +455,88 @@ function resetLocationBtn() {
 }
 
 /* ---------------------------------------------------------
- * Settings dropdown / theme / font / password / logout
+ * Mobile search (expands a search bar inline in the header)
  * ------------------------------------------------------- */
-function syncThemeMenuState() {
-  const theme = document.documentElement.getAttribute("data-theme") || "light";
-  const font = document.documentElement.getAttribute("data-font") || "sans";
-  document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
-    btn.setAttribute("aria-checked", String(btn.dataset.themeChoice === theme));
-  });
-  document.querySelectorAll("[data-font-choice]").forEach((btn) => {
-    btn.setAttribute("aria-checked", String(btn.dataset.fontChoice === font));
-  });
-}
-
-function closeAllMenus() {
-  ["settings-panel", "color-theme-submenu", "font-theme-submenu"].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.hidden = true;
-  });
-  document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
-  document.getElementById("color-theme-toggle")?.setAttribute("aria-expanded", "false");
-  document.getElementById("font-theme-toggle")?.setAttribute("aria-expanded", "false");
-}
-
 function exitMobileSearch() {
   els.contentHeader.removeAttribute("data-mobile-search");
   document.getElementById("search-input").value = "";
   state.query = "";
   renderList();
+  ui.setMobileView("list");
 }
 
 function enterMobileSearch() {
+  exitSettings();
   els.contentHeader.setAttribute("data-mobile-search", "true");
-  ui.setMobileView("list");
+  ui.setMobileView("list", "search");
   document.getElementById("search-input").focus();
+}
+
+/* ---------------------------------------------------------
+ * Settings section (full page, not a dropdown)
+ * ------------------------------------------------------- */
+function enterSettings() {
+  exitMobileSearch();
+  state.inSettings = true;
+  state.settingsDrilledOnMobile = false;
+  state.pendingThemeChoice = themes.getThemePref();
+  state.pendingFontChoice = themes.getFontPref();
+  syncRadioCards();
+
+  els.noteListCol.hidden = true;
+  els.noteDetailCol.hidden = true;
+  els.actionsCol.hidden = true;
+  document.getElementById("tags-panel").hidden = true;
+  els.settingsListCol.hidden = false;
+  els.settingsDetailCol.hidden = false;
+
+  els.listTitle.textContent = "Settings";
+  els.listDescription.hidden = true;
+  document.querySelectorAll("[data-nav]").forEach((btn) => btn.setAttribute("aria-current", "false"));
+  showSettingsSubpage(state.settingsSubpage);
+  ui.setMobileView("settings-menu");
+}
+
+function exitSettings() {
+  if (!state.inSettings) return;
+  state.inSettings = false;
+  state.settingsDrilledOnMobile = false;
+  els.settingsListCol.hidden = true;
+  els.settingsDetailCol.hidden = true;
+  els.noteListCol.hidden = false;
+  els.noteDetailCol.hidden = false;
+  els.actionsCol.hidden = false;
+}
+
+function showSettingsSubpage(page) {
+  state.settingsSubpage = page;
+  document.querySelectorAll(".settings-subpage").forEach((el) => {
+    el.hidden = el.id !== `${page}-page`;
+  });
+  document.querySelectorAll("[data-settings-page]").forEach((btn) => {
+    btn.setAttribute("aria-current", String(btn.dataset.settingsPage === page));
+  });
+  els.settingsPageTitle.textContent = page === "font-theme" ? "Font Theme" : "Color Theme";
+}
+
+function drillIntoSettingsSubpage(page) {
+  showSettingsSubpage(page);
+  state.settingsDrilledOnMobile = true;
+  ui.setMobileView("settings-page");
+}
+
+function backToSettingsMenu() {
+  state.settingsDrilledOnMobile = false;
+  ui.setMobileView("settings-menu");
+}
+
+function syncRadioCards() {
+  document.querySelectorAll("[data-theme-choice]").forEach((card) => {
+    card.setAttribute("aria-checked", String(card.dataset.themeChoice === state.pendingThemeChoice));
+  });
+  document.querySelectorAll("[data-font-choice]").forEach((card) => {
+    card.setAttribute("aria-checked", String(card.dataset.fontChoice === state.pendingFontChoice));
+  });
 }
 
 /* ---------------------------------------------------------
@@ -509,9 +574,9 @@ function attachEventListeners() {
   document.getElementById("create-note-btn").addEventListener("click", () => startNewNote());
   document.getElementById("fab-create").addEventListener("click", () => startNewNote());
 
-  // Save / Cancel (desktop + mobile duplicate buttons)
-  [els.saveBtn, els.saveBtnMobile].forEach((btn) => btn.addEventListener("click", saveCurrentNote));
-  [els.cancelBtn, els.cancelBtnMobile].forEach((btn) => btn.addEventListener("click", cancelEdit));
+  // Save / Cancel — header (mobile) + footer (desktop/tablet) buttons both wire to the same actions
+  [els.saveBtn, els.saveBtnDesktop].forEach((btn) => btn.addEventListener("click", saveCurrentNote));
+  [els.cancelBtn, els.cancelBtnDesktop].forEach((btn) => btn.addEventListener("click", cancelEdit));
 
   // Back button (mobile)
   document.getElementById("back-btn").addEventListener("click", () => {
@@ -580,7 +645,7 @@ function attachEventListeners() {
     if (!els.tagEditor.hidden) els.tagInput.focus();
   });
 
-  // Mobile search: bottom-nav "Search" expands a search bar in the header
+  // Mobile search
   document.getElementById("mobile-search-close").addEventListener("click", exitMobileSearch);
 
   // Geolocation
@@ -590,72 +655,68 @@ function attachEventListeners() {
   document.querySelectorAll("[data-mobile-nav]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.mobileNav;
-      if (target === "list") { exitMobileSearch(); state.filterMode = "all"; state.activeTag = null; renderSidebarTags(); renderList(); ui.setMobileView("list"); }
-      else if (target === "archived") { exitMobileSearch(); setFilterMode("archived"); }
-      else if (target === "tags") { exitMobileSearch(); ui.setMobileView("tags"); }
-      else if (target === "search") { enterMobileSearch(); }
-      else if (target === "settings") { toggleSettingsPanel(); }
+      if (target === "list") {
+        exitMobileSearch();
+        exitSettings();
+        state.filterMode = "all";
+        state.activeTag = null;
+        renderSidebarTags();
+        renderList();
+        ui.setMobileView("list");
+      } else if (target === "archived") {
+        setFilterMode("archived");
+      } else if (target === "tags") {
+        exitMobileSearch();
+        exitSettings();
+        els.listTitle.textContent = "Tags";
+        els.listDescription.hidden = true;
+        document.querySelectorAll("[data-nav]").forEach((b) => b.setAttribute("aria-current", "false"));
+        ui.setMobileView("tags");
+      } else if (target === "search") {
+        enterMobileSearch();
+      } else if (target === "settings") {
+        enterSettings();
+      }
     });
   });
 
-  // Settings dropdown
-  const settingsToggle = document.getElementById("settings-toggle");
-  const settingsPanel = document.getElementById("settings-panel");
-  settingsToggle.addEventListener("click", () => toggleSettingsPanel());
+  // Settings entry point (gear icon)
+  document.getElementById("settings-toggle").addEventListener("click", enterSettings);
 
-  function toggleSettingsPanel() {
-    const isOpen = !settingsPanel.hidden;
-    closeAllMenus();
-    if (!isOpen) {
-      settingsPanel.hidden = false;
-      settingsToggle.setAttribute("aria-expanded", "true");
-      settingsPanel.querySelector(".dropdown-item")?.focus();
-    }
-  }
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest("#settings-dropdown")) closeAllMenus();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeAllMenus();
+  // Settings: drill into a sub-page from the menu list
+  document.querySelectorAll("[data-settings-page]").forEach((btn) => {
+    btn.addEventListener("click", () => drillIntoSettingsSubpage(btn.dataset.settingsPage));
   });
 
-  document.getElementById("color-theme-toggle").addEventListener("click", (e) => {
-    e.stopPropagation();
-    const submenu = document.getElementById("color-theme-submenu");
-    const willOpen = submenu.hidden;
-    document.getElementById("font-theme-submenu").hidden = true;
-    submenu.hidden = !willOpen;
-    e.currentTarget.setAttribute("aria-expanded", String(willOpen));
+  // Settings: mobile "< Settings" back link returns to the menu list
+  document.getElementById("settings-back-btn").addEventListener("click", backToSettingsMenu);
+
+  // Settings: Color Theme radio cards (staged selection, applied on demand)
+  document.getElementById("color-theme-cards").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-theme-choice]");
+    if (!card) return;
+    state.pendingThemeChoice = card.dataset.themeChoice;
+    syncRadioCards();
   });
-  document.getElementById("font-theme-toggle").addEventListener("click", (e) => {
-    e.stopPropagation();
-    const submenu = document.getElementById("font-theme-submenu");
-    const willOpen = submenu.hidden;
-    document.getElementById("color-theme-submenu").hidden = true;
-    submenu.hidden = !willOpen;
-    e.currentTarget.setAttribute("aria-expanded", String(willOpen));
+  document.getElementById("apply-theme-btn").addEventListener("click", () => {
+    themes.applyTheme(state.pendingThemeChoice);
+    ui.showToast("Settings updated successfully!");
   });
 
-  document.querySelectorAll("[data-theme-choice]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      themes.applyTheme(btn.dataset.themeChoice);
-      syncThemeMenuState();
-      ui.showToast("Settings updated successfully!");
-      closeAllMenus();
-    });
+  // Settings: Font Theme radio cards (staged selection, applied on demand)
+  document.getElementById("font-theme-cards").addEventListener("click", (e) => {
+    const card = e.target.closest("[data-font-choice]");
+    if (!card) return;
+    state.pendingFontChoice = card.dataset.fontChoice;
+    syncRadioCards();
   });
-  document.querySelectorAll("[data-font-choice]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      themes.applyFont(btn.dataset.fontChoice);
-      syncThemeMenuState();
-      ui.showToast("Settings updated successfully!");
-      closeAllMenus();
-    });
+  document.getElementById("apply-font-btn").addEventListener("click", () => {
+    themes.applyFont(state.pendingFontChoice);
+    ui.showToast("Settings updated successfully!");
   });
 
+  // Settings: Change Password (still a focused modal — no reference design for a full page)
   document.getElementById("change-password-btn").addEventListener("click", () => {
-    closeAllMenus();
     document.getElementById("password-form").reset();
     ui.showValidationError("new-password", "password-error", "");
     ui.openModal("password-modal");

@@ -86,9 +86,21 @@ note-taking-app/
   attempt.
 
 **Theming**
-- Light/dark color theme and sans/serif/mono font theme, both persisted
-  to `localStorage` and re-applied on load via `data-theme` /
-  `data-font` attributes that the CSS custom properties key off of.
+- Light/Dark/System color theme (System follows the OS's `prefers-color-scheme`
+  live) and Sans/Serif/Monospace font theme, both staged on a dedicated
+  **Settings** page and only applied when you tap "Apply Changes". Persisted
+  to `localStorage` and re-applied on load.
+
+**Settings**
+- A full Settings section (not a dropdown): a menu (Color Theme, Font Theme,
+  Change Password, Logout) plus dedicated Color Theme / Font Theme pages with
+  selectable cards. On desktop it replaces the list+detail columns; on mobile
+  it's its own full-screen view with a "< Settings" drill-down for each page.
+
+**Logo**
+- `assets/logo-light.svg` and `assets/logo-dark.svg` are placeholders — drop
+  in your real exported logos at those exact paths (see `assets/README.md`).
+  The dark-mode version swaps in automatically.
 
 **Accessibility**
 - Semantic landmarks (`header`/`nav`/`main`/`aside`/`section`), a
@@ -98,11 +110,13 @@ note-taking-app/
   everywhere, and `prefers-reduced-motion` support.
 
 **Responsive design**
-- Desktop: 3-pane layout (sidebar, list, editor + actions column).
-- Tablet: 2-pane layout, action buttons collapse into header icons.
+- Desktop: 3-pane layout (sidebar, list, editor + actions column). Save/Cancel
+  appear as large buttons in a footer at the bottom of the editor pane.
+- Tablet: 2-pane layout, archive/delete buttons collapse into header icons.
 - Mobile: single-pane view switched by a bottom tab bar (Home, Search,
-  Archived, Tags, Settings) plus a floating "create note" button, with
-  a "Go Back" affordance in the editor header.
+  Archived, Tags, Settings) plus a floating "create note" button. Save/Cancel
+  move into the compact header next to "Go Back", and the whole content area
+  becomes a rounded card over a tinted page background.
 
 ## A note on authentication
 

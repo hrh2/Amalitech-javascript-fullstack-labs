@@ -10,15 +10,19 @@
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/layout.css">
 </head>
-<body data-font="sans">
+<body>
 <a class="skip-link" href="#main-content">Skip to note content</a>
 
 <div class="app" id="app" data-view="list">
 
   <!-- ============ Sidebar (desktop) ============ -->
   <aside class="sidebar" aria-label="Primary">
-    <div class="brand" aria-hidden="false">
-      <span aria-hidden="true">🖋️</span> Notes
+    <div class="brand">
+      <!-- Logo placeholder: drop in your light/dark SVG paths below.
+           The logo already contains the "Notes" wordmark, so no extra
+           text is added here. -->
+      <img class="logo-light" src="assets/logo-light.svg" alt="Notes">
+      <img class="logo-dark" src="assets/logo-dark.svg" alt="Notes">
     </div>
 
     <nav class="nav-primary" aria-label="Note views">
@@ -38,7 +42,8 @@
   <div class="content-area">
 
     <div class="mobile-topbar" aria-hidden="true">
-      <span aria-hidden="true">🖋️</span> Notes
+      <img class="logo-light" src="assets/logo-light.svg" alt="Notes">
+      <img class="logo-dark" src="assets/logo-dark.svg" alt="Notes">
     </div>
 
     <header class="content-header" id="content-header">
@@ -52,46 +57,16 @@
             <span data-icon="x"></span>
           </button>
         </form>
-        <div class="dropdown" id="settings-dropdown">
-          <button type="button" class="gear-btn" id="settings-toggle" aria-haspopup="true" aria-expanded="false" aria-label="Settings">
-            <span data-icon="settings"></span>
-          </button>
-          <div class="dropdown-panel" id="settings-panel" hidden role="menu" aria-label="Settings menu">
-            <div class="dropdown" style="position:static;">
-              <button type="button" class="dropdown-item" id="color-theme-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false">
-                <span data-icon="sun"></span> Color Theme <span class="chevron" data-icon="chevronRight"></span>
-              </button>
-              <div class="submenu-panel" id="color-theme-submenu" hidden role="menu" aria-label="Color theme options">
-                <button type="button" class="submenu-item" data-theme-choice="light" role="menuitemradio" aria-checked="true">Light</button>
-                <button type="button" class="submenu-item" data-theme-choice="dark" role="menuitemradio" aria-checked="false">Dark</button>
-              </div>
-            </div>
-            <div class="dropdown" style="position:static;">
-              <button type="button" class="dropdown-item" id="font-theme-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false">
-                <span data-icon="type"></span> Font Theme <span class="chevron" data-icon="chevronRight"></span>
-              </button>
-              <div class="submenu-panel" id="font-theme-submenu" hidden role="menu" aria-label="Font theme options">
-                <button type="button" class="submenu-item" data-font-choice="sans" role="menuitemradio" aria-checked="true">Sans-serif</button>
-                <button type="button" class="submenu-item" data-font-choice="serif" role="menuitemradio" aria-checked="false">Serif</button>
-                <button type="button" class="submenu-item" data-font-choice="mono" role="menuitemradio" aria-checked="false">Monospace</button>
-              </div>
-            </div>
-            <button type="button" class="dropdown-item" id="change-password-btn" role="menuitem">
-              <span data-icon="lock"></span> Change Password
-            </button>
-            <div class="dropdown-divider"></div>
-            <button type="button" class="dropdown-item" id="logout-btn" role="menuitem">
-              <span data-icon="logout"></span> Logout
-            </button>
-          </div>
-        </div>
+        <button type="button" class="gear-btn" id="settings-toggle" aria-label="Settings">
+          <span data-icon="settings"></span>
+        </button>
       </div>
     </header>
 
     <div class="content-body">
 
       <!-- ============ Note list column ============ -->
-      <section class="note-list-col" aria-label="Notes list">
+      <section class="note-list-col" id="note-list-col" aria-label="Notes list">
         <div class="note-list-header">
           <button type="button" class="btn btn-primary btn-block" id="create-note-btn">
             <span data-icon="plus"></span> Create New Note
@@ -113,6 +88,7 @@
             <button type="button" class="btn-icon danger" id="delete-icon-btn" aria-label="Delete note" hidden><span data-icon="trash"></span></button>
             <button type="button" class="btn-icon" id="archive-icon-btn" aria-label="Archive note" hidden><span data-icon="archive"></span></button>
           </div>
+          <!-- Mobile-only compact Save/Cancel (shown inline in the header on narrow screens) -->
           <button type="button" class="btn btn-secondary" id="cancel-btn" hidden>Cancel</button>
           <button type="button" class="btn-link" id="save-btn" hidden>Save Note</button>
         </div>
@@ -170,9 +146,10 @@
           </form>
         </div>
 
-        <div class="detail-footer" id="mobile-footer" hidden>
-          <button type="button" class="btn btn-secondary" id="cancel-btn-mobile">Cancel</button>
-          <button type="button" class="btn btn-primary btn-block" id="save-btn-mobile">Save Note</button>
+        <!-- Desktop/tablet Save + Cancel footer (large buttons, bottom of pane) -->
+        <div class="detail-footer" id="desktop-footer" hidden>
+          <button type="button" class="btn btn-primary" id="save-btn-desktop">Save Note</button>
+          <button type="button" class="btn btn-secondary" id="cancel-btn-desktop">Cancel</button>
         </div>
       </section>
 
@@ -188,8 +165,116 @@
 
       <!-- ============ Mobile tags panel ============ -->
       <section class="tags-panel" id="tags-panel" aria-label="Tags">
-        <h1 class="text-preset-2" style="margin-bottom:16px;">Tags</h1>
         <ul class="tag-nav-list" id="tag-nav-list-mobile"></ul>
+      </section>
+
+      <!-- ============ Settings: menu column ============ -->
+      <section class="settings-list-col" id="settings-list-col" aria-label="Settings menu" hidden>
+        <ul class="settings-nav-list">
+          <li>
+            <button type="button" class="settings-nav-item" data-settings-page="color-theme" aria-current="false">
+              <span data-icon="sun"></span> Color Theme <span class="chevron" data-icon="chevronRight"></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="settings-nav-item" data-settings-page="font-theme" aria-current="false">
+              <span data-icon="type"></span> Font Theme <span class="chevron" data-icon="chevronRight"></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="settings-nav-item" id="change-password-btn">
+              <span data-icon="lock"></span> Change Password
+            </button>
+          </li>
+        </ul>
+        <div class="settings-divider"></div>
+        <ul class="settings-nav-list">
+          <li>
+            <button type="button" class="settings-nav-item" id="logout-btn">
+              <span data-icon="logout"></span> Logout
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============ Settings: detail column ============ -->
+      <section class="settings-detail-col" id="settings-detail-col" aria-label="Settings detail" hidden>
+        <div class="settings-detail-header">
+          <button type="button" class="back-btn" id="settings-back-btn">
+            <span data-icon="chevronLeft"></span> Settings
+          </button>
+          <h2 class="settings-page-title" id="settings-page-title">Color Theme</h2>
+        </div>
+
+        <div class="settings-detail-body">
+          <!-- Color Theme sub-page -->
+          <div class="settings-subpage" id="color-theme-page">
+            <p class="settings-subtitle">Choose your color theme:</p>
+            <div class="radio-card-list" id="color-theme-cards">
+              <button type="button" class="radio-card" data-theme-choice="light" role="radio" aria-checked="true">
+                <span class="radio-card-icon"><span data-icon="sun"></span></span>
+                <span class="radio-card-text">
+                  <span class="radio-card-title">Light Mode</span>
+                  <span class="radio-card-desc">Pick a clean and classic light theme</span>
+                </span>
+                <span class="radio-dot" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="radio-card" data-theme-choice="dark" role="radio" aria-checked="false">
+                <span class="radio-card-icon"><span data-icon="moon"></span></span>
+                <span class="radio-card-text">
+                  <span class="radio-card-title">Dark Mode</span>
+                  <span class="radio-card-desc">Select a sleek and modern dark theme</span>
+                </span>
+                <span class="radio-dot" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="radio-card" data-theme-choice="system" role="radio" aria-checked="false">
+                <span class="radio-card-icon"><span data-icon="system"></span></span>
+                <span class="radio-card-text">
+                  <span class="radio-card-title">System</span>
+                  <span class="radio-card-desc">Adapts to your device's theme</span>
+                </span>
+                <span class="radio-dot" aria-hidden="true"></span>
+              </button>
+            </div>
+            <div class="settings-apply-row">
+              <button type="button" class="btn btn-primary" id="apply-theme-btn">Apply Changes</button>
+            </div>
+          </div>
+
+          <!-- Font Theme sub-page -->
+          <div class="settings-subpage" id="font-theme-page" hidden>
+            <p class="settings-subtitle">Choose your font theme:</p>
+            <div class="radio-card-list" id="font-theme-cards">
+              <button type="button" class="radio-card" data-font-choice="sans" role="radio" aria-checked="true">
+                <span class="radio-card-icon"><span data-icon="type"></span></span>
+                <span class="radio-card-text">
+                  <span class="radio-card-title">Sans Serif</span>
+                  <span class="radio-card-desc">Clean and modern, easy to read on screen</span>
+                </span>
+                <span class="radio-dot" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="radio-card" data-font-choice="serif" role="radio" aria-checked="false">
+                <span class="radio-card-icon"><span data-icon="type"></span></span>
+                <span class="radio-card-text">
+                  <span class="radio-card-title">Serif</span>
+                  <span class="radio-card-desc">A classic, literary feel for longer notes</span>
+                </span>
+                <span class="radio-dot" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="radio-card" data-font-choice="mono" role="radio" aria-checked="false">
+                <span class="radio-card-icon"><span data-icon="type"></span></span>
+                <span class="radio-card-text">
+                  <span class="radio-card-title">Monospace</span>
+                  <span class="radio-card-desc">Fixed-width, great for code-like notes</span>
+                </span>
+                <span class="radio-dot" aria-hidden="true"></span>
+              </button>
+            </div>
+            <div class="settings-apply-row">
+              <button type="button" class="btn btn-primary" id="apply-font-btn">Apply Changes</button>
+            </div>
+          </div>
+        </div>
       </section>
 
     </div>

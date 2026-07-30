@@ -240,10 +240,15 @@ export function showValidationError(fieldId, errorId, message) {
 /* ---------------------------------------------------------
  * View / breadcrumb toggling (mobile)
  * ------------------------------------------------------- */
-export function setMobileView(view) {
+export function setMobileView(view, navOverride = null) {
   document.getElementById("app").dataset.view = view;
+  const navMap = {
+    "settings-menu": "settings",
+    "settings-page": "settings",
+  };
+  const navKey = navOverride ?? navMap[view] ?? view;
   document.querySelectorAll("[data-mobile-nav]").forEach((btn) => {
-    btn.setAttribute("aria-current", String(btn.dataset.mobileNav === view));
+    btn.setAttribute("aria-current", String(btn.dataset.mobileNav === navKey));
   });
 }
 

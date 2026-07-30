@@ -1,12 +1,24 @@
 /* =========================================================
    App shell
    ========================================================= */
+html, body {
+  background: var(--color-bg);
+}
+
 .app {
   display: grid;
   grid-template-columns: var(--sidebar-width) 1fr;
   height: 100vh;
   overflow: hidden;
 }
+
+/* ---- Logo placeholders ----
+   Drop your light/dark SVG files at assets/logo-light.svg and
+   assets/logo-dark.svg — each logo already includes the "Notes"
+   wordmark, so no extra text is rendered alongside it. */
+.logo-dark { display: none; }
+[data-theme="dark"] .logo-dark { display: block; }
+[data-theme="dark"] .logo-light { display: none; }
 
 /* ---- Sidebar ---- */
 .sidebar {
@@ -20,26 +32,16 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--spacing-100);
-  font-size: var(--text-2-size);
-  font-weight: 700;
-  font-family: "Segoe Script", "Brush Script MT", cursive;
   padding: var(--spacing-100) var(--spacing-150) var(--spacing-300);
-  color: var(--color-text);
 }
-.brand svg { color: var(--color-accent); }
+.brand img { height: 28px; width: auto; }
 
 .mobile-topbar {
   display: none;
   align-items: center;
-  gap: var(--spacing-100);
-  font-size: var(--text-2-size);
-  font-weight: 700;
-  font-family: "Segoe Script", "Brush Script MT", cursive;
   padding: var(--spacing-300) var(--spacing-300) 0;
-  color: var(--color-text);
 }
-.mobile-topbar svg { color: var(--color-accent); }
+.mobile-topbar img { height: 26px; width: auto; }
 
 .nav-primary { display: flex; flex-direction: column; gap: var(--spacing-050); margin-bottom: var(--spacing-300); }
 .nav-link {
@@ -65,12 +67,16 @@
 }
 .tag-nav-list { display: flex; flex-direction: column; gap: 2px; }
 
+/* Utility: only rendered on the mobile/tablet breakpoint */
+.mobile-only-heading { display: none; }
+
 /* ---- Content area: unified header + 3-column body ---- */
 .content-area {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  background: var(--color-bg);
 }
 
 .content-header {
@@ -165,6 +171,17 @@
 }
 .detail-header .spacer { flex: 1; }
 .detail-header .icon-actions { display: none; gap: 4px; }
+
+/* Save/Cancel placement differs by breakpoint:
+   - Desktop & tablet (>860px): large buttons in a footer at the
+     bottom of the pane (#desktop-footer).
+   - Mobile (<=860px): compact text buttons inline in the header
+     (#cancel-btn / #save-btn), and the footer is hidden. */
+.detail-header #cancel-btn,
+.detail-header #save-btn {
+  display: none;
+}
+
 .detail-body { flex: 1; overflow-y: auto; padding: var(--spacing-400); }
 
 .meta-grid { display: flex; flex-direction: column; gap: var(--spacing-150); margin: var(--spacing-300) 0; }
@@ -182,6 +199,7 @@
 .tag-editor .tag-list { margin-top: var(--spacing-100); }
 
 .detail-body hr { border: none; border-top: 1px solid var(--color-border); margin: var(--spacing-300) 0; }
+
 .detail-footer {
   display: flex; gap: var(--spacing-150);
   padding: var(--spacing-200) var(--spacing-300);
@@ -191,6 +209,7 @@
 
 .title-input {
   width: 100%;
+  font-family: inherit;
   font-size: var(--text-1-size);
   font-weight: 700;
   letter-spacing: var(--text-1-ls);
@@ -211,6 +230,49 @@
   gap: var(--spacing-150);
   background: var(--color-bg);
 }
+
+/* ---- Settings: menu column (reuses note-list-col's grid slot) ---- */
+.settings-list-col {
+  grid-column: 1;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  padding: var(--spacing-300) var(--spacing-200);
+  background: var(--color-bg);
+}
+.settings-nav-list { display: flex; flex-direction: column; gap: 2px; }
+.settings-nav-item {
+  display: flex; align-items: center; gap: var(--spacing-150);
+  width: 100%; text-align: left;
+  padding: var(--spacing-150);
+  border-radius: var(--radius-8);
+  border: none; background: transparent;
+  color: var(--color-text); font-size: var(--text-4-size); font-weight: 500;
+  cursor: pointer;
+}
+.settings-nav-item:hover { background: var(--color-bg-muted); }
+.settings-nav-item[aria-current="true"] { background: var(--color-accent-subtle); color: var(--color-accent); }
+.settings-nav-item .chevron { margin-left: auto; color: currentColor; opacity: .7; }
+.settings-divider { height: 1px; background: var(--color-border); margin: var(--spacing-200) 0; }
+
+/* ---- Settings: detail column (reuses note-detail-col's grid slot) ---- */
+.settings-detail-col {
+  grid-column: 2 / span 2;
+  overflow-y: auto;
+  background: var(--color-bg);
+}
+.settings-detail-header {
+  padding: var(--spacing-300) var(--spacing-400) 0;
+}
+.settings-detail-header .back-btn {
+  display: none;
+  align-items: center; gap: var(--spacing-050);
+  background: none; border: none; color: var(--color-text-muted); cursor: pointer;
+  font-size: var(--text-5-size); margin-bottom: var(--spacing-100);
+}
+.settings-page-title { font-size: var(--text-2-size); font-weight: 700; margin-bottom: var(--spacing-100); }
+.settings-detail-body { padding: 0 var(--spacing-400) var(--spacing-400); }
+.settings-subtitle { color: var(--color-text-muted); margin-bottom: var(--spacing-200); }
+.settings-apply-row { display: flex; justify-content: flex-end; margin-top: var(--spacing-200); }
 
 /* ---- Bottom nav (mobile / tablet) ---- */
 .bottom-nav {
@@ -260,8 +322,12 @@
   .detail-header .icon-actions { display: flex; }
 }
 
-/* Mobile/small-tablet: single visible pane at a time, bottom tab bar */
+/* Mobile/small-tablet: single visible pane at a time, bottom tab bar,
+   Save/Cancel move into the header, and the whole content area
+   becomes a rounded card sitting on a tinted page background. */
 @media (max-width: 860px) {
+  html, body { background: var(--color-bg-muted); }
+
   .app {
     grid-template-columns: 1fr;
     height: auto;
@@ -269,23 +335,52 @@
   }
   .sidebar { display: none; }
   .mobile-topbar { display: flex; }
+  .mobile-only-heading { display: block; }
+
+  .content-area {
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+  }
 
   .content-header { padding: var(--spacing-200) var(--spacing-300) var(--spacing-150); }
   .content-header .search-box,
-  .content-header #settings-dropdown { display: none; }
+  .content-header .gear-btn { display: none; }
   .content-header[data-mobile-search="true"] #list-title { display: none; }
   .content-header[data-mobile-search="true"] .search-box { display: flex; flex: 1; }
   .content-header[data-mobile-search="true"] .mobile-search-close { display: flex; }
 
+  /* Settings sub-page fully replaces the outer header on mobile */
+  .app[data-view="settings-page"] .content-header { display: none; }
+
   .content-body { display: block; }
   .note-list-col, .note-detail-col { border-right: none; }
 
-  .app[data-view="list"] .note-detail-col { display: none; }
-  .app[data-view="detail"] .note-list-col { display: none; }
-  .app[data-view="tags"] .note-list-col,
-  .app[data-view="tags"] .note-detail-col { display: none; }
+  .app[data-view="list"] .note-detail-col,
+  .app[data-view="list"] .settings-list-col,
+  .app[data-view="list"] .settings-detail-col,
+  .app[data-view="list"] .tags-panel { display: none; }
 
-  .note-list-col, .note-detail-col {
+  .app[data-view="detail"] .note-list-col,
+  .app[data-view="detail"] .settings-list-col,
+  .app[data-view="detail"] .settings-detail-col,
+  .app[data-view="detail"] .tags-panel { display: none; }
+
+  .app[data-view="tags"] .note-list-col,
+  .app[data-view="tags"] .note-detail-col,
+  .app[data-view="tags"] .settings-list-col,
+  .app[data-view="tags"] .settings-detail-col { display: none; }
+
+  .app[data-view="settings-menu"] .note-list-col,
+  .app[data-view="settings-menu"] .note-detail-col,
+  .app[data-view="settings-menu"] .tags-panel,
+  .app[data-view="settings-menu"] .settings-detail-col { display: none; }
+
+  .app[data-view="settings-page"] .note-list-col,
+  .app[data-view="settings-page"] .note-detail-col,
+  .app[data-view="settings-page"] .tags-panel,
+  .app[data-view="settings-page"] .settings-list-col { display: none; }
+
+  .note-list-col, .note-detail-col, .settings-list-col, .settings-detail-col, .tags-panel {
     height: calc(100vh - 96px);
     padding-bottom: 72px;
   }
@@ -294,18 +389,15 @@
 
   .detail-header .back-btn { display: flex; }
   .detail-header #cancel-btn,
-  .detail-header #save-btn { display: none; }
+  .detail-header #save-btn { display: flex; }
+  .detail-footer { display: none; }
+
+  .settings-list-col { grid-column: auto; border-right: none; }
+  .settings-detail-col { grid-column: auto; }
+  .settings-detail-header .back-btn { display: flex; }
+
   .bottom-nav { display: block; }
   .fab { display: flex; }
-
-  #settings-panel:not([hidden]) {
-    position: fixed;
-    top: auto;
-    bottom: 88px;
-    left: 16px;
-    right: 16px;
-    width: auto;
-  }
 
   .toast-region {
     top: auto;
@@ -315,16 +407,5 @@
     max-width: none;
   }
 
-  .tags-panel {
-    display: none;
-    padding: var(--spacing-300);
-    overflow-y: auto;
-    height: 100vh;
-    padding-bottom: 88px;
-  }
-  .app[data-view="tags"] .tags-panel { display: block; }
-}
-
-@media (min-width: 861px) {
-  .tags-panel { display: none; }
+  .tags-panel { padding: var(--spacing-300); overflow-y: auto; }
 }
