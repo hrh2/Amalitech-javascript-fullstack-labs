@@ -1,37 +1,90 @@
 /* ========================================================= */
 /* Base / Reset                                               */
 /* ========================================================= */
-*, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after {
+    box-sizing: border-box;
+}
 
 html, body {
-  height: 100%;
+    height: 100%;
 }
 
 body {
-  margin: 0;
-  font-family: var(--font-body, var(--font-sans));
-  font-size: var(--text-5-size);
-  line-height: var(--text-5-lh);
-  letter-spacing: var(--text-5-ls);
-  color: var(--color-text);
-  background: var(--color-bg);
-  -webkit-font-smoothing: antialiased;
-  transition: background-color .15s ease, color .15s ease;
+    margin: 0;
+    font-family: var(--font-body, var(--font-sans));
+    font-size: var(--text-5-size);
+    line-height: var(--text-5-lh);
+    letter-spacing: var(--text-5-ls);
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color .15s ease, color .15s ease;
 }
 
-h1, h2, h3, h4, p, ul, ol, figure { margin: 0; }
-ul, ol { padding: 0; list-style: none; }
-a { color: inherit; }
-button, input, textarea, select { font-family: inherit; }
-img, svg { display: block; max-width: 100%; }
+h1, h2, h3, h4, p, ul, ol, figure {
+    margin: 0;
+}
+
+ul, ol {
+    padding: 0;
+    list-style: none;
+}
+
+a {
+    color: inherit;
+}
+
+button, input, textarea, select {
+    font-family: inherit;
+}
+
+img, svg {
+    display: block;
+    max-width: 100%;
+}
 
 /* Typography presets */
-.text-preset-1 { font-size: var(--text-1-size); line-height: var(--text-1-lh); letter-spacing: var(--text-1-ls); font-weight: var(--text-1-weight); }
-.text-preset-2 { font-size: var(--text-2-size); line-height: var(--text-2-lh); letter-spacing: var(--text-2-ls); font-weight: var(--text-2-weight); }
-.text-preset-3 { font-size: var(--text-3-size); line-height: var(--text-3-lh); letter-spacing: var(--text-3-ls); font-weight: var(--text-3-weight); }
-.text-preset-4 { font-size: var(--text-4-size); line-height: var(--text-4-lh); letter-spacing: var(--text-4-ls); font-weight: var(--text-4-weight); }
-.text-preset-5 { font-size: var(--text-5-size); line-height: var(--text-5-lh); letter-spacing: var(--text-5-ls); font-weight: var(--text-5-weight); }
-.text-preset-6 { font-size: var(--text-6-size); line-height: var(--text-6-lh); letter-spacing: var(--text-6-ls); font-weight: var(--text-6-weight); }
+.text-preset-1 {
+    font-size: var(--text-1-size);
+    line-height: var(--text-1-lh);
+    letter-spacing: var(--text-1-ls);
+    font-weight: var(--text-1-weight);
+}
+
+.text-preset-2 {
+    font-size: var(--text-2-size);
+    line-height: var(--text-2-lh);
+    letter-spacing: var(--text-2-ls);
+    font-weight: var(--text-2-weight);
+}
+
+.text-preset-3 {
+    font-size: var(--text-3-size);
+    line-height: var(--text-3-lh);
+    letter-spacing: var(--text-3-ls);
+    font-weight: var(--text-3-weight);
+}
+
+.text-preset-4 {
+    font-size: var(--text-4-size);
+    line-height: var(--text-4-lh);
+    letter-spacing: var(--text-4-ls);
+    font-weight: var(--text-4-weight);
+}
+
+.text-preset-5 {
+    font-size: var(--text-5-size);
+    line-height: var(--text-5-lh);
+    letter-spacing: var(--text-5-ls);
+    font-weight: var(--text-5-weight);
+}
+
+.text-preset-6 {
+    font-size: var(--text-6-size);
+    line-height: var(--text-6-lh);
+    letter-spacing: var(--text-6-ls);
+    font-weight: var(--text-6-weight);
+}
 
 /* Visible, consistent focus ring everywhere — required for keyboard accessibility */
 a:focus-visible,
@@ -40,50 +93,53 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--blue-500);
-  outline-offset: 2px;
-  border-radius: var(--radius-6);
+    outline: 2px solid var(--blue-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-6);
 }
 
 /* Screen-reader only utility */
 .sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
-  border: 0;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .skip-link {
-  position: absolute;
-  top: -48px;
-  left: 8px;
-  background: var(--color-accent);
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: var(--radius-8);
-  z-index: 1000;
-  transition: top .15s ease;
+    position: absolute;
+    top: -48px;
+    left: 8px;
+    background: var(--color-accent);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: var(--radius-8);
+    z-index: 1000;
+    transition: top .15s ease;
 }
+
 .skip-link:focus {
-  top: 8px;
+    top: 8px;
 }
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 ::selection {
-  background: var(--color-accent);
-  color: #fff;
+    background: var(--color-accent);
+    color: #fff;
 }
 
 /* Any element using the `hidden` attribute must actually hide, even if
@@ -91,5 +147,5 @@ select:focus-visible,
    .empty-state, .meta-row-item all set display:flex/inline-flex, which
    would otherwise override the browser's built-in [hidden] rule). */
 [hidden] {
-  display: none !important;
+    display: none !important;
 }
