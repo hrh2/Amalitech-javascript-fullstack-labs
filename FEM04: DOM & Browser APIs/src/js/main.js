@@ -114,16 +114,50 @@ function renderList() {
   };
   els.listTitle.textContent = titleMap[state.filterMode] ?? "All Notes";
 
-  if (state.filterMode === "tag" && state.activeTag) {
+  if (state.filterMode === "archived") {
+    els.listDescription.textContent = "All your archived notes are stored here. You can restore or delete them anytime.";
+    els.listDescription.hidden = false;
+  } else if (state.filterMode === "tag" && state.activeTag) {
     els.listDescription.textContent = `All notes with the "${state.activeTag}" tag are shown here.`;
     els.listDescription.hidden = false;
   } else {
     els.listDescription.hidden = true;
   }
 
+  renderEmptyListBanner(notes);
+
   document.querySelectorAll("[data-nav]").forEach((btn) => {
     btn.setAttribute("aria-current", String(btn.dataset.nav === state.filterMode));
   });
+}
+
+function escapeForBanner(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderEmptyListBanner(notes) {
+  const banner = document.getElementById("empty-list-banner");
+  if (notes.length > 0) {
+    banner.hidden = true;
+    return;
+  }
+
+  if (state.query) {
+    banner.innerHTML = "No notes match your search.";
+  } else if (state.filterMode === "archived") {
+    banner.innerHTML =
+      'No notes have been archived yet. Move notes here for safekeeping, or ' +
+      '<button type="button" class="banner-link" id="banner-create-note">create a new note.</button>';
+  } else if (state.filterMode === "tag" && state.activeTag) {
+    banner.innerHTML = `No notes found with the "${escapeForBanner(state.activeTag)}" tag.`;
+  } else {
+    banner.innerHTML = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
+  }
+  banner.hidden = false;
+
+  document.getElementById("banner-create-note")?.addEventListener("click", () => startNewNote());
 }
 
 function renderSidebarTags() {
@@ -455,20 +489,24 @@ function resetLocationBtn() {
 }
 
 /* ---------------------------------------------------------
- * Mobile search (expands a search bar inline in the header)
+ * Mobile search (its own persistent panel, like Tags/Settings)
  * ------------------------------------------------------- */
 function exitMobileSearch() {
-  els.contentHeader.removeAttribute("data-mobile-search");
   document.getElementById("search-input").value = "";
   state.query = "";
   renderList();
-  ui.setMobileView("list");
 }
 
 function enterMobileSearch() {
   exitSettings();
-  els.contentHeader.setAttribute("data-mobile-search", "true");
-  ui.setMobileView("list", "search");
+  state.filterMode = "all";
+  state.activeTag = null;
+  renderSidebarTags();
+  renderList();
+  els.listTitle.textContent = "Search";
+  els.listDescription.hidden = true;
+  document.querySelectorAll("[data-nav]").forEach((btn) => btn.setAttribute("aria-current", "false"));
+  ui.setMobileView("search");
   document.getElementById("search-input").focus();
 }
 
@@ -486,7 +524,6 @@ function enterSettings() {
   els.noteListCol.hidden = true;
   els.noteDetailCol.hidden = true;
   els.actionsCol.hidden = true;
-  document.getElementById("tags-panel").hidden = true;
   els.settingsListCol.hidden = false;
   els.settingsDetailCol.hidden = false;
 
@@ -644,9 +681,6 @@ function attachEventListeners() {
     els.tagEditor.hidden = !els.tagEditor.hidden;
     if (!els.tagEditor.hidden) els.tagInput.focus();
   });
-
-  // Mobile search
-  document.getElementById("mobile-search-close").addEventListener("click", exitMobileSearch);
 
   // Geolocation
   els.addLocationBtn.addEventListener("click", requestLocation);

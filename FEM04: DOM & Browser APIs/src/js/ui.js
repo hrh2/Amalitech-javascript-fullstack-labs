@@ -51,10 +51,6 @@ export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
   list.innerHTML = "";
 
   if (notes.length === 0) {
-    const li = document.createElement("li");
-    li.className = "empty-state";
-    li.innerHTML = `<h3>No notes found</h3><p>${query ? "Try a different search term." : "Create your first note to get started."}</p>`;
-    list.appendChild(li);
     return;
   }
 

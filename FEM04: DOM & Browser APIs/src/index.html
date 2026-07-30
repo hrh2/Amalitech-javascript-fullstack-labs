@@ -46,21 +46,21 @@
       <img class="logo-dark" src="assets/logo-dark.svg" alt="Notes">
     </div>
 
-    <header class="content-header" id="content-header">`
-      <h1 id="list-title">All Notes</h1>
-      <div class="header-right">
-        <form class="search-box" role="search" id="search-form">
-          <span data-icon="search"></span>
-          <label for="search-input" class="sr-only">Search by title, content, or tags</label>
-          <input type="search" id="search-input" placeholder="Search by title, content, or tags…" autocomplete="off">
-          <button type="button" class="mobile-search-close" id="mobile-search-close" aria-label="Close search" hidden>
-            <span data-icon="x"></span>
+    <header class="content-header" id="content-header">
+      <div class="content-header-top">
+        <h1 id="list-title">All Notes</h1>
+        <div class="header-right">
+          <form class="search-box" role="search" id="search-form">
+            <span data-icon="search"></span>
+            <label for="search-input" class="sr-only">Search by title, content, or tags</label>
+            <input type="search" id="search-input" placeholder="Search by title, content, or tags…" autocomplete="off">
+          </form>
+          <button type="button" class="gear-btn" id="settings-toggle" aria-label="Settings">
+            <span data-icon="settings"></span>
           </button>
-        </form>
-        <button type="button" class="gear-btn" id="settings-toggle" aria-label="Settings">
-          <span data-icon="settings"></span>
-        </button>
+        </div>
       </div>
+      <p class="hint" id="list-description" hidden></p>
     </header>
 
     <div class="content-body">
@@ -71,7 +71,7 @@
           <button type="button" class="btn btn-primary btn-block" id="create-note-btn">
             <span data-icon="plus"></span> Create New Note
           </button>
-          <p class="hint" id="list-description" hidden></p>
+          <div class="empty-list-banner" id="empty-list-banner" hidden></div>
         </div>
 
         <ul class="note-list-scroll" id="note-list" aria-labelledby="list-title"></ul>
