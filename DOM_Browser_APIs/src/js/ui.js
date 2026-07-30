@@ -107,8 +107,9 @@ export function updateTagList(tags, activeTag = null) {
         btn.type = "button";
         btn.className = "tag-nav-btn";
         btn.dataset.tag = tag;
-        btn.setAttribute("aria-current", String(tag === activeTag));
-        btn.innerHTML = `<span data-icon="tag"></span> ${escapeHtml(tag)}`;
+        const isActive = tag === activeTag;
+        btn.setAttribute("aria-current", String(isActive));
+        btn.innerHTML = `<span data-icon="tag"></span> ${escapeHtml(tag)}${isActive ? '<span class="chevron" data-icon="chevronRight"></span>' : ""}`;
         li.appendChild(btn);
         container.appendChild(li);
       });
@@ -128,6 +129,11 @@ export function renderTagEditor(tags) {
     li.innerHTML = `${escapeHtml(tag)} <button type="button" class="tag-remove" data-remove-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">${icons.x}</button>`;
     list.appendChild(li);
   });
+}
+
+export function renderTagsSummary(tags) {
+  const el = document.getElementById("tags-display");
+  el.textContent = tags.length ? tags.join(", ") : "No tags";
 }
 
 /* ---------------------------------------------------------

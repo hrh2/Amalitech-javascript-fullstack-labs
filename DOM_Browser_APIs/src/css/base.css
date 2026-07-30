@@ -85,3 +85,11 @@ select:focus-visible,
   background: var(--color-accent);
   color: #fff;
 }
+
+/* Any element using the `hidden` attribute must actually hide, even if
+   its own class sets an explicit `display` (e.g. .btn, .btn-icon,
+   .empty-state, .meta-row-item all set display:flex/inline-flex, which
+   would otherwise override the browser's built-in [hidden] rule). */
+[hidden] {
+  display: none !important;
+}

@@ -49,6 +49,11 @@ const els = {
   locationText: document.getElementById("location-text"),
   addLocationBtn: document.getElementById("add-location-btn"),
   listTitle: document.getElementById("list-title"),
+  listDescription: document.getElementById("list-description"),
+  contentHeader: document.getElementById("content-header"),
+  editTagsBtn: document.getElementById("edit-tags-btn"),
+  tagEditor: document.getElementById("tag-editor"),
+  mobileSearchClose: document.getElementById("mobile-search-close"),
 };
 
 let draftTags = [];
@@ -96,6 +101,13 @@ function renderList() {
   };
   els.listTitle.textContent = titleMap[state.filterMode] ?? "All Notes";
 
+  if (state.filterMode === "tag" && state.activeTag) {
+    els.listDescription.textContent = `All notes with the "${state.activeTag}" tag are shown here.`;
+    els.listDescription.hidden = false;
+  } else {
+    els.listDescription.hidden = true;
+  }
+
   document.querySelectorAll("[data-nav]").forEach((btn) => {
     btn.setAttribute("aria-current", String(btn.dataset.nav === state.filterMode));
   });
@@ -136,6 +148,8 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.titleInput.value = note.title;
   els.contentInput.value = note.content;
   ui.renderTagEditor(draftTags);
+  ui.renderTagsSummary(draftTags);
+  els.tagEditor.hidden = true;
   ui.showValidationError("note-title", "title-error", "");
 
   els.lastEditedText.textContent = isNew
@@ -213,12 +227,14 @@ function maybeRestoreDraft() {
  * Note creation / editing / saving
  * ------------------------------------------------------- */
 function startNewNote(draft = null) {
+  exitMobileSearch();
   const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null);
   blank.id = draft?.id || blank.id;
   renderNoteDetail(blank, { editing: true, isNew: true });
 }
 
 function selectNote(id) {
+  exitMobileSearch();
   const note = noteManager.getNoteById(id);
   if (!note) return;
   storage.clearDraft();
@@ -336,6 +352,7 @@ function confirmRestore() {
  * Filters / search / tags
  * ------------------------------------------------------- */
 function setFilterMode(mode, tag = null) {
+  exitMobileSearch();
   state.filterMode = mode;
   state.activeTag = tag;
   state.query = "";
@@ -364,6 +381,7 @@ function addTagFromInput() {
   if (!draftTags.includes(value)) {
     draftTags.push(value);
     ui.renderTagEditor(draftTags);
+    ui.renderTagsSummary(draftTags);
     scheduleDraftSave();
     ui.showToast("Tag added successfully!");
   }
@@ -373,6 +391,7 @@ function addTagFromInput() {
 function removeTag(tag) {
   draftTags = draftTags.filter((t) => t !== tag);
   ui.renderTagEditor(draftTags);
+  ui.renderTagsSummary(draftTags);
   scheduleDraftSave();
   ui.showToast("Tag removed successfully!");
 }
@@ -440,6 +459,19 @@ function closeAllMenus() {
   document.getElementById("settings-toggle")?.setAttribute("aria-expanded", "false");
   document.getElementById("color-theme-toggle")?.setAttribute("aria-expanded", "false");
   document.getElementById("font-theme-toggle")?.setAttribute("aria-expanded", "false");
+}
+
+function exitMobileSearch() {
+  els.contentHeader.removeAttribute("data-mobile-search");
+  document.getElementById("search-input").value = "";
+  state.query = "";
+  renderList();
+}
+
+function enterMobileSearch() {
+  els.contentHeader.setAttribute("data-mobile-search", "true");
+  ui.setMobileView("list");
+  document.getElementById("search-input").focus();
 }
 
 /* ---------------------------------------------------------
@@ -542,6 +574,15 @@ function attachEventListeners() {
     if (!modalOpen && state.isEditing) cancelEdit();
   });
 
+  // Tags summary "Edit" toggle
+  els.editTagsBtn.addEventListener("click", () => {
+    els.tagEditor.hidden = !els.tagEditor.hidden;
+    if (!els.tagEditor.hidden) els.tagInput.focus();
+  });
+
+  // Mobile search: bottom-nav "Search" expands a search bar in the header
+  document.getElementById("mobile-search-close").addEventListener("click", exitMobileSearch);
+
   // Geolocation
   els.addLocationBtn.addEventListener("click", requestLocation);
 
@@ -549,10 +590,10 @@ function attachEventListeners() {
   document.querySelectorAll("[data-mobile-nav]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.mobileNav;
-      if (target === "list") { state.filterMode = "all"; state.activeTag = null; renderSidebarTags(); renderList(); ui.setMobileView("list"); }
-      else if (target === "archived") setFilterMode("archived");
-      else if (target === "tags") ui.setMobileView("tags");
-      else if (target === "search") { ui.setMobileView("list"); document.getElementById("search-input").focus(); }
+      if (target === "list") { exitMobileSearch(); state.filterMode = "all"; state.activeTag = null; renderSidebarTags(); renderList(); ui.setMobileView("list"); }
+      else if (target === "archived") { exitMobileSearch(); setFilterMode("archived"); }
+      else if (target === "tags") { exitMobileSearch(); ui.setMobileView("tags"); }
+      else if (target === "search") { enterMobileSearch(); }
       else if (target === "settings") { toggleSettingsPanel(); }
     });
   });

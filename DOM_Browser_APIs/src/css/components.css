@@ -185,6 +185,7 @@
   color: var(--color-accent);
   font-weight: 600;
 }
+.tag-nav-btn .chevron { margin-left: auto; color: currentColor; opacity: .7; }
 
 /* =========================================================
    Toast
