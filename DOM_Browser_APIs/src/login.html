@@ -1,81 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Log In — Notes</title>
-<link rel="stylesheet" href="css/variables.css">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/auth.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In — Notes</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/auth.css">
 </head>
 <body>
 <main class="auth-page">
-  <div class="auth-card">
-    <div class="auth-brand"><img src="assets/logo-light.svg" alt="Notes"></div>
-    <h1 class="auth-title">Welcome back</h1>
-    <p class="auth-subtitle">Log in to keep organizing your notes.</p>
+    <div class="auth-card">
+        <div class="auth-brand"><img src="assets/logo-light.svg" alt="Notes"></div>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Please log in to continue.</p>
 
-    <p class="auth-error" id="form-error" role="alert"></p>
+        <p class="auth-error" id="form-error" role="alert"></p>
 
-    <form class="auth-form" id="login-form" novalidate>
-      <div class="field">
-        <label class="field-label" for="email">Email Address</label>
-        <div class="field-input-wrap">
-          <input class="field-input" type="email" id="email" placeholder="email@example.com" required autocomplete="email">
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label" for="password">Password</label>
-        <div class="field-input-wrap">
-          <input class="field-input" type="password" id="password" required autocomplete="current-password">
-          <button type="button" class="field-icon-btn" id="toggle-password" aria-label="Show password"></button>
-        </div>
-      </div>
-      <p style="text-align:right;">
-        <a href="forgot-password.html" style="font-size: var(--text-6-size); color: var(--color-accent); text-decoration:none;">Forgotten your password?</a>
-      </p>
-      <button type="submit" class="btn btn-primary btn-block">Log In</button>
-    </form>
+        <form class="auth-form" id="login-form" novalidate>
+            <div class="field">
+                <label class="field-label" for="email">Email Address</label>
+                <div class="field-input-wrap">
+                    <input class="field-input" type="email" id="email" placeholder="email@example.com" required
+                           autocomplete="email">
+                </div>
+            </div>
+            <div class="field">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <label class="field-label" for="password">Password</label>
+                    <a class="field-label" href="forgot-password.html"
+                       style="font-size: var(--text-6-size); color: var(--neutral-600);">Forgot</a>
+                </div>
+                <div class="field-input-wrap">
+                    <input class="field-input" type="password" id="password" required autocomplete="current-password">
+                    <button type="button" class="field-icon-btn" id="toggle-password"
+                            aria-label="Show password"></button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Log In</button>
+        </form>
+        <hr>
+        <p class="auth-divider">Or log in with: </p>
+        <button type="button" class="google-btn">
+            <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M20.8379 14.7181C20.9459 14.1681 20.9999 13.5881 20.9999 13.0081C20.9999 12.6161 20.9739 12.2341 20.9239 11.8611C20.8869 11.5871 20.6429 11.3881 20.3669 11.3881H12.5619C12.2519 11.3881 11.9999 11.6401 11.9999 11.9501V14.1561C11.9999 14.4661 12.2519 14.7181 12.5619 14.7181H16.8369C17.0129 14.7181 17.1419 14.8981 17.0759 15.0611C16.1409 17.3711 13.6859 18.8871 10.9439 18.3801C8.83793 17.9911 7.11193 16.3211 6.65993 14.2281C5.89293 10.6761 8.57693 7.53814 11.9999 7.53814C13.1219 7.53814 14.1619 7.87514 15.0289 8.45214C15.2609 8.60614 15.5639 8.59114 15.7599 8.39214L17.4619 6.65914C17.6939 6.42214 17.6799 6.02814 17.4159 5.82714C15.9749 4.73114 14.1929 4.06514 12.2549 4.01214C7.38293 3.87714 3.16393 7.83514 3.00493 12.7061C2.83793 17.8141 6.93193 22.0081 11.9999 22.0081C16.3829 22.0081 20.0369 18.8681 20.8379 14.7181Z"
+                      fill="#0E121B"/>
+            </svg>
+            Google
+        </button>
+        <hr>
 
-    <div class="auth-divider">Or log in with:</div>
-    <button type="button" class="google-btn"><span data-icon="google"></span> Google</button>
-
-    <p class="auth-footer">Don't have an account? <a href="signup.html">Sign up</a></p>
-  </div>
+        <p class="auth-footer">Don't have an account? <a href="signup.html">Sign up</a></p>
+    </div>
 </main>
 <script type="module">
-  import { login, redirectIfLoggedIn } from "./js/auth.js";
-  import { icons } from "./js/icons.js";
-  redirectIfLoggedIn();
+    import {login, redirectIfLoggedIn} from "./js/auth.js";
+    import {icons} from "./js/icons.js";
 
-  document.querySelectorAll("[data-icon]").forEach(el => {
-    el.innerHTML = icons[el.dataset.icon] || "";
-  });
-  const toggleBtn = document.getElementById("toggle-password");
-  toggleBtn.innerHTML = icons.eye;
-  const pwField = document.getElementById("password");
-  toggleBtn.addEventListener("click", () => {
-    const show = pwField.type === "password";
-    pwField.type = show ? "text" : "password";
-    toggleBtn.innerHTML = show ? icons.eyeOff : icons.eye;
-    toggleBtn.setAttribute("aria-label", show ? "Hide password" : "Show password");
-  });
+    redirectIfLoggedIn();
 
-  const form = document.getElementById("login-form");
-  const errorEl = document.getElementById("form-error");
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    const password = pwField.value;
-    const result = login(email, password);
-    if (!result.ok) {
-      errorEl.textContent = result.error;
-      errorEl.classList.add("visible");
-      return;
-    }
-    window.location.href = "index.html";
-  });
+    document.querySelectorAll("[data-icon]").forEach(el => {
+        el.innerHTML = icons[el.dataset.icon] || "";
+    });
+    const toggleBtn = document.getElementById("toggle-password");
+    toggleBtn.innerHTML = icons.eye;
+    const pwField = document.getElementById("password");
+    toggleBtn.addEventListener("click", () => {
+        const show = pwField.type === "password";
+        pwField.type = show ? "text" : "password";
+        toggleBtn.innerHTML = show ? icons.eyeOff : icons.eye;
+        toggleBtn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+    });
+
+    const form = document.getElementById("login-form");
+    const errorEl = document.getElementById("form-error");
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value.trim();
+        const password = pwField.value;
+        const result = login(email, password);
+        if (!result.ok) {
+            errorEl.textContent = result.error;
+            errorEl.classList.add("visible");
+            return;
+        }
+        window.location.href = "index.html";
+    });
 </script>
 </body>
 </html>
