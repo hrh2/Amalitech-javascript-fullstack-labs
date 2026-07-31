@@ -650,6 +650,7 @@ html, body {
         width: 100%;
         max-width: none;
     }
+
     .app[data-view="search"] .content-header-top {
         flex-direction: column;
         align-items: stretch;
@@ -727,6 +728,10 @@ html, body {
         display: none;
     }
 
+    .note-detail-col {
+        border-radius: var(--radius-24) var(--radius-24) 0 0;
+    }
+
     .note-list-col, .note-detail-col, .settings-list-col, .settings-detail-col, .tags-panel {
         height: calc(100vh - 96px);
         padding-bottom: 72px;
@@ -734,6 +739,13 @@ html, body {
 
     .note-list-header #create-note-btn {
         display: none;
+    }
+
+    .detail-header {
+        padding: var(--spacing-200) var(--spacing-300);
+        border-bottom: 1px solid var(--color-border);
+        border-radius: var(--radius-24) var(--radius-24) 0 0;
+        background: var(--color-bg);
     }
 
     .detail-header .back-btn {
@@ -745,8 +757,13 @@ html, body {
         display: flex;
     }
 
+    .detail-body {
+        background: var(--color-bg);
+    }
+
     .detail-footer {
         display: none;
+        background: var(--color-bg);
     }
 
     .settings-list-col {
