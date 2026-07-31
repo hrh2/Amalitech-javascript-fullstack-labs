@@ -39,7 +39,7 @@ const els = {
   emptyState: document.getElementById("empty-state"),
   titleInput: document.getElementById("note-title"),
   contentInput: document.getElementById("note-content"),
-  tagInput: document.getElementById("tag-input"),
+  tagsField: document.getElementById("tags-field"),
   saveBtn: document.getElementById("save-btn"),
   saveBtnDesktop: document.getElementById("save-btn-desktop"),
   cancelBtn: document.getElementById("cancel-btn"),
@@ -57,8 +57,8 @@ const els = {
   listTitle: document.getElementById("list-title"),
   listDescription: document.getElementById("list-description"),
   contentHeader: document.getElementById("content-header"),
-  editTagsBtn: document.getElementById("edit-tags-btn"),
-  tagEditor: document.getElementById("tag-editor"),
+  statusMeta: document.getElementById("status-meta"),
+  statusText: document.getElementById("status-text"),
   noteListCol: document.getElementById("note-list-col"),
   noteDetailCol: document.getElementById("main-content"),
   actionsCol: document.getElementById("actions-col"),
@@ -67,7 +67,21 @@ const els = {
   settingsPageTitle: document.getElementById("settings-page-title"),
 };
 
-let draftTags = [];
+/* ---------------------------------------------------------
+ * Tags field (comma-separated, matches the Figma "Tags" input —
+ * no separate Edit button/chip list; the person just types
+ * "Work, Planning" directly and we split it on save/autosave).
+ * ------------------------------------------------------- */
+function getTagsFromField() {
+  return els.tagsField.value
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
+function setTagsField(tags) {
+  els.tagsField.value = tags.join(", ");
+}
 
 /* ---------------------------------------------------------
  * Bootstrapping
@@ -184,7 +198,6 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   state.isEditing = editing;
   state.isNewNote = isNew;
   state.pendingLocation = note.location || null;
-  draftTags = [...note.tags];
 
   els.emptyState.hidden = true;
   els.noteForm.hidden = false;
@@ -194,9 +207,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
 
   els.titleInput.value = note.title;
   els.contentInput.value = note.content;
-  ui.renderTagEditor(draftTags);
-  ui.renderTagsSummary(draftTags);
-  els.tagEditor.hidden = true;
+  setTagsField(note.tags);
   ui.showValidationError("note-title", "title-error", "");
 
   els.lastEditedText.textContent = isNew
@@ -211,6 +222,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   }
 
   const archived = !!note.archived;
+  els.statusMeta.hidden = !archived;
   els.archiveBtn.hidden = isNew;
   els.deleteBtn.hidden = isNew;
   els.archiveIconBtn.hidden = isNew;
@@ -226,7 +238,7 @@ function currentDraft() {
     id: state.selectedNoteId,
     title: els.titleInput.value,
     content: els.contentInput.value,
-    tags: draftTags,
+    tags: getTagsFromField(),
     isNew: state.isNewNote,
   };
 }
@@ -264,9 +276,7 @@ function maybeRestoreDraft() {
       renderNoteDetail(existing, { editing: true, isNew: false });
       els.titleInput.value = draft.title;
       els.contentInput.value = draft.content;
-      draftTags = draft.tags || [];
-      ui.renderTagEditor(draftTags);
-      ui.renderTagsSummary(draftTags);
+      setTagsField(draft.tags || []);
     }
   }
 }
@@ -308,14 +318,15 @@ function saveCurrentNote() {
   }
   const title = els.titleInput.value.trim();
   const content = els.contentInput.value;
+  const tags = getTagsFromField();
 
   if (state.isNewNote) {
-    const note = noteManager.createNote(title, content, draftTags, state.pendingLocation);
+    const note = noteManager.createNote(title, content, tags, state.pendingLocation);
     state.isNewNote = false;
     state.selectedNoteId = note.id;
     ui.showToast("Note saved successfully!");
   } else {
-    noteManager.updateNote(state.selectedNoteId, { title, content, tags: draftTags, location: state.pendingLocation });
+    noteManager.updateNote(state.selectedNoteId, { title, content, tags, location: state.pendingLocation });
     ui.showToast("Note saved successfully!");
   }
 
@@ -421,30 +432,6 @@ function handleSearchInput(value) {
     state.query = value;
     renderList();
   }, 150);
-}
-
-/* ---------------------------------------------------------
- * Tags editor (chips inside the form)
- * ------------------------------------------------------- */
-function addTagFromInput() {
-  const value = els.tagInput.value.trim().replace(/,$/, "");
-  if (!value) return;
-  if (!draftTags.includes(value)) {
-    draftTags.push(value);
-    ui.renderTagEditor(draftTags);
-    ui.renderTagsSummary(draftTags);
-    scheduleDraftSave();
-    ui.showToast("Tag added successfully!");
-  }
-  els.tagInput.value = "";
-}
-
-function removeTag(tag) {
-  draftTags = draftTags.filter((t) => t !== tag);
-  ui.renderTagEditor(draftTags);
-  ui.renderTagsSummary(draftTags);
-  scheduleDraftSave();
-  ui.showToast("Tag removed successfully!");
 }
 
 /* ---------------------------------------------------------
@@ -656,30 +643,14 @@ function attachEventListeners() {
   });
   els.contentInput.addEventListener("input", scheduleDraftSave);
 
-  // Tag input (Enter or comma commits a tag)
-  els.tagInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addTagFromInput();
-    }
-  });
-  document.getElementById("tag-editor-list").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-remove-tag]");
-    if (!btn) return;
-    removeTag(btn.dataset.removeTag);
-  });
+  // Tags field — comma-separated text, parsed on save/autosave
+  els.tagsField.addEventListener("input", scheduleDraftSave);
 
   // Escape cancels an in-progress edit (when no modal is open)
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     const modalOpen = Array.from(document.querySelectorAll(".modal-overlay")).some((o) => !o.hidden);
     if (!modalOpen && state.isEditing) cancelEdit();
-  });
-
-  // Tags summary "Edit" toggle
-  els.editTagsBtn.addEventListener("click", () => {
-    els.tagEditor.hidden = !els.tagEditor.hidden;
-    if (!els.tagEditor.hidden) els.tagInput.focus();
   });
 
   // Geolocation

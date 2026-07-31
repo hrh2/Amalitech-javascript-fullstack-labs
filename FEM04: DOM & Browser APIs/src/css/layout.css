@@ -332,6 +332,8 @@ html, body {
 .meta-row-item {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    row-gap: 4px;
     gap: var(--spacing-100);
     font-size: var(--text-5-size);
     color: var(--color-text-muted);
@@ -351,27 +353,19 @@ html, body {
     color: var(--color-text);
 }
 
-.link-btn {
-    margin-left: var(--spacing-100);
-    background: none;
+.meta-input {
+    flex: 1;
+    min-width: 160px;
     border: none;
-    color: var(--color-accent);
-    font-size: var(--text-6-size);
-    font-weight: 600;
-    text-decoration: underline;
-    cursor: pointer;
-    padding: 2px 4px;
+    background: transparent;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: var(--text-5-size);
+    padding: 2px 0;
 }
 
-.tag-editor {
-    margin-bottom: var(--spacing-200);
-    padding: var(--spacing-150);
-    background: var(--color-bg-muted);
-    border-radius: var(--radius-10);
-}
-
-.tag-editor .tag-list {
-    margin-top: var(--spacing-100);
+.meta-input::placeholder {
+    color: var(--color-text-subtle);
 }
 
 .detail-body hr {
@@ -517,6 +511,30 @@ html, body {
 /* ---- Mobile tags panel: hidden on desktop/tablet, only used <=860px ---- */
 .tags-panel {
     display: none;
+}
+
+/* ---- Mobile/tablet Tags panel: full-width rows with a divider under
+   each one except the last (see Tablet - Tag Selected - Light) ---- */
+.tags-panel .tag-nav-list {
+    gap: 0;
+}
+
+.tags-panel .tag-nav-list > li {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tags-panel .tag-nav-list > li:last-child {
+    border-bottom: none;
+}
+
+.tags-panel .tag-nav-btn {
+    padding: var(--spacing-300) var(--spacing-150);
+    border-radius: 0;
+    font-size: var(--text-4-size);
+}
+
+.tags-panel .tag-nav-btn:hover {
+    background: transparent;
 }
 
 /* ---- Bottom nav (mobile / tablet) ---- */

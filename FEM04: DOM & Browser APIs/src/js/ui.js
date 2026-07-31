@@ -114,25 +114,6 @@ export function updateTagList(tags, activeTag = null) {
 }
 
 /* ---------------------------------------------------------
- * Tag editor (chips) inside the note form
- * ------------------------------------------------------- */
-export function renderTagEditor(tags) {
-  const list = document.getElementById("tag-editor-list");
-  list.innerHTML = "";
-  tags.forEach((tag) => {
-    const li = document.createElement("li");
-    li.className = "tag";
-    li.innerHTML = `${escapeHtml(tag)} <button type="button" class="tag-remove" data-remove-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">${icons.x}</button>`;
-    list.appendChild(li);
-  });
-}
-
-export function renderTagsSummary(tags) {
-  const el = document.getElementById("tags-display");
-  el.textContent = tags.length ? tags.join(", ") : "No tags";
-}
-
-/* ---------------------------------------------------------
  * Toasts
  * ------------------------------------------------------- */
 export function showToast(message, { actionLabel = null, onAction = null, duration = 4000 } = {}) {

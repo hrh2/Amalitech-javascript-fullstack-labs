@@ -111,8 +111,13 @@
               <div class="meta-row-item">
                 <span data-icon="tag"></span>
                 <span class="meta-label">Tags</span>
-                <span class="meta-value" id="tags-display">No tags</span>
-                <button type="button" class="link-btn" id="edit-tags-btn">Edit</button>
+                <label for="tags-field" class="sr-only">Tags, separated by commas</label>
+                <input type="text" id="tags-field" class="meta-input" placeholder="Add tags separated by commas (e.g. Work, Planning)" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+              </div>
+              <div class="meta-row-item" id="status-meta" hidden>
+                <span data-icon="archive"></span>
+                <span class="meta-label">Status</span>
+                <span class="meta-value" id="status-text">Archived</span>
               </div>
               <div class="meta-row-item">
                 <span data-icon="clock"></span>
@@ -124,15 +129,6 @@
                 <span class="meta-label">Location</span>
                 <span class="meta-value" id="location-text"></span>
               </div>
-            </div>
-
-            <div class="tag-editor" id="tag-editor" hidden>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span data-icon="tag"></span>
-                <label for="tag-input" class="sr-only">Add a tag</label>
-                <input type="text" id="tag-input" placeholder="Add a tag and press Enter" style="border:none; background:transparent; font-size: var(--text-5-size); flex:1; padding:2px 0;">
-              </div>
-              <ul class="tag-list" id="tag-editor-list" aria-label="Note tags"></ul>
             </div>
 
             <button type="button" class="btn btn-border" id="add-location-btn" style="margin-bottom: 16px;">
