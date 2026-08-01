@@ -42,6 +42,7 @@ const els = {
   emptyState: document.getElementById("empty-state"),
   titleInput: document.getElementById("note-title"),
   contentInput: document.getElementById("note-content"),
+  categoryField: document.getElementById("category-field"),
   tagsField: document.getElementById("tags-field"),
   saveBtn: document.getElementById("save-btn"),
   saveBtnDesktop: document.getElementById("save-btn-desktop"),
@@ -186,6 +187,22 @@ function renderSidebarTags() {
 
 function renderCategoryList() {
   ui.updateCategoryList(categoryManager.getCategories());
+  populateCategoryOptions();
+}
+
+/** Rebuilds the note editor's Category <select> options from current categories. */
+function populateCategoryOptions() {
+  const select = els.categoryField;
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">No category</option>';
+  categoryManager.getCategories().forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.textContent = category.name;
+    select.appendChild(option);
+  });
+  // Keep whatever was selected, if that category still exists.
+  select.value = select.querySelector(`option[value="${previousValue}"]`) ? previousValue : "";
 }
 
 function renderCategorySwatches() {
@@ -233,6 +250,8 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.titleInput.value = note.title;
   els.contentInput.value = note.content;
   setTagsField(note.tags);
+  populateCategoryOptions();
+  els.categoryField.value = note.categoryId || "";
   ui.showValidationError("note-title", "title-error", "");
 
   els.lastEditedText.textContent = isNew
@@ -264,6 +283,7 @@ function currentDraft() {
     title: els.titleInput.value,
     content: els.contentInput.value,
     tags: getTagsFromField(),
+    categoryId: els.categoryField.value || null,
     isNew: state.isNewNote,
   };
 }
@@ -302,6 +322,7 @@ function maybeRestoreDraft() {
       els.titleInput.value = draft.title;
       els.contentInput.value = draft.content;
       setTagsField(draft.tags || []);
+      els.categoryField.value = draft.categoryId || "";
     }
   }
 }
@@ -312,7 +333,7 @@ function maybeRestoreDraft() {
 function startNewNote(draft = null) {
   exitMobileSearch();
   exitSettings();
-  const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null);
+  const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null, draft?.categoryId ?? null);
   blank.id = draft?.id || blank.id;
   renderNoteDetail(blank, { editing: true, isNew: true });
 }
@@ -344,14 +365,15 @@ function saveCurrentNote() {
   const title = els.titleInput.value.trim();
   const content = els.contentInput.value;
   const tags = getTagsFromField();
+  const categoryId = els.categoryField.value || null;
 
   if (state.isNewNote) {
-    const note = noteManager.createNote(title, content, tags, state.pendingLocation);
+    const note = noteManager.createNote(title, content, tags, state.pendingLocation, categoryId);
     state.isNewNote = false;
     state.selectedNoteId = note.id;
     ui.showToast("Note saved successfully!");
   } else {
-    noteManager.updateNote(state.selectedNoteId, { title, content, tags, location: state.pendingLocation });
+    noteManager.updateNote(state.selectedNoteId, { title, content, tags, location: state.pendingLocation, categoryId });
     ui.showToast("Note saved successfully!");
   }
 
