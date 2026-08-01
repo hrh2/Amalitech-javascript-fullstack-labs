@@ -9,6 +9,7 @@ import * as noteManager from "./noteManager.js";
 import * as ui from "./ui.js";
 import * as themes from "./themes.js";
 import * as auth from "./auth.js";
+import * as exportImport from "./exportImport.js";
 
 auth.requireAuth();
 
@@ -751,6 +752,16 @@ function attachEventListeners() {
 
   document.getElementById("logout-btn").addEventListener("click", () => {
     auth.logout();
+  });
+
+  // Settings: Export Notes — downloads all of the current user's notes as JSON
+  document.getElementById("export-notes-btn").addEventListener("click", () => {
+    const { count, filename } = exportImport.exportNotesToJson();
+    ui.showToast(
+      count > 0
+        ? `Exported ${count} note${count === 1 ? "" : "s"} to ${filename}`
+        : "No notes to export yet."
+    );
   });
 }
 
