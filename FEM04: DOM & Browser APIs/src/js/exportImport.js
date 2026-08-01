@@ -1,8 +1,7 @@
 // exportImport.js
-// Handles moving notes in and out of the app as JSON files.
-// Export, import, and structural validation are implemented here;
-// duplicate prevention on import lands in a later commit on this
-// feature branch.
+// Handles moving notes in and out of the app as JSON files: exporting all
+// notes to a downloadable JSON file, and importing them back in with
+// structural validation and duplicate prevention.
 
 import { getNotes, importNotes } from "./noteManager.js";
 
@@ -126,20 +125,33 @@ export function validateImportedNotes(rawNotes) {
 }
 
 /**
+ * A note is treated as a duplicate of another if it has the same id
+ * (the common case: re-importing a file that was exported from this
+ * app) or the same title and content (catches copies that picked up a
+ * fresh id, e.g. from a hand-edited file or a different export).
+ */
+function isDuplicateNote(note, others) {
+  const title = note.title.trim().toLowerCase();
+  const content = note.content.trim().toLowerCase();
+  return others.some(
+    (other) =>
+      other.id === note.id ||
+      (other.title.trim().toLowerCase() === title && other.content.trim().toLowerCase() === content)
+  );
+}
+
+/**
  * Reads a File selected by the user (expected to be a previous export),
  * parses it as JSON, validates the notes it contains, and adds whichever
- * of them are shaped like valid notes to the app.
+ * of them are both structurally valid and not already present — either
+ * in the app already or earlier in the same file — to the app.
  *
  * Accepts either the `{ version, exportedAt, notes }` envelope this app
  * exports, or a bare array of notes, so files from slightly different
- * sources still have a chance of working. Entries that don't look like
- * valid notes are silently skipped rather than aborting the whole import.
- *
- * Duplicate prevention is handled in a later commit — this step is only
- * responsible for making sure what gets imported is structurally sound.
+ * sources still have a chance of working.
  *
  * @param {File} file
- * @returns {Promise<{ count: number, skipped: number }>}
+ * @returns {Promise<{ count: number, skipped: number, duplicates: number }>}
  */
 export function importNotesFromFile(file) {
   return new Promise((resolve, reject) => {
@@ -166,8 +178,25 @@ export function importNotesFromFile(file) {
         return;
       }
 
-      const count = importNotes(valid);
-      resolve({ count, skipped: invalidCount });
+      const existingNotes = getNotes();
+      const toImport = [];
+      let duplicateCount = 0;
+
+      valid.forEach((note) => {
+        if (isDuplicateNote(note, existingNotes) || isDuplicateNote(note, toImport)) {
+          duplicateCount += 1;
+        } else {
+          toImport.push(note);
+        }
+      });
+
+      if (toImport.length === 0) {
+        reject(new Error("Those notes have already been imported."));
+        return;
+      }
+
+      const count = importNotes(toImport);
+      resolve({ count, skipped: invalidCount, duplicates: duplicateCount });
     };
 
     reader.onerror = () => reject(new Error("Could not read the selected file."));

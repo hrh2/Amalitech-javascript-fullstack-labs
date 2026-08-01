@@ -775,12 +775,17 @@ function attachEventListeners() {
     if (!file) return;
 
     try {
-      const { count, skipped } = await exportImport.importNotesFromFile(file);
+      const { count, skipped, duplicates } = await exportImport.importNotesFromFile(file);
       renderSidebarTags();
       renderList();
+
+      const skipParts = [];
+      if (duplicates > 0) skipParts.push(`${duplicates} duplicate${duplicates === 1 ? "" : "s"}`);
+      if (skipped > 0) skipParts.push(`${skipped} invalid`);
+
       ui.showToast(
-        skipped > 0
-          ? `Imported ${count} note${count === 1 ? "" : "s"} (skipped ${skipped} invalid).`
+        skipParts.length > 0
+          ? `Imported ${count} note${count === 1 ? "" : "s"} (skipped ${skipParts.join(", ")}).`
           : `Imported ${count} note${count === 1 ? "" : "s"}.`
       );
     } catch (err) {
