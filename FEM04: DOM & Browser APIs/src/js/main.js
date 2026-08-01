@@ -10,6 +10,7 @@ import * as ui from "./ui.js";
 import * as themes from "./themes.js";
 import * as auth from "./auth.js";
 import * as exportImport from "./exportImport.js";
+import * as categoryManager from "./categoryManager.js";
 
 auth.requireAuth();
 
@@ -33,6 +34,7 @@ const state = {
   settingsDrilledOnMobile: false, // mobile only: showing a sub-page vs. the menu list
   pendingThemeChoice: "light",
   pendingFontChoice: "sans",
+  pendingCategoryColor: null,
 };
 
 const els = {
@@ -94,7 +96,9 @@ function init() {
   state.pendingFontChoice = themes.getFontPref();
   syncRadioCards();
   noteManager.initNotes();
+  categoryManager.initCategories();
   renderSidebarTags();
+  renderCategoryList();
   renderList();
   renderEmptyDetail();
   attachEventListeners();
@@ -178,6 +182,26 @@ function renderEmptyListBanner(notes) {
 function renderSidebarTags() {
   const tags = noteManager.getAllTags();
   ui.updateTagList(tags, state.filterMode === "tag" ? state.activeTag : null);
+}
+
+function renderCategoryList() {
+  ui.updateCategoryList(categoryManager.getCategories());
+}
+
+function renderCategorySwatches() {
+  const container = document.getElementById("category-color-swatches");
+  container.innerHTML = "";
+  categoryManager.CATEGORY_COLORS.forEach((color) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "swatch";
+    btn.dataset.color = color;
+    btn.style.background = color;
+    btn.setAttribute("role", "radio");
+    btn.setAttribute("aria-label", color);
+    btn.setAttribute("aria-checked", String(color === state.pendingCategoryColor));
+    container.appendChild(btn);
+  });
 }
 
 function renderEmptyDetail() {
@@ -794,6 +818,36 @@ function attachEventListeners() {
       // Reset so selecting the same file again still fires "change"
       e.target.value = "";
     }
+  });
+
+  // Categories: Create Category modal
+  document.getElementById("add-category-btn").addEventListener("click", () => {
+    document.getElementById("category-form").reset();
+    ui.showValidationError("category-name", "category-error", "");
+    state.pendingCategoryColor = categoryManager.CATEGORY_COLORS[0];
+    renderCategorySwatches();
+    ui.openModal("category-modal");
+  });
+
+  document.getElementById("category-color-swatches").addEventListener("click", (e) => {
+    const swatch = e.target.closest("[data-color]");
+    if (!swatch) return;
+    state.pendingCategoryColor = swatch.dataset.color;
+    renderCategorySwatches();
+  });
+
+  document.getElementById("category-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("category-name").value;
+    const result = categoryManager.createCategory(name, state.pendingCategoryColor);
+    if (!result.ok) {
+      ui.showValidationError("category-name", "category-error", result.error);
+      return;
+    }
+    ui.showValidationError("category-name", "category-error", "");
+    ui.closeModal("category-modal");
+    renderCategoryList();
+    ui.showToast(`Category "${result.category.name}" created.`);
   });
 }
 

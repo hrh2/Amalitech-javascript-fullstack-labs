@@ -114,6 +114,36 @@ export function updateTagList(tags, activeTag = null) {
 }
 
 /* ---------------------------------------------------------
+ * Category sidebar rendering
+ * ------------------------------------------------------- */
+export function updateCategoryList(categories) {
+  const container = document.getElementById("category-nav-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (categories.length === 0) {
+    const li = document.createElement("li");
+    li.innerHTML = `<p class="text-preset-6" style="color:var(--color-text-subtle); padding:8px 12px;">No categories yet</p>`;
+    container.appendChild(li);
+    return;
+  }
+
+  categories.forEach((category) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tag-nav-btn";
+    btn.dataset.categoryId = category.id;
+    btn.innerHTML = `
+      <span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${category.color};"></span>
+      ${escapeHtml(category.name)}
+    `;
+    li.appendChild(btn);
+    container.appendChild(li);
+  });
+}
+
+/* ---------------------------------------------------------
  * Toasts
  * ------------------------------------------------------- */
 export function showToast(message, { actionLabel = null, onAction = null, duration = 4000 } = {}) {

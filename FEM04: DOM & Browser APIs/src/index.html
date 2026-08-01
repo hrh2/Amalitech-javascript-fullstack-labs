@@ -36,6 +36,14 @@
 
     <h2 class="nav-section-title" id="tags-heading">Tags</h2>
     <ul class="tag-nav-list" id="tag-nav-list" aria-labelledby="tags-heading"></ul>
+
+    <div class="nav-section-header">
+      <h2 class="nav-section-title" id="categories-heading">Categories</h2>
+      <button type="button" class="nav-section-add" id="add-category-btn" aria-label="Create category">
+        <span data-icon="plus"></span>
+      </button>
+    </div>
+    <ul class="tag-nav-list" id="category-nav-list" aria-labelledby="categories-heading"></ul>
   </aside>
 
   <!-- ============ Content area: header + 3-column body ============ -->
@@ -334,6 +342,30 @@
       <button type="button" class="btn btn-secondary" data-modal-cancel="restore-modal">Cancel</button>
       <button type="button" class="btn btn-primary" id="confirm-restore-btn">Restore Note</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="category-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+    <div class="modal-icon info"><span data-icon="folder"></span></div>
+    <h2 class="modal-title" id="category-modal-title">Create Category</h2>
+    <form id="category-form" novalidate>
+      <div class="field" style="margin-bottom:16px;">
+        <label class="field-label" for="category-name">Category name</label>
+        <div class="field-input-wrap">
+          <input class="field-input" type="text" id="category-name" required maxlength="40" autocomplete="off">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <span class="field-label">Color</span>
+        <div class="swatch-list" id="category-color-swatches" role="radiogroup" aria-label="Category color"></div>
+      </div>
+      <p class="field-hint" id="category-error" role="alert" style="display:none; color:var(--color-danger); margin-bottom:12px;"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" data-modal-cancel="category-modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Category</button>
+      </div>
+    </form>
   </div>
 </div>
 
