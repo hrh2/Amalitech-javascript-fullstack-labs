@@ -763,6 +763,29 @@ function attachEventListeners() {
         : "No notes to export yet."
     );
   });
+
+  // Settings: Import Notes — reads a previously exported JSON file back in
+  const importInput = document.getElementById("import-notes-input");
+  document.getElementById("import-notes-btn").addEventListener("click", () => {
+    importInput.click();
+  });
+
+  importInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const { count } = await exportImport.importNotesFromFile(file);
+      renderSidebarTags();
+      renderList();
+      ui.showToast(`Imported ${count} note${count === 1 ? "" : "s"}.`);
+    } catch (err) {
+      ui.showToast(err.message);
+    } finally {
+      // Reset so selecting the same file again still fires "change"
+      e.target.value = "";
+    }
+  });
 }
 
 init();

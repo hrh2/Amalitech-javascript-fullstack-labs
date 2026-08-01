@@ -3,7 +3,7 @@
 // Export is implemented here first; import + validation + de-duplication
 // land in later commits on this feature branch.
 
-import { getNotes } from "./noteManager.js";
+import { getNotes, importNotes } from "./noteManager.js";
 
 const EXPORT_FORMAT_VERSION = 1;
 
@@ -54,4 +54,47 @@ function downloadJsonFile(json, filename) {
 function formatDateForFilename(date) {
   const pad = (n) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/**
+ * Reads a File selected by the user (expected to be a previous export),
+ * parses it as JSON, and adds the notes it contains to the app.
+ *
+ * Accepts either the `{ version, exportedAt, notes }` envelope this app
+ * exports, or a bare array of notes, so files from slightly different
+ * sources still have a chance of working.
+ *
+ * Structural validation of individual notes and duplicate prevention are
+ * handled in later commits — this step just gets notes from a JSON file
+ * into the app.
+ *
+ * @param {File} file
+ * @returns {Promise<{ count: number }>}
+ */
+export function importNotesFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      let parsed;
+      try {
+        parsed = JSON.parse(reader.result);
+      } catch {
+        reject(new Error("That file isn't valid JSON."));
+        return;
+      }
+
+      const notesToImport = Array.isArray(parsed) ? parsed : parsed?.notes;
+      if (!Array.isArray(notesToImport)) {
+        reject(new Error("That file doesn't contain any notes to import."));
+        return;
+      }
+
+      const count = importNotes(notesToImport);
+      resolve({ count });
+    };
+
+    reader.onerror = () => reject(new Error("Could not read the selected file."));
+    reader.readAsText(file);
+  });
 }
