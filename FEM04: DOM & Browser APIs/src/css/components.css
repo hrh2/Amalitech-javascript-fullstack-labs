@@ -229,6 +229,27 @@
     gap: var(--spacing-075);
 }
 
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--color-bg-muted);
+    background: color-mix(in srgb, var(--badge-color) 16%, transparent);
+    color: var(--badge-color);
+    border-radius: var(--radius-6);
+    padding: 3px 8px;
+    font-size: var(--text-6-size);
+    font-weight: 600;
+}
+
+.category-badge-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--badge-color);
+}
+
 .tag-nav-btn {
     display: flex;
     align-items: center;

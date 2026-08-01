@@ -128,7 +128,11 @@ function getFilteredNotes() {
 
 function renderList() {
   const notes = getFilteredNotes();
-  ui.renderNoteList(notes, { selectedId: state.selectedNoteId, query: state.query });
+  ui.renderNoteList(notes, {
+    selectedId: state.selectedNoteId,
+    query: state.query,
+    categories: categoryManager.getCategories(),
+  });
   ui.hydrateIcons(document.getElementById("note-list"));
 
   const activeCategory = state.activeCategoryId ? categoryManager.getCategoryById(state.activeCategoryId) : null;

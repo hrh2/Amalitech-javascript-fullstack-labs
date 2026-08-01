@@ -46,13 +46,15 @@ function highlight(text, query) {
 /* ---------------------------------------------------------
  * Note list rendering
  * ------------------------------------------------------- */
-export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
+export function renderNoteList(notes, { selectedId = null, query = "", categories = [] } = {}) {
   const list = document.getElementById("note-list");
   list.innerHTML = "";
 
   if (notes.length === 0) {
     return;
   }
+
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
 
   notes.forEach((note) => {
     const li = document.createElement("li");
@@ -69,9 +71,16 @@ export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
       .map((t) => `<span class="tag">${escapeHtml(t)}</span>`)
       .join("");
 
+    const category = note.categoryId ? categoryById.get(note.categoryId) : null;
+    const categoryBadgeHtml = category
+      ? `<span class="category-badge" style="--badge-color:${category.color};">
+           <span class="category-badge-dot" aria-hidden="true"></span>${escapeHtml(category.name)}
+         </span>`
+      : "";
+
     btn.innerHTML = `
       <h3>${highlight(title, query)}</h3>
-      ${note.tags.length ? `<div class="tag-list">${tagsHtml}</div>` : ""}
+      ${categoryBadgeHtml || note.tags.length ? `<div class="tag-list">${categoryBadgeHtml}${tagsHtml}</div>` : ""}
       <time datetime="${note.timestamp}">${formatDate(note.timestamp)}</time>
     `;
     li.appendChild(btn);
