@@ -18,8 +18,9 @@ auth.requireAuth();
  * View state
  * ------------------------------------------------------- */
 const state = {
-  filterMode: "all",       // "all" | "archived" | "tag"
+  filterMode: "all",       // "all" | "archived" | "tag" | "category"
   activeTag: null,
+  activeCategoryId: null,
   query: "",
   selectedNoteId: null,
   isEditing: false,
@@ -116,6 +117,9 @@ function getFilteredNotes() {
   if (state.filterMode === "tag" && state.activeTag) {
     source = noteManager.filterByTag(state.activeTag, source);
   }
+  if (state.filterMode === "category" && state.activeCategoryId) {
+    source = noteManager.filterByCategory(state.activeCategoryId, source);
+  }
   if (state.query) {
     source = noteManager.searchNotes(state.query, source);
   }
@@ -127,10 +131,12 @@ function renderList() {
   ui.renderNoteList(notes, { selectedId: state.selectedNoteId, query: state.query });
   ui.hydrateIcons(document.getElementById("note-list"));
 
+  const activeCategory = state.activeCategoryId ? categoryManager.getCategoryById(state.activeCategoryId) : null;
   const titleMap = {
     all: "All Notes",
     archived: "Archived Notes",
     tag: `Notes Tagged: ${state.activeTag ?? ""}`,
+    category: `Category: ${activeCategory?.name ?? ""}`,
   };
   els.listTitle.textContent = titleMap[state.filterMode] ?? "All Notes";
 
@@ -139,6 +145,9 @@ function renderList() {
     els.listDescription.hidden = false;
   } else if (state.filterMode === "tag" && state.activeTag) {
     els.listDescription.textContent = `All notes with the "${state.activeTag}" tag are shown here.`;
+    els.listDescription.hidden = false;
+  } else if (state.filterMode === "category" && activeCategory) {
+    els.listDescription.textContent = `All notes in the "${activeCategory.name}" category are shown here.`;
     els.listDescription.hidden = false;
   } else {
     els.listDescription.hidden = true;
@@ -172,6 +181,9 @@ function renderEmptyListBanner(notes) {
       '<button type="button" class="banner-link" id="banner-create-note">create a new note.</button>';
   } else if (state.filterMode === "tag" && state.activeTag) {
     banner.innerHTML = `No notes found with the "${escapeForBanner(state.activeTag)}" tag.`;
+  } else if (state.filterMode === "category" && state.activeCategoryId) {
+    const category = categoryManager.getCategoryById(state.activeCategoryId);
+    banner.innerHTML = `No notes found in the "${escapeForBanner(category?.name ?? "")}" category.`;
   } else {
     banner.innerHTML = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
   }
@@ -186,7 +198,7 @@ function renderSidebarTags() {
 }
 
 function renderCategoryList() {
-  ui.updateCategoryList(categoryManager.getCategories());
+  ui.updateCategoryList(categoryManager.getCategories(), state.filterMode === "category" ? state.activeCategoryId : null);
   populateCategoryOptions();
 }
 
@@ -459,14 +471,16 @@ function confirmRestore() {
 /* ---------------------------------------------------------
  * Filters / search / tags
  * ------------------------------------------------------- */
-function setFilterMode(mode, tag = null) {
+function setFilterMode(mode, tag = null, categoryId = null) {
   exitMobileSearch();
   exitSettings();
   state.filterMode = mode;
   state.activeTag = tag;
+  state.activeCategoryId = categoryId;
   state.query = "";
   document.getElementById("search-input").value = "";
   renderSidebarTags();
+  renderCategoryList();
   renderList();
   renderEmptyDetail();
   ui.setMobileView(mode === "archived" ? "archived" : "list");
@@ -629,6 +643,13 @@ function attachEventListeners() {
       });
     }
   );
+
+  // Category list — filter notes down to a single category
+  document.getElementById("category-nav-list").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-category-id]");
+    if (!btn) return;
+    setFilterMode("category", null, btn.dataset.categoryId);
+  });
 
   // Note list — event delegation: one listener handles every note card
   document.getElementById("note-list").addEventListener("click", (e) => {

@@ -116,7 +116,7 @@ export function updateTagList(tags, activeTag = null) {
 /* ---------------------------------------------------------
  * Category sidebar rendering
  * ------------------------------------------------------- */
-export function updateCategoryList(categories) {
+export function updateCategoryList(categories, activeCategoryId = null) {
   const container = document.getElementById("category-nav-list");
   if (!container) return;
   container.innerHTML = "";
@@ -134,6 +134,8 @@ export function updateCategoryList(categories) {
     btn.type = "button";
     btn.className = "tag-nav-btn";
     btn.dataset.categoryId = category.id;
+    const isActive = category.id === activeCategoryId;
+    btn.setAttribute("aria-current", String(isActive));
     btn.innerHTML = `
       <span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${category.color};"></span>
       ${escapeHtml(category.name)}

@@ -118,6 +118,11 @@ export const filterByTag = (tag, sourceList = notes) => {
   return sourceList.filter((n) => n.tags.includes(tag));
 };
 
+export const filterByCategory = (categoryId, sourceList = notes) => {
+  if (!categoryId) return sourceList;
+  return sourceList.filter((n) => n.categoryId === categoryId);
+};
+
 export const getAllTags = () => {
   const set = new Set();
   notes.forEach((n) => n.tags.forEach((t) => set.add(t)));
