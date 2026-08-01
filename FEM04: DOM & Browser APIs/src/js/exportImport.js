@@ -1,7 +1,8 @@
 // exportImport.js
 // Handles moving notes in and out of the app as JSON files.
-// Export is implemented here first; import + validation + de-duplication
-// land in later commits on this feature branch.
+// Export, import, and structural validation are implemented here;
+// duplicate prevention on import lands in a later commit on this
+// feature branch.
 
 import { getNotes, importNotes } from "./noteManager.js";
 
@@ -57,19 +58,88 @@ function formatDateForFilename(date) {
 }
 
 /**
+ * Checks that a raw parsed object looks enough like a Note to import.
+ * Only `title` and `content` are required — everything else has a safe
+ * default — so notes exported by slightly older/newer versions of this
+ * app, or hand-edited files, still have a reasonable chance of passing.
+ */
+function isValidNoteShape(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
+  if (typeof raw.title !== "string") return false;
+  if (typeof raw.content !== "string") return false;
+  if (raw.tags !== undefined && !isStringArray(raw.tags)) return false;
+  if (raw.archived !== undefined && typeof raw.archived !== "boolean") return false;
+  if (raw.timestamp !== undefined && Number.isNaN(Date.parse(raw.timestamp))) return false;
+  if (raw.location !== undefined && raw.location !== null && typeof raw.location !== "object") return false;
+  return true;
+}
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+/**
+ * Fills in any missing optional fields on a note that already passed
+ * `isValidNoteShape`, so every note handed to `noteManager.importNotes`
+ * has a complete, predictable shape.
+ */
+function normalizeImportedNote(raw) {
+  return {
+    id: typeof raw.id === "string" && raw.id ? raw.id : generateImportId(),
+    title: raw.title,
+    content: raw.content,
+    tags: isStringArray(raw.tags) ? raw.tags : [],
+    archived: typeof raw.archived === "boolean" ? raw.archived : false,
+    timestamp: raw.timestamp && !Number.isNaN(Date.parse(raw.timestamp)) ? raw.timestamp : new Date().toISOString(),
+    location: raw.location && typeof raw.location === "object" ? raw.location : null,
+  };
+}
+
+function generateImportId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `note_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/**
+ * Splits a raw array of parsed JSON entries into notes that are shaped
+ * closely enough to import (normalized to a complete Note-like object)
+ * and a count of entries that were rejected.
+ *
+ * @param {unknown[]} rawNotes
+ * @returns {{ valid: object[], invalidCount: number }}
+ */
+export function validateImportedNotes(rawNotes) {
+  const valid = [];
+  let invalidCount = 0;
+
+  rawNotes.forEach((raw) => {
+    if (isValidNoteShape(raw)) {
+      valid.push(normalizeImportedNote(raw));
+    } else {
+      invalidCount += 1;
+    }
+  });
+
+  return { valid, invalidCount };
+}
+
+/**
  * Reads a File selected by the user (expected to be a previous export),
- * parses it as JSON, and adds the notes it contains to the app.
+ * parses it as JSON, validates the notes it contains, and adds whichever
+ * of them are shaped like valid notes to the app.
  *
  * Accepts either the `{ version, exportedAt, notes }` envelope this app
  * exports, or a bare array of notes, so files from slightly different
- * sources still have a chance of working.
+ * sources still have a chance of working. Entries that don't look like
+ * valid notes are silently skipped rather than aborting the whole import.
  *
- * Structural validation of individual notes and duplicate prevention are
- * handled in later commits — this step just gets notes from a JSON file
- * into the app.
+ * Duplicate prevention is handled in a later commit — this step is only
+ * responsible for making sure what gets imported is structurally sound.
  *
  * @param {File} file
- * @returns {Promise<{ count: number }>}
+ * @returns {Promise<{ count: number, skipped: number }>}
  */
 export function importNotesFromFile(file) {
   return new Promise((resolve, reject) => {
@@ -84,14 +154,20 @@ export function importNotesFromFile(file) {
         return;
       }
 
-      const notesToImport = Array.isArray(parsed) ? parsed : parsed?.notes;
-      if (!Array.isArray(notesToImport)) {
+      const rawNotes = Array.isArray(parsed) ? parsed : parsed?.notes;
+      if (!Array.isArray(rawNotes)) {
         reject(new Error("That file doesn't contain any notes to import."));
         return;
       }
 
-      const count = importNotes(notesToImport);
-      resolve({ count });
+      const { valid, invalidCount } = validateImportedNotes(rawNotes);
+      if (valid.length === 0) {
+        reject(new Error("None of the notes in that file are in a valid format."));
+        return;
+      }
+
+      const count = importNotes(valid);
+      resolve({ count, skipped: invalidCount });
     };
 
     reader.onerror = () => reject(new Error("Could not read the selected file."));

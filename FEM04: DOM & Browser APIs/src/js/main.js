@@ -775,10 +775,14 @@ function attachEventListeners() {
     if (!file) return;
 
     try {
-      const { count } = await exportImport.importNotesFromFile(file);
+      const { count, skipped } = await exportImport.importNotesFromFile(file);
       renderSidebarTags();
       renderList();
-      ui.showToast(`Imported ${count} note${count === 1 ? "" : "s"}.`);
+      ui.showToast(
+        skipped > 0
+          ? `Imported ${count} note${count === 1 ? "" : "s"} (skipped ${skipped} invalid).`
+          : `Imported ${count} note${count === 1 ? "" : "s"}.`
+      );
     } catch (err) {
       ui.showToast(err.message);
     } finally {
