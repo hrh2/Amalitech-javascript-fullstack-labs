@@ -186,6 +186,9 @@
 
       <!-- ============ Right actions column (desktop) ============ -->
       <aside class="actions-col" aria-label="Note actions" id="actions-col">
+        <button type="button" class="btn btn-border btn-block" id="share-btn" hidden>
+          <span data-icon="share"></span> Share Note
+        </button>
         <button type="button" class="btn btn-border btn-block" id="archive-btn" hidden>
           <span data-icon="archive"></span> <span id="archive-btn-label">Archive Note</span>
         </button>
@@ -381,6 +384,9 @@
       <label class="field-label sr-only" for="share-link-input">Shareable link</label>
       <div class="field-input-wrap">
         <input class="field-input" type="text" id="share-link-input" readonly>
+        <button type="button" class="field-icon-btn" id="copy-share-link-btn" aria-label="Copy link to clipboard" title="Copy link">
+          <span data-icon="copy"></span>
+        </button>
       </div>
     </div>
     <div class="modal-actions">

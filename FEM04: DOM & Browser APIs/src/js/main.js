@@ -53,6 +53,7 @@ const els = {
   desktopFooter: document.getElementById("desktop-footer"),
   archiveBtn: document.getElementById("archive-btn"),
   deleteBtn: document.getElementById("delete-btn"),
+  shareBtn: document.getElementById("share-btn"),
   archiveIconBtn: document.getElementById("archive-icon-btn"),
   deleteIconBtn: document.getElementById("delete-icon-btn"),
   shareIconBtn: document.getElementById("share-icon-btn"),
@@ -247,6 +248,7 @@ function renderEmptyDetail() {
   els.desktopFooter.hidden = true;
   els.archiveBtn.hidden = true;
   els.deleteBtn.hidden = true;
+  els.shareBtn.hidden = true;
   els.archiveIconBtn.hidden = true;
   els.deleteIconBtn.hidden = true;
   els.shareIconBtn.hidden = true;
@@ -289,6 +291,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.statusMeta.hidden = !archived;
   els.archiveBtn.hidden = isNew;
   els.deleteBtn.hidden = isNew;
+  els.shareBtn.hidden = isNew;
   els.archiveIconBtn.hidden = isNew;
   els.deleteIconBtn.hidden = isNew;
   els.shareIconBtn.hidden = isNew;
@@ -473,6 +476,46 @@ function openShareModal(id) {
 function buildShareUrl(shareId) {
   const basePath = window.location.pathname.replace(/index\.html$/, "");
   return `${window.location.origin}${basePath}shared.html?id=${shareId}`;
+}
+
+/**
+ * Copies `text` to the clipboard using the modern Clipboard API where
+ * available (requires a secure context), falling back to selecting the
+ * (readonly) link input and the legacy execCommand("copy") otherwise.
+ *
+ * @returns {Promise<boolean>} whether the copy succeeded
+ */
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the legacy fallback below.
+    }
+  }
+
+  const input = document.getElementById("share-link-input");
+  input.focus();
+  input.select();
+  input.setSelectionRange(0, text.length);
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  }
+}
+
+/** Briefly swaps a button's icon to a checkmark to confirm a successful copy. */
+function flashCopySuccess(btn) {
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span data-icon="check"></span>';
+  ui.hydrateIcons(btn);
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }, 1500);
 }
 
 function confirmDelete() {
@@ -721,9 +764,22 @@ function attachEventListeners() {
   // Archive / Delete (desktop actions column + mobile icon buttons)
   els.archiveBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
+  els.shareBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
   els.archiveIconBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteIconBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
   els.shareIconBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
+
+  document.getElementById("copy-share-link-btn").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const link = document.getElementById("share-link-input").value;
+    const copied = await copyTextToClipboard(link);
+    if (copied) {
+      ui.showToast("Link copied to clipboard!");
+      flashCopySuccess(btn);
+    } else {
+      ui.showToast("Couldn't copy automatically — please copy the link manually.");
+    }
+  });
 
   document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
   document.getElementById("confirm-archive-btn").addEventListener("click", confirmArchive);
