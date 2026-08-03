@@ -4,6 +4,7 @@
 // This makes it easy to handle quota errors and (de)serialize JSON safely.
 
 const NOTES_KEY_PREFIX = "notes_app:notes:";
+const CATEGORIES_KEY_PREFIX = "notes_app:categories:";
 const PREFS_KEY_PREFIX = "notes_app:prefs:";
 const DRAFT_KEY_PREFIX = "notes_app:draft:";
 const USERS_KEY = "notes_app:users";
@@ -43,6 +44,26 @@ export const saveNotes = (notes) => {
 
 export const loadNotes = () => {
   const key = NOTES_KEY_PREFIX + currentUserKey();
+  return safeParse(localStorage.getItem(key), []);
+};
+
+/* ---------------------------------------------------------
+ * Category persistence (localStorage) — scoped per logged-in user
+ * ------------------------------------------------------- */
+
+export const saveCategories = (categories) => {
+  try {
+    const key = CATEGORIES_KEY_PREFIX + currentUserKey();
+    localStorage.setItem(key, JSON.stringify(categories));
+    return true;
+  } catch (err) {
+    console.error("storage.js: could not save categories", err);
+    return false;
+  }
+};
+
+export const loadCategories = () => {
+  const key = CATEGORIES_KEY_PREFIX + currentUserKey();
   return safeParse(localStorage.getItem(key), []);
 };
 

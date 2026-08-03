@@ -46,13 +46,15 @@ function highlight(text, query) {
 /* ---------------------------------------------------------
  * Note list rendering
  * ------------------------------------------------------- */
-export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
+export function renderNoteList(notes, { selectedId = null, query = "", categories = [] } = {}) {
   const list = document.getElementById("note-list");
   list.innerHTML = "";
 
   if (notes.length === 0) {
     return;
   }
+
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
 
   notes.forEach((note) => {
     const li = document.createElement("li");
@@ -69,9 +71,16 @@ export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
       .map((t) => `<span class="tag">${escapeHtml(t)}</span>`)
       .join("");
 
+    const category = note.categoryId ? categoryById.get(note.categoryId) : null;
+    const categoryBadgeHtml = category
+      ? `<span class="category-badge" style="--badge-color:${category.color};">
+           <span class="category-badge-dot" aria-hidden="true"></span>${escapeHtml(category.name)}
+         </span>`
+      : "";
+
     btn.innerHTML = `
       <h3>${highlight(title, query)}</h3>
-      ${note.tags.length ? `<div class="tag-list">${tagsHtml}</div>` : ""}
+      ${categoryBadgeHtml || note.tags.length ? `<div class="tag-list">${categoryBadgeHtml}${tagsHtml}</div>` : ""}
       <time datetime="${note.timestamp}">${formatDate(note.timestamp)}</time>
     `;
     li.appendChild(btn);
@@ -111,6 +120,38 @@ export function updateTagList(tags, activeTag = null) {
       });
       hydrateIcons(container);
     });
+}
+
+/* ---------------------------------------------------------
+ * Category sidebar rendering
+ * ------------------------------------------------------- */
+export function updateCategoryList(categories, activeCategoryId = null) {
+  const container = document.getElementById("category-nav-list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (categories.length === 0) {
+    const li = document.createElement("li");
+    li.innerHTML = `<p class="text-preset-6" style="color:var(--color-text-subtle); padding:8px 12px;">No categories yet</p>`;
+    container.appendChild(li);
+    return;
+  }
+
+  categories.forEach((category) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tag-nav-btn";
+    btn.dataset.categoryId = category.id;
+    const isActive = category.id === activeCategoryId;
+    btn.setAttribute("aria-current", String(isActive));
+    btn.innerHTML = `
+      <span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${category.color};"></span>
+      ${escapeHtml(category.name)}
+    `;
+    li.appendChild(btn);
+    container.appendChild(li);
+  });
 }
 
 /* ---------------------------------------------------------

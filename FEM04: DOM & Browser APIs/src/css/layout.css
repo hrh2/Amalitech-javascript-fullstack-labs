@@ -103,6 +103,55 @@ html, body {
     margin-bottom: var(--spacing-100);
 }
 
+.nav-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: var(--spacing-100);
+    margin-top: var(--spacing-200);
+}
+
+.nav-section-header .nav-section-title {
+    margin-bottom: 0;
+}
+
+.nav-section-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-6);
+    background: transparent;
+    border: none;
+    color: var(--color-text-subtle);
+    cursor: pointer;
+}
+
+.nav-section-add:hover {
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+}
+
+.swatch-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-100);
+}
+
+.swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.swatch[aria-checked="true"] {
+    border-color: var(--color-text);
+}
+
 .tag-nav-list {
     display: flex;
     flex-direction: column;

@@ -6,7 +6,7 @@
 import { saveNotes, loadNotes } from "./storage.js";
 
 export class Note {
-  constructor(title, content, tags = [], location = null) {
+  constructor(title, content, tags = [], location = null, categoryId = null) {
     this.id = generateId();
     this.title = title;
     this.content = content;
@@ -14,6 +14,7 @@ export class Note {
     this.archived = false;
     this.timestamp = new Date().toISOString();
     this.location = location; // { city, lat, lng } | null
+    this.categoryId = categoryId; // Category.id | null — assignment is 1 note : 1 category
   }
 
   archive() {
@@ -57,8 +58,8 @@ export const getNotes = () => notes;
 
 export const getNoteById = (id) => notes.find((n) => n.id === id) || null;
 
-export const createNote = (title, content, tags = [], location = null) => {
-  const note = new Note(title, content, tags, location);
+export const createNote = (title, content, tags = [], location = null, categoryId = null) => {
+  const note = new Note(title, content, tags, location, categoryId);
   notes.unshift(note);
   saveNotes(notes);
   return note;
@@ -115,6 +116,11 @@ export const searchNotes = (query, sourceList = notes) => {
 export const filterByTag = (tag, sourceList = notes) => {
   if (!tag) return sourceList;
   return sourceList.filter((n) => n.tags.includes(tag));
+};
+
+export const filterByCategory = (categoryId, sourceList = notes) => {
+  if (!categoryId) return sourceList;
+  return sourceList.filter((n) => n.categoryId === categoryId);
 };
 
 export const getAllTags = () => {

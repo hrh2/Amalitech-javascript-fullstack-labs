@@ -10,6 +10,7 @@ import * as ui from "./ui.js";
 import * as themes from "./themes.js";
 import * as auth from "./auth.js";
 import * as exportImport from "./exportImport.js";
+import * as categoryManager from "./categoryManager.js";
 
 auth.requireAuth();
 
@@ -17,8 +18,9 @@ auth.requireAuth();
  * View state
  * ------------------------------------------------------- */
 const state = {
-  filterMode: "all",       // "all" | "archived" | "tag"
+  filterMode: "all",       // "all" | "archived" | "tag" | "category"
   activeTag: null,
+  activeCategoryId: null,
   query: "",
   selectedNoteId: null,
   isEditing: false,
@@ -33,6 +35,7 @@ const state = {
   settingsDrilledOnMobile: false, // mobile only: showing a sub-page vs. the menu list
   pendingThemeChoice: "light",
   pendingFontChoice: "sans",
+  pendingCategoryColor: null,
 };
 
 const els = {
@@ -40,6 +43,7 @@ const els = {
   emptyState: document.getElementById("empty-state"),
   titleInput: document.getElementById("note-title"),
   contentInput: document.getElementById("note-content"),
+  categoryField: document.getElementById("category-field"),
   tagsField: document.getElementById("tags-field"),
   saveBtn: document.getElementById("save-btn"),
   saveBtnDesktop: document.getElementById("save-btn-desktop"),
@@ -94,7 +98,9 @@ function init() {
   state.pendingFontChoice = themes.getFontPref();
   syncRadioCards();
   noteManager.initNotes();
+  categoryManager.initCategories();
   renderSidebarTags();
+  renderCategoryList();
   renderList();
   renderEmptyDetail();
   attachEventListeners();
@@ -111,6 +117,9 @@ function getFilteredNotes() {
   if (state.filterMode === "tag" && state.activeTag) {
     source = noteManager.filterByTag(state.activeTag, source);
   }
+  if (state.filterMode === "category" && state.activeCategoryId) {
+    source = noteManager.filterByCategory(state.activeCategoryId, source);
+  }
   if (state.query) {
     source = noteManager.searchNotes(state.query, source);
   }
@@ -119,13 +128,19 @@ function getFilteredNotes() {
 
 function renderList() {
   const notes = getFilteredNotes();
-  ui.renderNoteList(notes, { selectedId: state.selectedNoteId, query: state.query });
+  ui.renderNoteList(notes, {
+    selectedId: state.selectedNoteId,
+    query: state.query,
+    categories: categoryManager.getCategories(),
+  });
   ui.hydrateIcons(document.getElementById("note-list"));
 
+  const activeCategory = state.activeCategoryId ? categoryManager.getCategoryById(state.activeCategoryId) : null;
   const titleMap = {
     all: "All Notes",
     archived: "Archived Notes",
     tag: `Notes Tagged: ${state.activeTag ?? ""}`,
+    category: `Category: ${activeCategory?.name ?? ""}`,
   };
   els.listTitle.textContent = titleMap[state.filterMode] ?? "All Notes";
 
@@ -134,6 +149,9 @@ function renderList() {
     els.listDescription.hidden = false;
   } else if (state.filterMode === "tag" && state.activeTag) {
     els.listDescription.textContent = `All notes with the "${state.activeTag}" tag are shown here.`;
+    els.listDescription.hidden = false;
+  } else if (state.filterMode === "category" && activeCategory) {
+    els.listDescription.textContent = `All notes in the "${activeCategory.name}" category are shown here.`;
     els.listDescription.hidden = false;
   } else {
     els.listDescription.hidden = true;
@@ -167,6 +185,9 @@ function renderEmptyListBanner(notes) {
       '<button type="button" class="banner-link" id="banner-create-note">create a new note.</button>';
   } else if (state.filterMode === "tag" && state.activeTag) {
     banner.innerHTML = `No notes found with the "${escapeForBanner(state.activeTag)}" tag.`;
+  } else if (state.filterMode === "category" && state.activeCategoryId) {
+    const category = categoryManager.getCategoryById(state.activeCategoryId);
+    banner.innerHTML = `No notes found in the "${escapeForBanner(category?.name ?? "")}" category.`;
   } else {
     banner.innerHTML = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
   }
@@ -178,6 +199,42 @@ function renderEmptyListBanner(notes) {
 function renderSidebarTags() {
   const tags = noteManager.getAllTags();
   ui.updateTagList(tags, state.filterMode === "tag" ? state.activeTag : null);
+}
+
+function renderCategoryList() {
+  ui.updateCategoryList(categoryManager.getCategories(), state.filterMode === "category" ? state.activeCategoryId : null);
+  populateCategoryOptions();
+}
+
+/** Rebuilds the note editor's Category <select> options from current categories. */
+function populateCategoryOptions() {
+  const select = els.categoryField;
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">No category</option>';
+  categoryManager.getCategories().forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.textContent = category.name;
+    select.appendChild(option);
+  });
+  // Keep whatever was selected, if that category still exists.
+  select.value = select.querySelector(`option[value="${previousValue}"]`) ? previousValue : "";
+}
+
+function renderCategorySwatches() {
+  const container = document.getElementById("category-color-swatches");
+  container.innerHTML = "";
+  categoryManager.CATEGORY_COLORS.forEach((color) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "swatch";
+    btn.dataset.color = color;
+    btn.style.background = color;
+    btn.setAttribute("role", "radio");
+    btn.setAttribute("aria-label", color);
+    btn.setAttribute("aria-checked", String(color === state.pendingCategoryColor));
+    container.appendChild(btn);
+  });
 }
 
 function renderEmptyDetail() {
@@ -209,6 +266,8 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.titleInput.value = note.title;
   els.contentInput.value = note.content;
   setTagsField(note.tags);
+  populateCategoryOptions();
+  els.categoryField.value = note.categoryId || "";
   ui.showValidationError("note-title", "title-error", "");
 
   els.lastEditedText.textContent = isNew
@@ -240,6 +299,7 @@ function currentDraft() {
     title: els.titleInput.value,
     content: els.contentInput.value,
     tags: getTagsFromField(),
+    categoryId: els.categoryField.value || null,
     isNew: state.isNewNote,
   };
 }
@@ -278,6 +338,7 @@ function maybeRestoreDraft() {
       els.titleInput.value = draft.title;
       els.contentInput.value = draft.content;
       setTagsField(draft.tags || []);
+      els.categoryField.value = draft.categoryId || "";
     }
   }
 }
@@ -288,7 +349,7 @@ function maybeRestoreDraft() {
 function startNewNote(draft = null) {
   exitMobileSearch();
   exitSettings();
-  const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null);
+  const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null, draft?.categoryId ?? null);
   blank.id = draft?.id || blank.id;
   renderNoteDetail(blank, { editing: true, isNew: true });
 }
@@ -320,14 +381,15 @@ function saveCurrentNote() {
   const title = els.titleInput.value.trim();
   const content = els.contentInput.value;
   const tags = getTagsFromField();
+  const categoryId = els.categoryField.value || null;
 
   if (state.isNewNote) {
-    const note = noteManager.createNote(title, content, tags, state.pendingLocation);
+    const note = noteManager.createNote(title, content, tags, state.pendingLocation, categoryId);
     state.isNewNote = false;
     state.selectedNoteId = note.id;
     ui.showToast("Note saved successfully!");
   } else {
-    noteManager.updateNote(state.selectedNoteId, { title, content, tags, location: state.pendingLocation });
+    noteManager.updateNote(state.selectedNoteId, { title, content, tags, location: state.pendingLocation, categoryId });
     ui.showToast("Note saved successfully!");
   }
 
@@ -413,14 +475,16 @@ function confirmRestore() {
 /* ---------------------------------------------------------
  * Filters / search / tags
  * ------------------------------------------------------- */
-function setFilterMode(mode, tag = null) {
+function setFilterMode(mode, tag = null, categoryId = null) {
   exitMobileSearch();
   exitSettings();
   state.filterMode = mode;
   state.activeTag = tag;
+  state.activeCategoryId = categoryId;
   state.query = "";
   document.getElementById("search-input").value = "";
   renderSidebarTags();
+  renderCategoryList();
   renderList();
   renderEmptyDetail();
   ui.setMobileView(mode === "archived" ? "archived" : "list");
@@ -583,6 +647,13 @@ function attachEventListeners() {
       });
     }
   );
+
+  // Category list — filter notes down to a single category
+  document.getElementById("category-nav-list").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-category-id]");
+    if (!btn) return;
+    setFilterMode("category", null, btn.dataset.categoryId);
+  });
 
   // Note list — event delegation: one listener handles every note card
   document.getElementById("note-list").addEventListener("click", (e) => {
@@ -794,6 +865,36 @@ function attachEventListeners() {
       // Reset so selecting the same file again still fires "change"
       e.target.value = "";
     }
+  });
+
+  // Categories: Create Category modal
+  document.getElementById("add-category-btn").addEventListener("click", () => {
+    document.getElementById("category-form").reset();
+    ui.showValidationError("category-name", "category-error", "");
+    state.pendingCategoryColor = categoryManager.CATEGORY_COLORS[0];
+    renderCategorySwatches();
+    ui.openModal("category-modal");
+  });
+
+  document.getElementById("category-color-swatches").addEventListener("click", (e) => {
+    const swatch = e.target.closest("[data-color]");
+    if (!swatch) return;
+    state.pendingCategoryColor = swatch.dataset.color;
+    renderCategorySwatches();
+  });
+
+  document.getElementById("category-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("category-name").value;
+    const result = categoryManager.createCategory(name, state.pendingCategoryColor);
+    if (!result.ok) {
+      ui.showValidationError("category-name", "category-error", result.error);
+      return;
+    }
+    ui.showValidationError("category-name", "category-error", "");
+    ui.closeModal("category-modal");
+    renderCategoryList();
+    ui.showToast(`Category "${result.category.name}" created.`);
   });
 }
 
