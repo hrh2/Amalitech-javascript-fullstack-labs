@@ -53,8 +53,10 @@ const els = {
   desktopFooter: document.getElementById("desktop-footer"),
   archiveBtn: document.getElementById("archive-btn"),
   deleteBtn: document.getElementById("delete-btn"),
+  shareBtn: document.getElementById("share-btn"),
   archiveIconBtn: document.getElementById("archive-icon-btn"),
   deleteIconBtn: document.getElementById("delete-icon-btn"),
+  shareIconBtn: document.getElementById("share-icon-btn"),
   iconActions: document.getElementById("icon-actions"),
   lastEditedText: document.getElementById("last-edited-text"),
   locationMeta: document.getElementById("location-meta"),
@@ -246,8 +248,10 @@ function renderEmptyDetail() {
   els.desktopFooter.hidden = true;
   els.archiveBtn.hidden = true;
   els.deleteBtn.hidden = true;
+  els.shareBtn.hidden = true;
   els.archiveIconBtn.hidden = true;
   els.deleteIconBtn.hidden = true;
+  els.shareIconBtn.hidden = true;
   state.selectedNoteId = null;
   state.isEditing = false;
 }
@@ -265,7 +269,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.desktopFooter.hidden = false;
 
   els.titleInput.value = note.title;
-  els.contentInput.innerHTML = note.content;
+  els.contentInput.innerHTML = sanitizeRichText(note.content);
   updateToolbarState();
   setTagsField(note.tags);
   populateCategoryOptions();
@@ -287,8 +291,10 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.statusMeta.hidden = !archived;
   els.archiveBtn.hidden = isNew;
   els.deleteBtn.hidden = isNew;
+  els.shareBtn.hidden = isNew;
   els.archiveIconBtn.hidden = isNew;
   els.deleteIconBtn.hidden = isNew;
+  els.shareIconBtn.hidden = isNew;
   document.getElementById("archive-btn-label").textContent = archived ? "Restore Note" : "Archive Note";
 
   ui.setMobileView("detail");
@@ -316,7 +322,7 @@ function currentDraft() {
   return {
     id: state.selectedNoteId,
     title: els.titleInput.value,
-    content: els.contentInput.innerHTML,
+    content: sanitizeRichText(els.contentInput.innerHTML),
     tags: getTagsFromField(),
     categoryId: els.categoryField.value || null,
     isNew: state.isNewNote,
@@ -355,7 +361,7 @@ function maybeRestoreDraft() {
     if (existing) {
       renderNoteDetail(existing, { editing: true, isNew: false });
       els.titleInput.value = draft.title;
-      els.contentInput.innerHTML = draft.content;
+      els.contentInput.innerHTML = sanitizeRichText(draft.content || "");
       setTagsField(draft.tags || []);
       els.categoryField.value = draft.categoryId || "";
     }
@@ -453,6 +459,63 @@ function requestArchive(id) {
     state.pendingArchiveId = id;
     ui.openModal("archive-modal");
   }
+}
+
+/* ---------------------------------------------------------
+ * Note sharing
+ * ------------------------------------------------------- */
+function openShareModal(id) {
+  const shareId = noteManager.getOrCreateShareId(id);
+  if (!shareId) return;
+
+  document.getElementById("share-link-input").value = buildShareUrl(shareId);
+  ui.openModal("share-modal");
+}
+
+/** Builds the public read-only link for a given share token. */
+function buildShareUrl(shareId) {
+  const basePath = window.location.pathname.replace(/index\.html$/, "");
+  return `${window.location.origin}${basePath}shared.html?id=${shareId}`;
+}
+
+/**
+ * Copies `text` to the clipboard using the modern Clipboard API where
+ * available (requires a secure context), falling back to selecting the
+ * (readonly) link input and the legacy execCommand("copy") otherwise.
+ *
+ * @returns {Promise<boolean>} whether the copy succeeded
+ */
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the legacy fallback below.
+    }
+  }
+
+  const input = document.getElementById("share-link-input");
+  input.focus();
+  input.select();
+  input.setSelectionRange(0, text.length);
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  }
+}
+
+/** Briefly swaps a button's icon to a checkmark to confirm a successful copy. */
+function flashCopySuccess(btn) {
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span data-icon="check"></span>';
+  ui.hydrateIcons(btn);
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }, 1500);
 }
 
 function confirmDelete() {
@@ -701,8 +764,22 @@ function attachEventListeners() {
   // Archive / Delete (desktop actions column + mobile icon buttons)
   els.archiveBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
+  els.shareBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
   els.archiveIconBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteIconBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
+  els.shareIconBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
+
+  document.getElementById("copy-share-link-btn").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const link = document.getElementById("share-link-input").value;
+    const copied = await copyTextToClipboard(link);
+    if (copied) {
+      ui.showToast("Link copied to clipboard!");
+      flashCopySuccess(btn);
+    } else {
+      ui.showToast("Couldn't copy automatically — please copy the link manually.");
+    }
+  });
 
   document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
   document.getElementById("confirm-archive-btn").addEventListener("click", confirmArchive);
@@ -735,6 +812,17 @@ function attachEventListeners() {
   els.contentInput.addEventListener("input", scheduleDraftSave);
   els.contentInput.addEventListener("keyup", updateToolbarState);
   els.contentInput.addEventListener("mouseup", updateToolbarState);
+
+  // Sanitize pasted content before it ever lands in the editor — pasted
+  // HTML is one more ingress vector alongside save and import.
+  els.contentInput.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const clipboard = e.clipboardData || window.clipboardData;
+    const html = clipboard.getData("text/html") || clipboard.getData("text/plain");
+    const clean = sanitizeRichText(html || "");
+    document.execCommand("insertHTML", false, clean);
+    scheduleDraftSave();
+  });
 
   // Rich text toolbar — Bold / Italic / Underline
   document.querySelectorAll(".toolbar-btn[data-format]").forEach((btn) => {

@@ -15,6 +15,7 @@ export class Note {
     this.timestamp = new Date().toISOString();
     this.location = location; // { city, lat, lng } | null
     this.categoryId = categoryId; // Category.id | null — assignment is 1 note : 1 category
+    this.shareId = null; // short public token | null — set the first time a share link is generated
   }
 
   archive() {
@@ -142,3 +143,46 @@ export const getAllTags = () => {
 
 export const getActiveNotes = () => notes.filter((n) => !n.archived);
 export const getArchivedNotes = () => notes.filter((n) => n.archived);
+
+/**
+ * Returns a note's existing share token, generating one the first time
+ * it's needed. The token is short and URL-friendly (not the note's own
+ * id) so a shared link doesn't expose the note's internal identifier,
+ * and is guaranteed unique across all notes for this user.
+ *
+ * @param {string} id note id
+ * @returns {string | null} the share token, or null if the note doesn't exist
+ */
+export const getOrCreateShareId = (id) => {
+  const note = getNoteById(id);
+  if (!note) return null;
+
+  if (!note.shareId) {
+    note.shareId = generateUniqueShareId();
+    saveNotes(notes);
+  }
+  return note.shareId;
+};
+
+export const getNoteByShareId = (shareId) => notes.find((n) => n.shareId === shareId) || null;
+
+function generateUniqueShareId() {
+  let candidate;
+  do {
+    candidate = generateShareId();
+  } while (notes.some((n) => n.shareId === candidate));
+  return candidate;
+}
+
+function generateShareId() {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+  }
+  let result = "";
+  for (let i = 0; i < 10; i++) {
+    result += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return result;
+}
