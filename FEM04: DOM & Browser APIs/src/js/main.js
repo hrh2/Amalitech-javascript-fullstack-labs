@@ -298,7 +298,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
  * Rich text toolbar
  * ------------------------------------------------------- */
 function updateToolbarState() {
-  ["bold", "italic", "underline"].forEach((format) => {
+  ["bold", "italic", "underline", "insertUnorderedList", "insertOrderedList"].forEach((format) => {
     const btn = document.querySelector(`.toolbar-btn[data-format="${format}"]`);
     if (!btn) return;
     let active = false;
