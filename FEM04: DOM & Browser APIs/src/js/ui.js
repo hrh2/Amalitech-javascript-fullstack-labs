@@ -43,6 +43,18 @@ function highlight(text, query) {
   }
 }
 
+/**
+ * Converts a note's rich text HTML into plain, readable text for
+ * contexts (like the compact list card) where the full formatting
+ * shouldn't render — e.g. so a bolded word shows as the word itself
+ * rather than a literal "<b>" tag.
+ */
+function htmlToPlainText(html) {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return (template.content.textContent || "").replace(/\s+/g, " ").trim();
+}
+
 /* ---------------------------------------------------------
  * Note list rendering
  * ------------------------------------------------------- */
@@ -78,8 +90,11 @@ export function renderNoteList(notes, { selectedId = null, query = "", categorie
          </span>`
       : "";
 
+    const previewText = htmlToPlainText(note.content);
+
     btn.innerHTML = `
       <h3>${highlight(title, query)}</h3>
+      ${previewText ? `<p class="note-preview">${highlight(previewText, query)}</p>` : ""}
       ${categoryBadgeHtml || note.tags.length ? `<div class="tag-list">${categoryBadgeHtml}${tagsHtml}</div>` : ""}
       <time datetime="${note.timestamp}">${formatDate(note.timestamp)}</time>
     `;

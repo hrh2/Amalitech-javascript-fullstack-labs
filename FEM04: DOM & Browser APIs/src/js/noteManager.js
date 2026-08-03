@@ -107,11 +107,22 @@ export const searchNotes = (query, sourceList = notes) => {
   return sourceList.filter((n) => {
     return (
       n.title.toLowerCase().includes(q) ||
-      n.content.toLowerCase().includes(q) ||
+      stripHtmlTags(n.content).toLowerCase().includes(q) ||
       n.tags.some((t) => t.toLowerCase().includes(q))
     );
   });
 };
+
+/**
+ * Crude HTML-tag stripper used only so search matches the note's visible
+ * text rather than raw markup (e.g. a query shouldn't fail to match just
+ * because the word is split across a <b> boundary). Kept regex-based
+ * rather than DOM-based since this module intentionally has no knowledge
+ * of the DOM — see file header.
+ */
+function stripHtmlTags(html) {
+  return html.replace(/<[^>]*>/g, " ");
+}
 
 export const filterByTag = (tag, sourceList = notes) => {
   if (!tag) return sourceList;
