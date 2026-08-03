@@ -11,6 +11,7 @@ import * as themes from "./themes.js";
 import * as auth from "./auth.js";
 import * as exportImport from "./exportImport.js";
 import * as categoryManager from "./categoryManager.js";
+import { sanitizeRichText } from "./sanitize.js";
 
 auth.requireAuth();
 
@@ -397,7 +398,7 @@ function saveCurrentNote() {
     return;
   }
   const title = els.titleInput.value.trim();
-  const content = els.contentInput.innerHTML;
+  const content = sanitizeRichText(els.contentInput.innerHTML);
   const tags = getTagsFromField();
   const categoryId = els.categoryField.value || null;
 
