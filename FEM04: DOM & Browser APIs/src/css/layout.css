@@ -423,6 +423,45 @@ html, body {
     margin: var(--spacing-300) 0;
 }
 
+.rich-text-toolbar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: var(--spacing-150);
+}
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-6);
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.toolbar-btn:hover {
+    background: var(--color-bg-muted);
+    color: var(--color-text);
+}
+
+.toolbar-btn[aria-pressed="true"] {
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+}
+
+.rich-text-editor {
+    outline: none;
+}
+
+.rich-text-editor:empty::before {
+    content: attr(data-placeholder);
+    color: var(--color-text-subtle);
+    pointer-events: none;
+}
+
 .detail-footer {
     display: flex;
     gap: var(--spacing-150);
