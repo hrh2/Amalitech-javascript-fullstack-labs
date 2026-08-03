@@ -95,6 +95,7 @@
           <div class="icon-actions" id="icon-actions">
             <button type="button" class="btn-icon danger" id="delete-icon-btn" aria-label="Delete note" hidden><span data-icon="trash"></span></button>
             <button type="button" class="btn-icon" id="archive-icon-btn" aria-label="Archive note" hidden><span data-icon="archive"></span></button>
+            <button type="button" class="btn-icon" id="share-icon-btn" aria-label="Share note" hidden><span data-icon="share"></span></button>
           </div>
           <!-- Mobile-only compact Save/Cancel (shown inline in the header on narrow screens) -->
           <button type="button" class="btn btn-secondary" id="cancel-btn" hidden>Cancel</button>
@@ -367,6 +368,23 @@
     <div class="modal-actions">
       <button type="button" class="btn btn-secondary" data-modal-cancel="restore-modal">Cancel</button>
       <button type="button" class="btn btn-primary" id="confirm-restore-btn">Restore Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="share-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title" aria-describedby="share-modal-desc">
+    <div class="modal-icon info"><span data-icon="share"></span></div>
+    <h2 class="modal-title" id="share-modal-title">Share Note</h2>
+    <p class="modal-desc" id="share-modal-desc">Anyone with this link will be able to view a read-only copy of this note.</p>
+    <div class="field" style="margin: 16px 0;">
+      <label class="field-label sr-only" for="share-link-input">Shareable link</label>
+      <div class="field-input-wrap">
+        <input class="field-input" type="text" id="share-link-input" readonly>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" data-modal-cancel="share-modal">Close</button>
     </div>
   </div>
 </div>

@@ -55,6 +55,7 @@ const els = {
   deleteBtn: document.getElementById("delete-btn"),
   archiveIconBtn: document.getElementById("archive-icon-btn"),
   deleteIconBtn: document.getElementById("delete-icon-btn"),
+  shareIconBtn: document.getElementById("share-icon-btn"),
   iconActions: document.getElementById("icon-actions"),
   lastEditedText: document.getElementById("last-edited-text"),
   locationMeta: document.getElementById("location-meta"),
@@ -248,6 +249,7 @@ function renderEmptyDetail() {
   els.deleteBtn.hidden = true;
   els.archiveIconBtn.hidden = true;
   els.deleteIconBtn.hidden = true;
+  els.shareIconBtn.hidden = true;
   state.selectedNoteId = null;
   state.isEditing = false;
 }
@@ -265,7 +267,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.desktopFooter.hidden = false;
 
   els.titleInput.value = note.title;
-  els.contentInput.innerHTML = note.content;
+  els.contentInput.innerHTML = sanitizeRichText(note.content);
   updateToolbarState();
   setTagsField(note.tags);
   populateCategoryOptions();
@@ -289,6 +291,7 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.deleteBtn.hidden = isNew;
   els.archiveIconBtn.hidden = isNew;
   els.deleteIconBtn.hidden = isNew;
+  els.shareIconBtn.hidden = isNew;
   document.getElementById("archive-btn-label").textContent = archived ? "Restore Note" : "Archive Note";
 
   ui.setMobileView("detail");
@@ -316,7 +319,7 @@ function currentDraft() {
   return {
     id: state.selectedNoteId,
     title: els.titleInput.value,
-    content: els.contentInput.innerHTML,
+    content: sanitizeRichText(els.contentInput.innerHTML),
     tags: getTagsFromField(),
     categoryId: els.categoryField.value || null,
     isNew: state.isNewNote,
@@ -355,7 +358,7 @@ function maybeRestoreDraft() {
     if (existing) {
       renderNoteDetail(existing, { editing: true, isNew: false });
       els.titleInput.value = draft.title;
-      els.contentInput.innerHTML = draft.content;
+      els.contentInput.innerHTML = sanitizeRichText(draft.content || "");
       setTagsField(draft.tags || []);
       els.categoryField.value = draft.categoryId || "";
     }
@@ -453,6 +456,23 @@ function requestArchive(id) {
     state.pendingArchiveId = id;
     ui.openModal("archive-modal");
   }
+}
+
+/* ---------------------------------------------------------
+ * Note sharing
+ * ------------------------------------------------------- */
+function openShareModal(id) {
+  const shareId = noteManager.getOrCreateShareId(id);
+  if (!shareId) return;
+
+  document.getElementById("share-link-input").value = buildShareUrl(shareId);
+  ui.openModal("share-modal");
+}
+
+/** Builds the public read-only link for a given share token. */
+function buildShareUrl(shareId) {
+  const basePath = window.location.pathname.replace(/index\.html$/, "");
+  return `${window.location.origin}${basePath}shared.html?id=${shareId}`;
 }
 
 function confirmDelete() {
@@ -703,6 +723,7 @@ function attachEventListeners() {
   els.deleteBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
   els.archiveIconBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteIconBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
+  els.shareIconBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
 
   document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
   document.getElementById("confirm-archive-btn").addEventListener("click", confirmArchive);
@@ -735,6 +756,17 @@ function attachEventListeners() {
   els.contentInput.addEventListener("input", scheduleDraftSave);
   els.contentInput.addEventListener("keyup", updateToolbarState);
   els.contentInput.addEventListener("mouseup", updateToolbarState);
+
+  // Sanitize pasted content before it ever lands in the editor — pasted
+  // HTML is one more ingress vector alongside save and import.
+  els.contentInput.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const clipboard = e.clipboardData || window.clipboardData;
+    const html = clipboard.getData("text/html") || clipboard.getData("text/plain");
+    const clean = sanitizeRichText(html || "");
+    document.execCommand("insertHTML", false, clean);
+    scheduleDraftSave();
+  });
 
   // Rich text toolbar — Bold / Italic / Underline
   document.querySelectorAll(".toolbar-btn[data-format]").forEach((btn) => {
