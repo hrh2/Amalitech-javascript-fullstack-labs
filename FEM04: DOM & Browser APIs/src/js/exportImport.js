@@ -4,6 +4,7 @@
 // structural validation and duplicate prevention.
 
 import { getNotes, importNotes } from "./noteManager.js";
+import { sanitizeRichText } from "./sanitize.js";
 
 const EXPORT_FORMAT_VERSION = 1;
 
@@ -86,7 +87,7 @@ function normalizeImportedNote(raw) {
   return {
     id: typeof raw.id === "string" && raw.id ? raw.id : generateImportId(),
     title: raw.title,
-    content: raw.content,
+    content: sanitizeRichText(raw.content),
     tags: isStringArray(raw.tags) ? raw.tags : [],
     archived: typeof raw.archived === "boolean" ? raw.archived : false,
     timestamp: raw.timestamp && !Number.isNaN(Date.parse(raw.timestamp)) ? raw.timestamp : new Date().toISOString(),

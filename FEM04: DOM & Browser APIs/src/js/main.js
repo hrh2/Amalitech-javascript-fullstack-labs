@@ -11,6 +11,7 @@ import * as themes from "./themes.js";
 import * as auth from "./auth.js";
 import * as exportImport from "./exportImport.js";
 import * as categoryManager from "./categoryManager.js";
+import { sanitizeRichText } from "./sanitize.js";
 
 auth.requireAuth();
 
@@ -264,7 +265,8 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.desktopFooter.hidden = false;
 
   els.titleInput.value = note.title;
-  els.contentInput.value = note.content;
+  els.contentInput.innerHTML = note.content;
+  updateToolbarState();
   setTagsField(note.tags);
   populateCategoryOptions();
   els.categoryField.value = note.categoryId || "";
@@ -293,11 +295,28 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   window.requestAnimationFrame(() => els.titleInput.focus());
 }
 
+/* ---------------------------------------------------------
+ * Rich text toolbar
+ * ------------------------------------------------------- */
+function updateToolbarState() {
+  ["bold", "italic", "underline", "insertUnorderedList", "insertOrderedList"].forEach((format) => {
+    const btn = document.querySelector(`.toolbar-btn[data-format="${format}"]`);
+    if (!btn) return;
+    let active = false;
+    try {
+      active = document.queryCommandState(format);
+    } catch {
+      active = false;
+    }
+    btn.setAttribute("aria-pressed", String(active));
+  });
+}
+
 function currentDraft() {
   return {
     id: state.selectedNoteId,
     title: els.titleInput.value,
-    content: els.contentInput.value,
+    content: els.contentInput.innerHTML,
     tags: getTagsFromField(),
     categoryId: els.categoryField.value || null,
     isNew: state.isNewNote,
@@ -336,7 +355,7 @@ function maybeRestoreDraft() {
     if (existing) {
       renderNoteDetail(existing, { editing: true, isNew: false });
       els.titleInput.value = draft.title;
-      els.contentInput.value = draft.content;
+      els.contentInput.innerHTML = draft.content;
       setTagsField(draft.tags || []);
       els.categoryField.value = draft.categoryId || "";
     }
@@ -379,7 +398,7 @@ function saveCurrentNote() {
     return;
   }
   const title = els.titleInput.value.trim();
-  const content = els.contentInput.value;
+  const content = sanitizeRichText(els.contentInput.innerHTML);
   const tags = getTagsFromField();
   const categoryId = els.categoryField.value || null;
 
@@ -714,6 +733,18 @@ function attachEventListeners() {
     }
   });
   els.contentInput.addEventListener("input", scheduleDraftSave);
+  els.contentInput.addEventListener("keyup", updateToolbarState);
+  els.contentInput.addEventListener("mouseup", updateToolbarState);
+
+  // Rich text toolbar — Bold / Italic / Underline
+  document.querySelectorAll(".toolbar-btn[data-format]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      els.contentInput.focus();
+      document.execCommand(btn.dataset.format, false, null);
+      updateToolbarState();
+      scheduleDraftSave();
+    });
+  });
 
   // Tags field — comma-separated text, parsed on save/autosave
   els.tagsField.addEventListener("input", scheduleDraftSave);
