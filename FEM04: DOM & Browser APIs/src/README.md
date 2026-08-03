@@ -124,3 +124,7 @@ The sign-up/login/forgot/reset-password screens are implemented
 front-end-only, storing users in `localStorage` in plain text purely so
 the screens from the design have something to do. **This is not secure
 and must never be used as a real authentication system**
+
+## Project Status
+
+Status: Feature-complete (version A)
