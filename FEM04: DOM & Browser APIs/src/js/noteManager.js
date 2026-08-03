@@ -85,6 +85,21 @@ export const toggleArchive = (id, archived) => {
   return note;
 };
 
+/**
+ * Adds a batch of already-parsed note objects (e.g. from a JSON import)
+ * to the in-memory list and persists it. Imported notes keep their own
+ * id/timestamp rather than going through the `Note` constructor, since
+ * they're re-entering the app rather than being freshly created.
+ *
+ * NOTE: this is intentionally minimal for now — structural validation and
+ * duplicate detection are handled in later commits on this feature branch.
+ */
+export const importNotes = (importedNotes) => {
+  notes = [...importedNotes, ...notes];
+  saveNotes(notes);
+  return importedNotes.length;
+};
+
 export const searchNotes = (query, sourceList = notes) => {
   const q = query.trim().toLowerCase();
   if (!q) return sourceList;

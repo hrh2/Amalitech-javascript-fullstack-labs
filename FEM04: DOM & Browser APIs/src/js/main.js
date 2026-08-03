@@ -9,6 +9,7 @@ import * as noteManager from "./noteManager.js";
 import * as ui from "./ui.js";
 import * as themes from "./themes.js";
 import * as auth from "./auth.js";
+import * as exportImport from "./exportImport.js";
 
 auth.requireAuth();
 
@@ -751,6 +752,48 @@ function attachEventListeners() {
 
   document.getElementById("logout-btn").addEventListener("click", () => {
     auth.logout();
+  });
+
+  // Settings: Export Notes — downloads all of the current user's notes as JSON
+  document.getElementById("export-notes-btn").addEventListener("click", () => {
+    const { count, filename } = exportImport.exportNotesToJson();
+    ui.showToast(
+      count > 0
+        ? `Exported ${count} note${count === 1 ? "" : "s"} to ${filename}`
+        : "No notes to export yet."
+    );
+  });
+
+  // Settings: Import Notes — reads a previously exported JSON file back in
+  const importInput = document.getElementById("import-notes-input");
+  document.getElementById("import-notes-btn").addEventListener("click", () => {
+    importInput.click();
+  });
+
+  importInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const { count, skipped, duplicates } = await exportImport.importNotesFromFile(file);
+      renderSidebarTags();
+      renderList();
+
+      const skipParts = [];
+      if (duplicates > 0) skipParts.push(`${duplicates} duplicate${duplicates === 1 ? "" : "s"}`);
+      if (skipped > 0) skipParts.push(`${skipped} invalid`);
+
+      ui.showToast(
+        skipParts.length > 0
+          ? `Imported ${count} note${count === 1 ? "" : "s"} (skipped ${skipParts.join(", ")}).`
+          : `Imported ${count} note${count === 1 ? "" : "s"}.`
+      );
+    } catch (err) {
+      ui.showToast(err.message);
+    } finally {
+      // Reset so selecting the same file again still fires "change"
+      e.target.value = "";
+    }
   });
 }
 
