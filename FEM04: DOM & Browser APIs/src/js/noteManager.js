@@ -6,7 +6,7 @@
 import { saveNotes, loadNotes } from "./storage.js";
 
 export class Note {
-  constructor(title, content, tags = [], location = null) {
+  constructor(title, content, tags = [], location = null, categoryId = null) {
     this.id = generateId();
     this.title = title;
     this.content = content;
@@ -14,6 +14,8 @@ export class Note {
     this.archived = false;
     this.timestamp = new Date().toISOString();
     this.location = location; // { city, lat, lng } | null
+    this.categoryId = categoryId; // Category.id | null — assignment is 1 note : 1 category
+    this.shareId = null; // short public token | null — set the first time a share link is generated
   }
 
   archive() {
@@ -57,8 +59,8 @@ export const getNotes = () => notes;
 
 export const getNoteById = (id) => notes.find((n) => n.id === id) || null;
 
-export const createNote = (title, content, tags = [], location = null) => {
-  const note = new Note(title, content, tags, location);
+export const createNote = (title, content, tags = [], location = null, categoryId = null) => {
+  const note = new Note(title, content, tags, location, categoryId);
   notes.unshift(note);
   saveNotes(notes);
   return note;
@@ -85,21 +87,52 @@ export const toggleArchive = (id, archived) => {
   return note;
 };
 
+/**
+ * Adds a batch of already-parsed note objects (e.g. from a JSON import)
+ * to the in-memory list and persists it. Imported notes keep their own
+ * id/timestamp rather than going through the `Note` constructor, since
+ * they're re-entering the app rather than being freshly created.
+ *
+ * NOTE: this is intentionally minimal for now — structural validation and
+ * duplicate detection are handled in later commits on this feature branch.
+ */
+export const importNotes = (importedNotes) => {
+  notes = [...importedNotes, ...notes];
+  saveNotes(notes);
+  return importedNotes.length;
+};
+
 export const searchNotes = (query, sourceList = notes) => {
   const q = query.trim().toLowerCase();
   if (!q) return sourceList;
   return sourceList.filter((n) => {
     return (
       n.title.toLowerCase().includes(q) ||
-      n.content.toLowerCase().includes(q) ||
+      stripHtmlTags(n.content).toLowerCase().includes(q) ||
       n.tags.some((t) => t.toLowerCase().includes(q))
     );
   });
 };
 
+/**
+ * Crude HTML-tag stripper used only so search matches the note's visible
+ * text rather than raw markup (e.g. a query shouldn't fail to match just
+ * because the word is split across a <b> boundary). Kept regex-based
+ * rather than DOM-based since this module intentionally has no knowledge
+ * of the DOM — see file header.
+ */
+function stripHtmlTags(html) {
+  return html.replace(/<[^>]*>/g, " ");
+}
+
 export const filterByTag = (tag, sourceList = notes) => {
   if (!tag) return sourceList;
   return sourceList.filter((n) => n.tags.includes(tag));
+};
+
+export const filterByCategory = (categoryId, sourceList = notes) => {
+  if (!categoryId) return sourceList;
+  return sourceList.filter((n) => n.categoryId === categoryId);
 };
 
 export const getAllTags = () => {
@@ -110,3 +143,46 @@ export const getAllTags = () => {
 
 export const getActiveNotes = () => notes.filter((n) => !n.archived);
 export const getArchivedNotes = () => notes.filter((n) => n.archived);
+
+/**
+ * Returns a note's existing share token, generating one the first time
+ * it's needed. The token is short and URL-friendly (not the note's own
+ * id) so a shared link doesn't expose the note's internal identifier,
+ * and is guaranteed unique across all notes for this user.
+ *
+ * @param {string} id note id
+ * @returns {string | null} the share token, or null if the note doesn't exist
+ */
+export const getOrCreateShareId = (id) => {
+  const note = getNoteById(id);
+  if (!note) return null;
+
+  if (!note.shareId) {
+    note.shareId = generateUniqueShareId();
+    saveNotes(notes);
+  }
+  return note.shareId;
+};
+
+export const getNoteByShareId = (shareId) => notes.find((n) => n.shareId === shareId) || null;
+
+function generateUniqueShareId() {
+  let candidate;
+  do {
+    candidate = generateShareId();
+  } while (notes.some((n) => n.shareId === candidate));
+  return candidate;
+}
+
+function generateShareId() {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+  }
+  let result = "";
+  for (let i = 0; i < 10; i++) {
+    result += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return result;
+}

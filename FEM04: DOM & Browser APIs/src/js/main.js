@@ -9,6 +9,9 @@ import * as noteManager from "./noteManager.js";
 import * as ui from "./ui.js";
 import * as themes from "./themes.js";
 import * as auth from "./auth.js";
+import * as exportImport from "./exportImport.js";
+import * as categoryManager from "./categoryManager.js";
+import { sanitizeRichText } from "./sanitize.js";
 
 auth.requireAuth();
 
@@ -16,8 +19,9 @@ auth.requireAuth();
  * View state
  * ------------------------------------------------------- */
 const state = {
-  filterMode: "all",       // "all" | "archived" | "tag"
+  filterMode: "all",       // "all" | "archived" | "tag" | "category"
   activeTag: null,
+  activeCategoryId: null,
   query: "",
   selectedNoteId: null,
   isEditing: false,
@@ -32,6 +36,7 @@ const state = {
   settingsDrilledOnMobile: false, // mobile only: showing a sub-page vs. the menu list
   pendingThemeChoice: "light",
   pendingFontChoice: "sans",
+  pendingCategoryColor: null,
 };
 
 const els = {
@@ -39,7 +44,8 @@ const els = {
   emptyState: document.getElementById("empty-state"),
   titleInput: document.getElementById("note-title"),
   contentInput: document.getElementById("note-content"),
-  tagInput: document.getElementById("tag-input"),
+  categoryField: document.getElementById("category-field"),
+  tagsField: document.getElementById("tags-field"),
   saveBtn: document.getElementById("save-btn"),
   saveBtnDesktop: document.getElementById("save-btn-desktop"),
   cancelBtn: document.getElementById("cancel-btn"),
@@ -47,8 +53,10 @@ const els = {
   desktopFooter: document.getElementById("desktop-footer"),
   archiveBtn: document.getElementById("archive-btn"),
   deleteBtn: document.getElementById("delete-btn"),
+  shareBtn: document.getElementById("share-btn"),
   archiveIconBtn: document.getElementById("archive-icon-btn"),
   deleteIconBtn: document.getElementById("delete-icon-btn"),
+  shareIconBtn: document.getElementById("share-icon-btn"),
   iconActions: document.getElementById("icon-actions"),
   lastEditedText: document.getElementById("last-edited-text"),
   locationMeta: document.getElementById("location-meta"),
@@ -57,8 +65,8 @@ const els = {
   listTitle: document.getElementById("list-title"),
   listDescription: document.getElementById("list-description"),
   contentHeader: document.getElementById("content-header"),
-  editTagsBtn: document.getElementById("edit-tags-btn"),
-  tagEditor: document.getElementById("tag-editor"),
+  statusMeta: document.getElementById("status-meta"),
+  statusText: document.getElementById("status-text"),
   noteListCol: document.getElementById("note-list-col"),
   noteDetailCol: document.getElementById("main-content"),
   actionsCol: document.getElementById("actions-col"),
@@ -67,7 +75,21 @@ const els = {
   settingsPageTitle: document.getElementById("settings-page-title"),
 };
 
-let draftTags = [];
+/* ---------------------------------------------------------
+ * Tags field (comma-separated, matches the Figma "Tags" input —
+ * no separate Edit button/chip list; the person just types
+ * "Work, Planning" directly and we split it on save/autosave).
+ * ------------------------------------------------------- */
+function getTagsFromField() {
+  return els.tagsField.value
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
+function setTagsField(tags) {
+  els.tagsField.value = tags.join(", ");
+}
 
 /* ---------------------------------------------------------
  * Bootstrapping
@@ -79,7 +101,9 @@ function init() {
   state.pendingFontChoice = themes.getFontPref();
   syncRadioCards();
   noteManager.initNotes();
+  categoryManager.initCategories();
   renderSidebarTags();
+  renderCategoryList();
   renderList();
   renderEmptyDetail();
   attachEventListeners();
@@ -96,6 +120,9 @@ function getFilteredNotes() {
   if (state.filterMode === "tag" && state.activeTag) {
     source = noteManager.filterByTag(state.activeTag, source);
   }
+  if (state.filterMode === "category" && state.activeCategoryId) {
+    source = noteManager.filterByCategory(state.activeCategoryId, source);
+  }
   if (state.query) {
     source = noteManager.searchNotes(state.query, source);
   }
@@ -104,31 +131,113 @@ function getFilteredNotes() {
 
 function renderList() {
   const notes = getFilteredNotes();
-  ui.renderNoteList(notes, { selectedId: state.selectedNoteId, query: state.query });
+  ui.renderNoteList(notes, {
+    selectedId: state.selectedNoteId,
+    query: state.query,
+    categories: categoryManager.getCategories(),
+  });
   ui.hydrateIcons(document.getElementById("note-list"));
 
+  const activeCategory = state.activeCategoryId ? categoryManager.getCategoryById(state.activeCategoryId) : null;
   const titleMap = {
     all: "All Notes",
     archived: "Archived Notes",
     tag: `Notes Tagged: ${state.activeTag ?? ""}`,
+    category: `Category: ${activeCategory?.name ?? ""}`,
   };
   els.listTitle.textContent = titleMap[state.filterMode] ?? "All Notes";
 
-  if (state.filterMode === "tag" && state.activeTag) {
+  if (state.filterMode === "archived") {
+    els.listDescription.textContent = "All your archived notes are stored here. You can restore or delete them anytime.";
+    els.listDescription.hidden = false;
+  } else if (state.filterMode === "tag" && state.activeTag) {
     els.listDescription.textContent = `All notes with the "${state.activeTag}" tag are shown here.`;
+    els.listDescription.hidden = false;
+  } else if (state.filterMode === "category" && activeCategory) {
+    els.listDescription.textContent = `All notes in the "${activeCategory.name}" category are shown here.`;
     els.listDescription.hidden = false;
   } else {
     els.listDescription.hidden = true;
   }
+
+  renderEmptyListBanner(notes);
 
   document.querySelectorAll("[data-nav]").forEach((btn) => {
     btn.setAttribute("aria-current", String(btn.dataset.nav === state.filterMode));
   });
 }
 
+function escapeForBanner(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderEmptyListBanner(notes) {
+  const banner = document.getElementById("empty-list-banner");
+  if (notes.length > 0) {
+    banner.hidden = true;
+    return;
+  }
+
+  if (state.query) {
+    banner.innerHTML = "No notes match your search.";
+  } else if (state.filterMode === "archived") {
+    banner.innerHTML =
+      'No notes have been archived yet. Move notes here for safekeeping, or ' +
+      '<button type="button" class="banner-link" id="banner-create-note">create a new note.</button>';
+  } else if (state.filterMode === "tag" && state.activeTag) {
+    banner.innerHTML = `No notes found with the "${escapeForBanner(state.activeTag)}" tag.`;
+  } else if (state.filterMode === "category" && state.activeCategoryId) {
+    const category = categoryManager.getCategoryById(state.activeCategoryId);
+    banner.innerHTML = `No notes found in the "${escapeForBanner(category?.name ?? "")}" category.`;
+  } else {
+    banner.innerHTML = "You don't have any notes yet. Start a new note to capture your thoughts and ideas.";
+  }
+  banner.hidden = false;
+
+  document.getElementById("banner-create-note")?.addEventListener("click", () => startNewNote());
+}
+
 function renderSidebarTags() {
   const tags = noteManager.getAllTags();
   ui.updateTagList(tags, state.filterMode === "tag" ? state.activeTag : null);
+}
+
+function renderCategoryList() {
+  ui.updateCategoryList(categoryManager.getCategories(), state.filterMode === "category" ? state.activeCategoryId : null);
+  populateCategoryOptions();
+}
+
+/** Rebuilds the note editor's Category <select> options from current categories. */
+function populateCategoryOptions() {
+  const select = els.categoryField;
+  const previousValue = select.value;
+  select.innerHTML = '<option value="">No category</option>';
+  categoryManager.getCategories().forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.textContent = category.name;
+    select.appendChild(option);
+  });
+  // Keep whatever was selected, if that category still exists.
+  select.value = select.querySelector(`option[value="${previousValue}"]`) ? previousValue : "";
+}
+
+function renderCategorySwatches() {
+  const container = document.getElementById("category-color-swatches");
+  container.innerHTML = "";
+  categoryManager.CATEGORY_COLORS.forEach((color) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "swatch";
+    btn.dataset.color = color;
+    btn.style.background = color;
+    btn.setAttribute("role", "radio");
+    btn.setAttribute("aria-label", color);
+    btn.setAttribute("aria-checked", String(color === state.pendingCategoryColor));
+    container.appendChild(btn);
+  });
 }
 
 function renderEmptyDetail() {
@@ -139,8 +248,10 @@ function renderEmptyDetail() {
   els.desktopFooter.hidden = true;
   els.archiveBtn.hidden = true;
   els.deleteBtn.hidden = true;
+  els.shareBtn.hidden = true;
   els.archiveIconBtn.hidden = true;
   els.deleteIconBtn.hidden = true;
+  els.shareIconBtn.hidden = true;
   state.selectedNoteId = null;
   state.isEditing = false;
 }
@@ -150,7 +261,6 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   state.isEditing = editing;
   state.isNewNote = isNew;
   state.pendingLocation = note.location || null;
-  draftTags = [...note.tags];
 
   els.emptyState.hidden = true;
   els.noteForm.hidden = false;
@@ -159,10 +269,11 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   els.desktopFooter.hidden = false;
 
   els.titleInput.value = note.title;
-  els.contentInput.value = note.content;
-  ui.renderTagEditor(draftTags);
-  ui.renderTagsSummary(draftTags);
-  els.tagEditor.hidden = true;
+  els.contentInput.innerHTML = sanitizeRichText(note.content);
+  updateToolbarState();
+  setTagsField(note.tags);
+  populateCategoryOptions();
+  els.categoryField.value = note.categoryId || "";
   ui.showValidationError("note-title", "title-error", "");
 
   els.lastEditedText.textContent = isNew
@@ -177,22 +288,43 @@ function renderNoteDetail(note, { editing = false, isNew = false } = {}) {
   }
 
   const archived = !!note.archived;
+  els.statusMeta.hidden = !archived;
   els.archiveBtn.hidden = isNew;
   els.deleteBtn.hidden = isNew;
+  els.shareBtn.hidden = isNew;
   els.archiveIconBtn.hidden = isNew;
   els.deleteIconBtn.hidden = isNew;
+  els.shareIconBtn.hidden = isNew;
   document.getElementById("archive-btn-label").textContent = archived ? "Restore Note" : "Archive Note";
 
   ui.setMobileView("detail");
   window.requestAnimationFrame(() => els.titleInput.focus());
 }
 
+/* ---------------------------------------------------------
+ * Rich text toolbar
+ * ------------------------------------------------------- */
+function updateToolbarState() {
+  ["bold", "italic", "underline", "insertUnorderedList", "insertOrderedList"].forEach((format) => {
+    const btn = document.querySelector(`.toolbar-btn[data-format="${format}"]`);
+    if (!btn) return;
+    let active = false;
+    try {
+      active = document.queryCommandState(format);
+    } catch {
+      active = false;
+    }
+    btn.setAttribute("aria-pressed", String(active));
+  });
+}
+
 function currentDraft() {
   return {
     id: state.selectedNoteId,
     title: els.titleInput.value,
-    content: els.contentInput.value,
-    tags: draftTags,
+    content: sanitizeRichText(els.contentInput.innerHTML),
+    tags: getTagsFromField(),
+    categoryId: els.categoryField.value || null,
     isNew: state.isNewNote,
   };
 }
@@ -229,10 +361,9 @@ function maybeRestoreDraft() {
     if (existing) {
       renderNoteDetail(existing, { editing: true, isNew: false });
       els.titleInput.value = draft.title;
-      els.contentInput.value = draft.content;
-      draftTags = draft.tags || [];
-      ui.renderTagEditor(draftTags);
-      ui.renderTagsSummary(draftTags);
+      els.contentInput.innerHTML = sanitizeRichText(draft.content || "");
+      setTagsField(draft.tags || []);
+      els.categoryField.value = draft.categoryId || "";
     }
   }
 }
@@ -243,7 +374,7 @@ function maybeRestoreDraft() {
 function startNewNote(draft = null) {
   exitMobileSearch();
   exitSettings();
-  const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null);
+  const blank = new noteManager.Note(draft?.title ?? "", draft?.content ?? "", draft?.tags ?? [], null, draft?.categoryId ?? null);
   blank.id = draft?.id || blank.id;
   renderNoteDetail(blank, { editing: true, isNew: true });
 }
@@ -273,15 +404,17 @@ function saveCurrentNote() {
     return;
   }
   const title = els.titleInput.value.trim();
-  const content = els.contentInput.value;
+  const content = sanitizeRichText(els.contentInput.innerHTML);
+  const tags = getTagsFromField();
+  const categoryId = els.categoryField.value || null;
 
   if (state.isNewNote) {
-    const note = noteManager.createNote(title, content, draftTags, state.pendingLocation);
+    const note = noteManager.createNote(title, content, tags, state.pendingLocation, categoryId);
     state.isNewNote = false;
     state.selectedNoteId = note.id;
     ui.showToast("Note saved successfully!");
   } else {
-    noteManager.updateNote(state.selectedNoteId, { title, content, tags: draftTags, location: state.pendingLocation });
+    noteManager.updateNote(state.selectedNoteId, { title, content, tags, location: state.pendingLocation, categoryId });
     ui.showToast("Note saved successfully!");
   }
 
@@ -328,6 +461,63 @@ function requestArchive(id) {
   }
 }
 
+/* ---------------------------------------------------------
+ * Note sharing
+ * ------------------------------------------------------- */
+function openShareModal(id) {
+  const shareId = noteManager.getOrCreateShareId(id);
+  if (!shareId) return;
+
+  document.getElementById("share-link-input").value = buildShareUrl(shareId);
+  ui.openModal("share-modal");
+}
+
+/** Builds the public read-only link for a given share token. */
+function buildShareUrl(shareId) {
+  const basePath = window.location.pathname.replace(/index\.html$/, "");
+  return `${window.location.origin}${basePath}shared.html?id=${shareId}`;
+}
+
+/**
+ * Copies `text` to the clipboard using the modern Clipboard API where
+ * available (requires a secure context), falling back to selecting the
+ * (readonly) link input and the legacy execCommand("copy") otherwise.
+ *
+ * @returns {Promise<boolean>} whether the copy succeeded
+ */
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to the legacy fallback below.
+    }
+  }
+
+  const input = document.getElementById("share-link-input");
+  input.focus();
+  input.select();
+  input.setSelectionRange(0, text.length);
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  }
+}
+
+/** Briefly swaps a button's icon to a checkmark to confirm a successful copy. */
+function flashCopySuccess(btn) {
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span data-icon="check"></span>';
+  ui.hydrateIcons(btn);
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }, 1500);
+}
+
 function confirmDelete() {
   noteManager.deleteNote(state.pendingDeleteId);
   ui.closeModal("delete-modal");
@@ -367,14 +557,16 @@ function confirmRestore() {
 /* ---------------------------------------------------------
  * Filters / search / tags
  * ------------------------------------------------------- */
-function setFilterMode(mode, tag = null) {
+function setFilterMode(mode, tag = null, categoryId = null) {
   exitMobileSearch();
   exitSettings();
   state.filterMode = mode;
   state.activeTag = tag;
+  state.activeCategoryId = categoryId;
   state.query = "";
   document.getElementById("search-input").value = "";
   renderSidebarTags();
+  renderCategoryList();
   renderList();
   renderEmptyDetail();
   ui.setMobileView(mode === "archived" ? "archived" : "list");
@@ -387,30 +579,6 @@ function handleSearchInput(value) {
     state.query = value;
     renderList();
   }, 150);
-}
-
-/* ---------------------------------------------------------
- * Tags editor (chips inside the form)
- * ------------------------------------------------------- */
-function addTagFromInput() {
-  const value = els.tagInput.value.trim().replace(/,$/, "");
-  if (!value) return;
-  if (!draftTags.includes(value)) {
-    draftTags.push(value);
-    ui.renderTagEditor(draftTags);
-    ui.renderTagsSummary(draftTags);
-    scheduleDraftSave();
-    ui.showToast("Tag added successfully!");
-  }
-  els.tagInput.value = "";
-}
-
-function removeTag(tag) {
-  draftTags = draftTags.filter((t) => t !== tag);
-  ui.renderTagEditor(draftTags);
-  ui.renderTagsSummary(draftTags);
-  scheduleDraftSave();
-  ui.showToast("Tag removed successfully!");
 }
 
 /* ---------------------------------------------------------
@@ -455,20 +623,24 @@ function resetLocationBtn() {
 }
 
 /* ---------------------------------------------------------
- * Mobile search (expands a search bar inline in the header)
+ * Mobile search (its own persistent panel, like Tags/Settings)
  * ------------------------------------------------------- */
 function exitMobileSearch() {
-  els.contentHeader.removeAttribute("data-mobile-search");
   document.getElementById("search-input").value = "";
   state.query = "";
   renderList();
-  ui.setMobileView("list");
 }
 
 function enterMobileSearch() {
   exitSettings();
-  els.contentHeader.setAttribute("data-mobile-search", "true");
-  ui.setMobileView("list", "search");
+  state.filterMode = "all";
+  state.activeTag = null;
+  renderSidebarTags();
+  renderList();
+  els.listTitle.textContent = "Search";
+  els.listDescription.hidden = true;
+  document.querySelectorAll("[data-nav]").forEach((btn) => btn.setAttribute("aria-current", "false"));
+  ui.setMobileView("search");
   document.getElementById("search-input").focus();
 }
 
@@ -486,7 +658,6 @@ function enterSettings() {
   els.noteListCol.hidden = true;
   els.noteDetailCol.hidden = true;
   els.actionsCol.hidden = true;
-  document.getElementById("tags-panel").hidden = true;
   els.settingsListCol.hidden = false;
   els.settingsDetailCol.hidden = false;
 
@@ -559,6 +730,13 @@ function attachEventListeners() {
     }
   );
 
+  // Category list — filter notes down to a single category
+  document.getElementById("category-nav-list").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-category-id]");
+    if (!btn) return;
+    setFilterMode("category", null, btn.dataset.categoryId);
+  });
+
   // Note list — event delegation: one listener handles every note card
   document.getElementById("note-list").addEventListener("click", (e) => {
     const card = e.target.closest("[data-note-id]");
@@ -586,8 +764,22 @@ function attachEventListeners() {
   // Archive / Delete (desktop actions column + mobile icon buttons)
   els.archiveBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
+  els.shareBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
   els.archiveIconBtn.addEventListener("click", () => requestArchive(state.selectedNoteId));
   els.deleteIconBtn.addEventListener("click", () => requestDelete(state.selectedNoteId));
+  els.shareIconBtn.addEventListener("click", () => openShareModal(state.selectedNoteId));
+
+  document.getElementById("copy-share-link-btn").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const link = document.getElementById("share-link-input").value;
+    const copied = await copyTextToClipboard(link);
+    if (copied) {
+      ui.showToast("Link copied to clipboard!");
+      flashCopySuccess(btn);
+    } else {
+      ui.showToast("Couldn't copy automatically — please copy the link manually.");
+    }
+  });
 
   document.getElementById("confirm-delete-btn").addEventListener("click", confirmDelete);
   document.getElementById("confirm-archive-btn").addEventListener("click", confirmArchive);
@@ -618,19 +810,32 @@ function attachEventListeners() {
     }
   });
   els.contentInput.addEventListener("input", scheduleDraftSave);
+  els.contentInput.addEventListener("keyup", updateToolbarState);
+  els.contentInput.addEventListener("mouseup", updateToolbarState);
 
-  // Tag input (Enter or comma commits a tag)
-  els.tagInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addTagFromInput();
-    }
+  // Sanitize pasted content before it ever lands in the editor — pasted
+  // HTML is one more ingress vector alongside save and import.
+  els.contentInput.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const clipboard = e.clipboardData || window.clipboardData;
+    const html = clipboard.getData("text/html") || clipboard.getData("text/plain");
+    const clean = sanitizeRichText(html || "");
+    document.execCommand("insertHTML", false, clean);
+    scheduleDraftSave();
   });
-  document.getElementById("tag-editor-list").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-remove-tag]");
-    if (!btn) return;
-    removeTag(btn.dataset.removeTag);
+
+  // Rich text toolbar — Bold / Italic / Underline
+  document.querySelectorAll(".toolbar-btn[data-format]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      els.contentInput.focus();
+      document.execCommand(btn.dataset.format, false, null);
+      updateToolbarState();
+      scheduleDraftSave();
+    });
   });
+
+  // Tags field — comma-separated text, parsed on save/autosave
+  els.tagsField.addEventListener("input", scheduleDraftSave);
 
   // Escape cancels an in-progress edit (when no modal is open)
   document.addEventListener("keydown", (e) => {
@@ -638,15 +843,6 @@ function attachEventListeners() {
     const modalOpen = Array.from(document.querySelectorAll(".modal-overlay")).some((o) => !o.hidden);
     if (!modalOpen && state.isEditing) cancelEdit();
   });
-
-  // Tags summary "Edit" toggle
-  els.editTagsBtn.addEventListener("click", () => {
-    els.tagEditor.hidden = !els.tagEditor.hidden;
-    if (!els.tagEditor.hidden) els.tagInput.focus();
-  });
-
-  // Mobile search
-  document.getElementById("mobile-search-close").addEventListener("click", exitMobileSearch);
 
   // Geolocation
   els.addLocationBtn.addEventListener("click", requestLocation);
@@ -746,6 +942,78 @@ function attachEventListeners() {
 
   document.getElementById("logout-btn").addEventListener("click", () => {
     auth.logout();
+  });
+
+  // Settings: Export Notes — downloads all of the current user's notes as JSON
+  document.getElementById("export-notes-btn").addEventListener("click", () => {
+    const { count, filename } = exportImport.exportNotesToJson();
+    ui.showToast(
+      count > 0
+        ? `Exported ${count} note${count === 1 ? "" : "s"} to ${filename}`
+        : "No notes to export yet."
+    );
+  });
+
+  // Settings: Import Notes — reads a previously exported JSON file back in
+  const importInput = document.getElementById("import-notes-input");
+  document.getElementById("import-notes-btn").addEventListener("click", () => {
+    importInput.click();
+  });
+
+  importInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const { count, skipped, duplicates } = await exportImport.importNotesFromFile(file);
+      renderSidebarTags();
+      renderList();
+
+      const skipParts = [];
+      if (duplicates > 0) skipParts.push(`${duplicates} duplicate${duplicates === 1 ? "" : "s"}`);
+      if (skipped > 0) skipParts.push(`${skipped} invalid`);
+
+      ui.showToast(
+        skipParts.length > 0
+          ? `Imported ${count} note${count === 1 ? "" : "s"} (skipped ${skipParts.join(", ")}).`
+          : `Imported ${count} note${count === 1 ? "" : "s"}.`
+      );
+    } catch (err) {
+      ui.showToast(err.message);
+    } finally {
+      // Reset so selecting the same file again still fires "change"
+      e.target.value = "";
+    }
+  });
+
+  // Categories: Create Category modal
+  document.getElementById("add-category-btn").addEventListener("click", () => {
+    document.getElementById("category-form").reset();
+    ui.showValidationError("category-name", "category-error", "");
+    state.pendingCategoryColor = categoryManager.CATEGORY_COLORS[0];
+    renderCategorySwatches();
+    ui.openModal("category-modal");
+  });
+
+  document.getElementById("category-color-swatches").addEventListener("click", (e) => {
+    const swatch = e.target.closest("[data-color]");
+    if (!swatch) return;
+    state.pendingCategoryColor = swatch.dataset.color;
+    renderCategorySwatches();
+  });
+
+  document.getElementById("category-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("category-name").value;
+    const result = categoryManager.createCategory(name, state.pendingCategoryColor);
+    if (!result.ok) {
+      ui.showValidationError("category-name", "category-error", result.error);
+      return;
+    }
+    ui.showValidationError("category-name", "category-error", "");
+    ui.closeModal("category-modal");
+    renderCategoryList();
+    ui.showToast(`Category "${result.category.name}" created.`);
   });
 }
 

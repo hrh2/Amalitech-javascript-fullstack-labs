@@ -25,7 +25,7 @@ browser) to reach the note-taking app.
 ## Project structure
 
 ```
-note-taking-app/
+src/
 ├── index.html              All Notes app shell (list + editor + actions)
 ├── login.html               Log in
 ├── signup.html               Create account
@@ -123,5 +123,4 @@ note-taking-app/
 The sign-up/login/forgot/reset-password screens are implemented
 front-end-only, storing users in `localStorage` in plain text purely so
 the screens from the design have something to do. **This is not secure
-and must never be used as a real authentication system** — a production
-app needs a real backend, hashed passwords, and server-side sessions.
+and must never be used as a real authentication system**

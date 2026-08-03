@@ -43,20 +43,30 @@ function highlight(text, query) {
   }
 }
 
+/**
+ * Converts a note's rich text HTML into plain, readable text for
+ * contexts (like the compact list card) where the full formatting
+ * shouldn't render — e.g. so a bolded word shows as the word itself
+ * rather than a literal "<b>" tag.
+ */
+function htmlToPlainText(html) {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return (template.content.textContent || "").replace(/\s+/g, " ").trim();
+}
+
 /* ---------------------------------------------------------
  * Note list rendering
  * ------------------------------------------------------- */
-export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
+export function renderNoteList(notes, { selectedId = null, query = "", categories = [] } = {}) {
   const list = document.getElementById("note-list");
   list.innerHTML = "";
 
   if (notes.length === 0) {
-    const li = document.createElement("li");
-    li.className = "empty-state";
-    li.innerHTML = `<h3>No notes found</h3><p>${query ? "Try a different search term." : "Create your first note to get started."}</p>`;
-    list.appendChild(li);
     return;
   }
+
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
 
   notes.forEach((note) => {
     const li = document.createElement("li");
@@ -73,9 +83,19 @@ export function renderNoteList(notes, { selectedId = null, query = "" } = {}) {
       .map((t) => `<span class="tag">${escapeHtml(t)}</span>`)
       .join("");
 
+    const category = note.categoryId ? categoryById.get(note.categoryId) : null;
+    const categoryBadgeHtml = category
+      ? `<span class="category-badge" style="--badge-color:${category.color};">
+           <span class="category-badge-dot" aria-hidden="true"></span>${escapeHtml(category.name)}
+         </span>`
+      : "";
+
+    const previewText = htmlToPlainText(note.content);
+
     btn.innerHTML = `
       <h3>${highlight(title, query)}</h3>
-      ${note.tags.length ? `<div class="tag-list">${tagsHtml}</div>` : ""}
+      ${previewText ? `<p class="note-preview">${highlight(previewText, query)}</p>` : ""}
+      ${categoryBadgeHtml || note.tags.length ? `<div class="tag-list">${categoryBadgeHtml}${tagsHtml}</div>` : ""}
       <time datetime="${note.timestamp}">${formatDate(note.timestamp)}</time>
     `;
     li.appendChild(btn);
@@ -118,22 +138,35 @@ export function updateTagList(tags, activeTag = null) {
 }
 
 /* ---------------------------------------------------------
- * Tag editor (chips) inside the note form
+ * Category sidebar rendering
  * ------------------------------------------------------- */
-export function renderTagEditor(tags) {
-  const list = document.getElementById("tag-editor-list");
-  list.innerHTML = "";
-  tags.forEach((tag) => {
-    const li = document.createElement("li");
-    li.className = "tag";
-    li.innerHTML = `${escapeHtml(tag)} <button type="button" class="tag-remove" data-remove-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">${icons.x}</button>`;
-    list.appendChild(li);
-  });
-}
+export function updateCategoryList(categories, activeCategoryId = null) {
+  const container = document.getElementById("category-nav-list");
+  if (!container) return;
+  container.innerHTML = "";
 
-export function renderTagsSummary(tags) {
-  const el = document.getElementById("tags-display");
-  el.textContent = tags.length ? tags.join(", ") : "No tags";
+  if (categories.length === 0) {
+    const li = document.createElement("li");
+    li.innerHTML = `<p class="text-preset-6" style="color:var(--color-text-subtle); padding:8px 12px;">No categories yet</p>`;
+    container.appendChild(li);
+    return;
+  }
+
+  categories.forEach((category) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tag-nav-btn";
+    btn.dataset.categoryId = category.id;
+    const isActive = category.id === activeCategoryId;
+    btn.setAttribute("aria-current", String(isActive));
+    btn.innerHTML = `
+      <span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${category.color};"></span>
+      ${escapeHtml(category.name)}
+    `;
+    li.appendChild(btn);
+    container.appendChild(li);
+  });
 }
 
 /* ---------------------------------------------------------

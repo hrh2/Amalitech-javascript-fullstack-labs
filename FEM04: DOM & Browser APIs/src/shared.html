@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Note</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <style>
+    .shared-page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: var(--spacing-300) var(--spacing-200);
+    }
+    .shared-banner {
+      color: var(--color-text-subtle);
+      font-size: var(--text-6-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: var(--spacing-300);
+      padding-bottom: var(--spacing-200);
+      border-bottom: 1px solid var(--color-border);
+    }
+    #shared-title {
+      margin-bottom: var(--spacing-100);
+    }
+    #shared-timestamp {
+      color: var(--color-text-subtle);
+      font-size: var(--text-6-size);
+      margin-bottom: var(--spacing-200);
+    }
+    #shared-tags {
+      margin-bottom: var(--spacing-300);
+    }
+    #shared-body ul {
+      list-style: disc;
+      padding-left: 1.5em;
+      margin: var(--spacing-100) 0;
+    }
+    #shared-body ol {
+      list-style: decimal;
+      padding-left: 1.5em;
+      margin: var(--spacing-100) 0;
+    }
+    #shared-not-found h1 {
+      margin-bottom: var(--spacing-150);
+    }
+  </style>
+</head>
+<body>
+  <main class="shared-page">
+    <p class="shared-banner">Shared read-only note</p>
+
+    <div id="shared-note" hidden>
+      <h1 id="shared-title"></h1>
+      <p id="shared-timestamp"></p>
+      <div class="tag-list" id="shared-tags"></div>
+      <div id="shared-body"></div>
+    </div>
+
+    <div id="shared-not-found" hidden>
+      <h1>Note not found</h1>
+      <p>This link may be invalid, or the note may no longer be shared. Since this app stores notes locally in the browser rather than on a server, a shared link only works on the same device/browser where the note was created.</p>
+    </div>
+  </main>
+
+  <script type="module" src="js/shared.js"></script>
+</body>
+</html>
