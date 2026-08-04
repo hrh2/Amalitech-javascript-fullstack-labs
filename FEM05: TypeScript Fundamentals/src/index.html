@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Field Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="margin-rule" aria-hidden="true"></div>
+
+  <div class="page">
+    <header class="masthead">
+      <p class="masthead__eyebrow">No. 1 — Personal Record</p>
+      <h1 class="masthead__title">Field Journal</h1>
+      <p class="masthead__sub">One entry, one mood, one honest line at a time.</p>
+    </header>
+
+    <section class="composer" aria-label="Write a new entry">
+      <form id="entry-form" class="composer__form">
+        <div class="composer__row">
+          <label for="entry-title" class="field-label">Title</label>
+          <input
+            id="entry-title"
+            name="title"
+            type="text"
+            placeholder="Give today a headline…"
+            autocomplete="off"
+            required
+          />
+        </div>
+
+        <div class="composer__row">
+          <label for="entry-content" class="field-label">Entry</label>
+          <textarea
+            id="entry-content"
+            name="content"
+            rows="5"
+            placeholder="Write what happened…"
+            required
+          ></textarea>
+        </div>
+
+        <div class="composer__row composer__row--split">
+          <div class="composer__field">
+            <label for="entry-mood" class="field-label">Mood</label>
+            <select id="entry-mood" name="mood"></select>
+          </div>
+
+          <div class="composer__buttons">
+            <button type="button" id="cancel-edit" class="btn btn--ghost" hidden>Cancel</button>
+            <button type="submit" id="submit-button" class="btn btn--primary">Save entry</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section class="log" aria-label="Journal entries">
+      <div class="log__header">
+        <h2 class="log__title">Entries</h2>
+        <div class="log__filter">
+          <label for="mood-filter" class="field-label">Filter by mood</label>
+          <select id="mood-filter"></select>
+        </div>
+      </div>
+
+      <div id="entries" class="entries"></div>
+    </section>
+  </div>
+
+  <script type="module" src="dist/journal.js"></script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+/* ------------------------------------------------------------------ */
+/* Tokens                                                              */
+/* ------------------------------------------------------------------ */
+:root {
+  --paper: #f0ead6;
+  --paper-shadow: #e2dabe;
+  --ink: #1b1b2f;
+  --ink-soft: #4a4a63;
+  --rule-blue: #a9c0d9;
+  --margin-red: #b23a48;
+
+  --mood-happy: #e0a458;
+  --mood-sad: #5c7a99;
+  --mood-motivated: #6b8e4e;
+  --mood-stressed: #b23a48;
+  --mood-calm: #4e8e8e;
+
+  --font-display: "Special Elite", "Courier New", monospace;
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-ui: "Inter", system-ui, sans-serif;
+
+  --rule-height: 2.1rem;
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--rule-height) - 1px),
+      var(--rule-blue) calc(var(--rule-height) - 1px),
+      var(--rule-blue) var(--rule-height)
+    ),
+    var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  padding: 2.5rem 2.5rem 4rem 4.5rem;
+  position: relative;
+}
+
+/* Signature element: a hand-ruled red margin line running the full
+   height of the page, like a real notebook. */
+.margin-rule {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 2.6rem;
+  width: 2px;
+  background: var(--margin-red);
+  opacity: 0.55;
+}
+
+.page {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Masthead                                                            */
+/* ------------------------------------------------------------------ */
+.masthead {
+  margin-bottom: 2rem;
+}
+
+.masthead__eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--margin-red);
+  margin: 0 0 0.35rem;
+}
+
+.masthead__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 6vw, 2.9rem);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.masthead__sub {
+  font-family: var(--font-ui);
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin: 0.5rem 0 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Composer (the form)                                                 */
+/* ------------------------------------------------------------------ */
+.composer {
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(27, 27, 47, 0.12);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+  backdrop-filter: blur(1px);
+}
+
+.composer__row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.composer__row--split {
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.composer__field {
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+}
+
+.composer__buttons {
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.field-label {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+
+input[type="text"],
+textarea,
+select {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid rgba(27, 27, 47, 0.25);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.7rem;
+  resize: vertical;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--margin-red);
+  outline-offset: 1px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                             */
+/* ------------------------------------------------------------------ */
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn--primary:hover { background: #33334a; }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: rgba(27, 27, 47, 0.3);
+}
+
+.btn--ghost:hover { background: rgba(27, 27, 47, 0.06); }
+
+/* ------------------------------------------------------------------ */
+/* Log / entries list                                                  */
+/* ------------------------------------------------------------------ */
+.log__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.log__title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.log__filter {
+  display: flex;
+  flex-direction: column;
+  min-width: 9rem;
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.entries__empty {
+  font-family: var(--font-ui);
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 1.5rem 0;
+}
+
+.entry {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(27, 27, 47, 0.12);
+  border-left: 3px solid var(--margin-red);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+}
+
+.entry__header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.entry__stamp {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.entry__stamp[data-mood="HAPPY"] { background: var(--mood-happy); }
+.entry__stamp[data-mood="SAD"] { background: var(--mood-sad); }
+.entry__stamp[data-mood="MOTIVATED"] { background: var(--mood-motivated); }
+.entry__stamp[data-mood="STRESSED"] { background: var(--mood-stressed); }
+.entry__stamp[data-mood="CALM"] { background: var(--mood-calm); }
+
+.entry__heading {
+  min-width: 0;
+}
+
+.entry__title {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.entry__date {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+.entry__mood-label {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.entry__content {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0.4rem 0 0.8rem;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.entry__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.entry__edit,
+.entry__delete {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  background: transparent;
+  border: 1px solid rgba(27, 27, 47, 0.2);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+
+.entry__edit:hover { background: rgba(27, 27, 47, 0.08); }
+.entry__delete:hover { background: var(--margin-red); color: white; border-color: var(--margin-red); }
+
+/* ------------------------------------------------------------------ */
+/* Responsiveness                                                      */
+/* ------------------------------------------------------------------ */
+@media (max-width: 640px) {
+  body {
+    padding: 1.75rem 1.25rem 3rem 2.25rem;
+    --rule-height: 1.7rem;
+  }
+
+  .margin-rule { left: 1.35rem; }
+
+  .composer { padding: 1.1rem; }
+
+  .composer__row--split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .composer__buttons {
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .entry__header {
+    grid-template-columns: auto 1fr;
+  }
+
+  .entry__mood-label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
