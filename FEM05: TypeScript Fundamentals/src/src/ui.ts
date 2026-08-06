@@ -66,15 +66,22 @@ function createEntryElement(entry: JournalEntry): HTMLElement {
   const page = document.createElement("article");
   page.className = "entry";
   page.dataset.id = entry.id;
+  // <article> already carries an implicit "article" role — no need to
+  // restate it. The accessible name carries mood + date, since the stamp icon and
+  // the mood-label chip (hidden on narrow screens) are both decorative.
+  page.setAttribute(
+    "aria-label",
+    `${entry.title}. Mood: ${meta.label}. ${formatTimestamp(entry.timestamp)}.`
+  );
 
   page.innerHTML = `
     <header class="entry__header">
-      <span class="entry__stamp" data-mood="${entry.mood}">${meta.stamp}</span>
+      <span class="entry__stamp" data-mood="${entry.mood}" aria-hidden="true">${meta.stamp}</span>
       <div class="entry__heading">
         <h3 class="entry__title"></h3>
-        <time class="entry__date">${formatTimestamp(entry.timestamp)}</time>
+        <time class="entry__date" datetime="${new Date(entry.timestamp).toISOString()}">${formatTimestamp(entry.timestamp)}</time>
       </div>
-      <span class="entry__mood-label">${meta.label}</span>
+      <span class="entry__mood-label" aria-hidden="true">${meta.label}</span>
     </header>
     <p class="entry__content"></p>
     <footer class="entry__actions">
@@ -89,6 +96,14 @@ function createEntryElement(entry: JournalEntry): HTMLElement {
   const contentEl = page.querySelector<HTMLParagraphElement>(".entry__content");
   if (titleEl) titleEl.textContent = entry.title;
   if (contentEl) contentEl.textContent = entry.content;
+
+  // Give the action buttons an accessible name that doesn't depend on
+  // surrounding visual context — important once there are many entries
+  // and a screen reader user is tabbing through buttons in isolation.
+  const editBtn = page.querySelector<HTMLButtonElement>(".entry__edit");
+  const deleteBtn = page.querySelector<HTMLButtonElement>(".entry__delete");
+  if (editBtn) editBtn.setAttribute("aria-label", `Edit entry: ${entry.title}`);
+  if (deleteBtn) deleteBtn.setAttribute("aria-label", `Delete entry: ${entry.title}`);
 
   return page;
 }

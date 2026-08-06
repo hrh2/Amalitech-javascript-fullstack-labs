@@ -64,6 +64,33 @@ body {
   margin: 0 auto;
 }
 
+/* Skip link: hidden until focused, so keyboard/screen-reader users can
+   jump past the masthead straight to the form and entries. */
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: 1rem;
+  z-index: 10;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+}
+
 /* ------------------------------------------------------------------ */
 /* Masthead                                                            */
 /* ------------------------------------------------------------------ */
@@ -155,11 +182,16 @@ select {
   resize: vertical;
 }
 
-input[type="text"]:focus,
-textarea:focus,
-select:focus {
+/* Visible focus for every interactive element — never rely on the
+   browser default alone, and never suppress it without a replacement. */
+input[type="text"]:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.btn:focus-visible,
+.entry__edit:focus-visible,
+.entry__delete:focus-visible {
   outline: 2px solid var(--margin-red);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* ------------------------------------------------------------------ */

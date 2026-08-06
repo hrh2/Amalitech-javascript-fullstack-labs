@@ -10,6 +10,8 @@
 </head>
 <body>
 
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
   <div class="margin-rule" aria-hidden="true"></div>
 
   <div class="page">
@@ -19,7 +21,9 @@
       <p class="masthead__sub">One entry, one mood, one honest line at a time.</p>
     </header>
 
-    <section class="composer" aria-label="Write a new entry">
+    <main id="main-content">
+    <section class="composer" aria-labelledby="composer-heading">
+      <h2 id="composer-heading" class="section-heading">Write an entry</h2>
       <form id="entry-form" class="composer__form">
         <div class="composer__row">
           <label for="entry-title" class="field-label">Title</label>
@@ -58,17 +62,18 @@
       </form>
     </section>
 
-    <section class="log" aria-label="Journal entries">
+    <section class="log" aria-labelledby="log-heading">
       <div class="log__header">
-        <h2 class="log__title">Entries</h2>
+        <h2 id="log-heading" class="log__title">Entries</h2>
         <div class="log__filter">
           <label for="mood-filter" class="field-label">Filter by mood</label>
           <select id="mood-filter"></select>
         </div>
       </div>
 
-      <div id="entries" class="entries"></div>
+      <div id="entries" class="entries" aria-live="polite"></div>
     </section>
+    </main>
   </div>
 
   <script type="module" src="dist/journal.js"></script>
