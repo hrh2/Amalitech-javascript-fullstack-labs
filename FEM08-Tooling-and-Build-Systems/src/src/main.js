@@ -103,7 +103,13 @@ function cardTemplate(item, index) {
         <span class="tag ${item.category}">${item.category}</span>
         <span class="tag format">${item.type}</span>
       </div>
-      <a class="checkout" href="${item.link}" target="_blank" rel="noopener noreferrer">
+      <a
+        class="checkout"
+        href="${item.link}"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Check out ${item.name}"
+      >
         → check out resource
       </a>
     </article>
@@ -148,6 +154,7 @@ function shell() {
       <span id="count" class="count"></span>
     </div>
 
+    <h2 class="grid-heading">Cards on file</h2>
     <section id="grid" class="grid" aria-live="polite"></section>
 
     <footer>Filed under Tooling &amp; Build Systems — FEM08</footer>

@@ -5,10 +5,11 @@
   --ink-soft: #3f5442;
   --line: #c9c2a0;
   --tab-blue: #2c4a73;
-  --tab-gold: #a8791d;
+  --tab-gold: #8a6216;
   --tab-rust: #8c3b2e;
-  --wood: #6b4a34;
-  --wood-dark: #4a3122;
+  --wood: #5c3f2c;
+  --wood-dark: #3d281b;
+  --placeholder: #6b6448;
 
   color-scheme: light;
 }
@@ -141,7 +142,7 @@ body {
 }
 
 .rail input[type='search']::placeholder {
-  color: #8b8465;
+  color: var(--placeholder);
 }
 
 .rail input[type='search']:focus-visible {
@@ -202,8 +203,16 @@ body {
 
 /* ---------- Card grid ---------- */
 
+.grid-heading {
+  margin: 30px 0 12px;
+  font-family: 'Special Elite', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
 .grid {
-  margin-top: 26px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 18px;

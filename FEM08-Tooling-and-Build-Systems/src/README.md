@@ -49,6 +49,21 @@ developer-dashboard/
 - Each card gets a generated "call number" (e.g. `PKG.001`) from its category, echoing
   a library card-catalog drawer, which is this project's visual signature element.
 
+## Accessibility fixes applied
+
+An audit flagged four issues; all four are fixed in this build:
+
+- **Contrast** — `--wood`, `--wood-dark`, `--tab-gold`, and the search placeholder
+  color were darkened. Every text/background pair in the design now meets WCAG AA
+  (4.5:1) — verified with a contrast-ratio script against the final palette.
+- **Heading order** — added an `<h2>Cards on file</h2>` before the `<h3>` card
+  titles, so headings run `h1 → h2 → h3` with no skipped level.
+- **Main landmark** — the app root in `index.html` is now `<main id="app">` instead
+  of a plain `<div>`.
+- **Identical links** — each "check out resource" link now carries a unique
+  `aria-label="Check out <resource name>"`, so links with the same visible text
+  have distinct accessible names.
+
 ## Reflection: how Vite's build process helps
 
 During development, Vite serves source files over native ES modules and only
