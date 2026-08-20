@@ -1,0 +1,44 @@
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background-color: var(--white);
+  color: var(--rose-900);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  z-index: 200;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+.layout {
+  max-width: 75.875rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    padding: 3rem 1rem 4rem;
+    grid-template-columns: minmax(0, 1fr) 23.5rem;
+    gap: 2rem;
+  }
+}
+
+.layout__cart {
+  position: static;
+}
+
+@media (min-width: 1024px) {
+  .layout__cart {
+    position: sticky;
+    top: 2rem;
+  }
+}

@@ -1,0 +1,40 @@
+<section class="cart" aria-labelledby="cart-heading">
+  <h2 id="cart-heading" class="cart__heading">
+    Your Cart (<span aria-live="polite">{{ itemCount }}</span>)
+  </h2>
+
+  <div *ngIf="cartLines.length === 0; else hasItems" class="cart__empty">
+    <img
+      src="assets/images/illustration-empty-cart.svg"
+      alt=""
+      aria-hidden="true"
+      class="cart__empty-illustration"
+    />
+    <p>Your added items will appear here</p>
+  </div>
+
+  <ng-template #hasItems>
+    <ul class="cart__list">
+      <app-cart-item
+        *ngFor="let line of cartLines; trackBy: trackByDessertId"
+        [line]="line"
+        variant="cart"
+        (remove)="removeItem.emit($event)"
+      ></app-cart-item>
+    </ul>
+
+    <div class="cart__total-row">
+      <span>Order Total</span>
+      <span class="cart__total-amount" aria-live="polite">{{ orderTotal | currency }}</span>
+    </div>
+
+    <p class="cart__carbon-note">
+      <img src="assets/images/icon-carbon-neutral.svg" alt="" aria-hidden="true" />
+      This is a <strong>carbon-neutral</strong> delivery
+    </p>
+
+    <button type="button" class="btn btn--confirm" (click)="confirmOrder.emit()">
+      Confirm Order
+    </button>
+  </ng-template>
+</section>
