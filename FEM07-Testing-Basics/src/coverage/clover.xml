@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1786382105562" clover="3.2.0">
-  <project timestamp="1786382105562" name="All files">
+<coverage generated="1787236463991" clover="3.2.0">
+  <project timestamp="1787236463991" name="All files">
     <metrics statements="119" coveredstatements="118" conditionals="70" coveredconditionals="69" methods="48" coveredmethods="48" elements="237" coveredelements="235" complexity="0" loc="119" ncloc="119" packages="1" files="3" classes="3"/>
     <file name="api.js" path="/home/hrh/Documents/AmaliTech/Apprenticeship/labs/jsfullstack/FEM07-Testing-Basics/src/api.js">
       <metrics statements="43" coveredstatements="42" conditionals="10" coveredconditionals="9" methods="11" coveredmethods="11"/>

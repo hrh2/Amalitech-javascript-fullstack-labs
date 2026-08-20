@@ -58,6 +58,8 @@ Tests:       138 passed, 138 total
 Snapshots:   0 total
 Time:        1.389 s
 ```
+### Image
+![Coverage image from terminal](./assets/img.png)
 *(Terminal coverage summary from `npm run test:coverage`, captured in lieu of a GUI screenshot since this environment has no browser to screenshot the HTML report — the same numbers are in `coverage/lcov-report/index.html` after running the command.)*
 
 - **Overall: 99.28% statements / 98.57% branches / 100% functions / 99.15% lines** — well above the 80/75/85/80 targets.

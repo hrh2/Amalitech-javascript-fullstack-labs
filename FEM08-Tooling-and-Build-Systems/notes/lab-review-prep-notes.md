@@ -30,12 +30,13 @@ eslint, or prettier — only your `src/` code, bundled, does.
 **What's in the project:** `vite.config.js`, `index.html`, `src/main.js`, `dist/` (build output).
 
 **Key config choices and why:**
-| Option | Value | Reason |
-|---|---|---|
-| `base` | `'./'` | Makes the build's asset paths relative, so `dist/` works from any folder or subpath, not just the domain root. |
-| `build.outDir` | `'dist'` | Explicit output folder, matches the lab's expectation. |
-| `build.minify` | `true` | Uses Vite's built-in minifier for production JS/CSS. |
-| `server.port` | `5173` | Vite's default; set explicitly so it's visible in config rather than implicit. |
+
+| Option         | Value    | Reason                                                                                                |
+| -------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `base`         | `'./'`   | Makes asset paths relative, allowing the `dist/` build to work correctly from any folder or subpath.  |
+| `build.outDir` | `'dist'` | Explicitly sets the output directory to `dist/`, matching the lab's expected structure.               |
+| `build.minify` | `true`   | Enables minification of the production JavaScript and CSS output.                                     |
+| `server.port`  | `5173`   | Explicitly sets Vite's default development-server port, making it clear in the project configuration. |
 
 **Be ready to explain the dev vs. build difference:**
 - **Dev (`npm run dev`):** Vite serves your source files over native ES modules. It

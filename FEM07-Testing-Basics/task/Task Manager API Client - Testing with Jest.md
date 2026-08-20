@@ -42,7 +42,10 @@ o Coverage report generation
 ### 2. Create Test Directory Structure:
 
 ```
-tests/ ├── unit/ # Unit tests for individual functions/classes ├── integration/ # Integration tests for modules working together └── __mocks__/ # Mock implementations of modules
+tests/ 
+├── unit/ # Unit tests for individual functions/classes 
+├── integration/ # Integration tests for modules working together 
+└── __mocks__/ # Mock implementations of modules
 ```
 
 ---
