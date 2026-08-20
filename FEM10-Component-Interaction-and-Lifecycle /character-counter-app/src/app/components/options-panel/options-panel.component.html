@@ -1,0 +1,24 @@
+<div class="options-left">
+  <label class="checkbox">
+    <input type="checkbox" [checked]="excludeSpaces" (change)="onExcludeSpacesChange($event)" />
+    <span class="checkbox-box" aria-hidden="true"></span>
+    <span class="checkbox-label">Exclude Spaces</span>
+  </label>
+
+  <label class="checkbox">
+    <input type="checkbox" [checked]="limitEnabled" (change)="onLimitEnabledChange($event)" />
+    <span class="checkbox-box" aria-hidden="true"></span>
+    <span class="checkbox-label">Set Character Limit</span>
+  </label>
+
+  @if (limitEnabled) {
+    <input
+      type="number"
+      class="limit-input"
+      min="1"
+      [value]="limitValue"
+      (input)="onLimitValueChange($event)"
+      aria-label="Character limit"
+    />
+  }
+</div>

@@ -1,0 +1,146 @@
+.bg-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--bg-noise);
+  background-repeat: repeat;
+  background-size: 480px;
+  opacity: var(--bg-noise-opacity);
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-400) var(--spacing-300) var(--spacing-1000);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-600);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150);
+}
+
+.brand-logo {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  overflow: hidden;
+}
+
+.brand-logo-left,
+.brand-logo-right {
+  width: 50%;
+  height: 100%;
+  position: relative;
+}
+
+.brand-logo-left {
+  background: var(--logo-accent);
+  overflow: hidden;
+}
+
+.brand-logo-left::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: var(--bg);
+  border-radius: 50%;
+  top: 50%;
+  left: 100%;
+  transform: translate(-50%, -50%);
+}
+
+.brand-logo-right {
+  overflow: hidden;
+}
+
+.brand-logo-right::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: var(--logo-accent);
+  border-radius: 50%;
+  top: 50%;
+  right: 100%;
+  transform: translate(50%, -50%);
+}
+
+.brand-name {
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+.hero-title {
+  font-family: var(--font-family);
+  font-weight: 700;
+  line-height: 100%;
+  letter-spacing: -1px;
+  font-size: 40px;
+  text-align: center;
+  margin-bottom: var(--spacing-400);
+  color: var(--text-heading);
+}
+
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-200) var(--spacing-300);
+  margin-bottom: var(--spacing-500);
+}
+
+.reading-time {
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .hero-title {
+    font-size: 64px;
+    margin-bottom: var(--spacing-500);
+  }
+}
+
+@media (max-width: 720px) {
+  .options-row {
+    align-items: flex-start;
+  }
+
+  .reading-time {
+    width: 100%;
+    order: 3;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: var(--spacing-300) var(--spacing-200) var(--spacing-800);
+  }
+
+  .topbar {
+    margin-bottom: var(--spacing-500);
+  }
+
+  .brand-name {
+    font-size: 16px;
+  }
+}

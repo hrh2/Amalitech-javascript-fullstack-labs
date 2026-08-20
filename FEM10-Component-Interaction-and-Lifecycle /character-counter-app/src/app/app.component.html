@@ -1,0 +1,44 @@
+<div class="bg-noise" aria-hidden="true"></div>
+
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">
+        <div class="brand-logo-left"></div>
+        <div class="brand-logo-right"></div>
+      </div>
+      <span class="brand-name">Character&nbsp;counter</span>
+    </div>
+
+    <app-theme-toggle [theme]="theme" (themeChange)="onThemeChange($event)" />
+  </header>
+
+  <main>
+    <h1 class="hero-title">Analyze your text<br />in real-time.</h1>
+
+    <app-text-editor
+      [text]="text"
+      [excludeSpaces]="excludeSpaces"
+      [limitEnabled]="limitEnabled"
+      [limitValue]="limitValue"
+      (textChange)="onTextChange($event)"
+    />
+
+    <div class="options-row">
+      <app-options-panel
+        [excludeSpaces]="excludeSpaces"
+        [limitEnabled]="limitEnabled"
+        [limitValue]="limitValue"
+        (excludeSpacesChange)="onExcludeSpacesChange($event)"
+        (limitEnabledChange)="onLimitEnabledChange($event)"
+        (limitValueChange)="onLimitValueChange($event)"
+      />
+
+      <p class="reading-time" role="status">Approx. reading time: {{ readingTime }}</p>
+    </div>
+
+    <app-stats-grid [totalChars]="totalChars" [wordCount]="wordCount" [sentenceCount]="sentenceCount" />
+
+    <app-letter-density [text]="text" />
+  </main>
+</div>
