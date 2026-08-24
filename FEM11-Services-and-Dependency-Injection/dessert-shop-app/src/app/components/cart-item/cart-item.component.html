@@ -1,0 +1,31 @@
+<li class="cart-item" [ngClass]="'cart-item--' + variant">
+  <img
+    *ngIf="variant === 'summary'"
+    class="cart-item__thumb"
+    [src]="line.dessert.image.thumbnail"
+    [alt]="line.dessert.name"
+    width="36"
+    height="36"
+  />
+
+  <div class="cart-item__details">
+    <p class="cart-item__name">{{ line.dessert.name }}</p>
+    <p class="cart-item__meta">
+      <span class="cart-item__qty">{{ line.quantity }}x</span>
+      <span class="cart-item__unit-price">&#64; {{ line.dessert.price | currency }}</span>
+      <span *ngIf="variant === 'cart'" class="cart-item__line-total">{{ lineTotal | currency }}</span>
+    </p>
+  </div>
+
+  <p *ngIf="variant === 'summary'" class="cart-item__total">{{ lineTotal | currency }}</p>
+
+  <button
+    *ngIf="variant === 'cart'"
+    type="button"
+    class="cart-item__remove"
+    [attr.aria-label]="'Remove ' + line.dessert.name + ' from cart'"
+    (click)="onRemove()"
+  >
+    <img src="assets/images/icon-remove-item.svg" alt="" aria-hidden="true" />
+  </button>
+</li>

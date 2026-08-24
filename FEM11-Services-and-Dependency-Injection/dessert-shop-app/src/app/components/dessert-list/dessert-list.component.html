@@ -1,0 +1,50 @@
+<section class="dessert-list" aria-labelledby="dessert-list-heading">
+  <div class="dessert-list__header">
+    <h1 id="dessert-list-heading" class="dessert-list__heading">Desserts</h1>
+
+    <div class="dessert-list__controls">
+      <label class="dessert-list__control">
+        Category
+        <select
+          [(ngModel)]="selectedCategory"
+          (ngModelChange)="applyFilters()"
+          aria-label="Filter by category"
+        >
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let category of categories" [ngValue]="category">{{ category }}</option>
+        </select>
+      </label>
+
+      <label class="dessert-list__control">
+        Sort by
+        <select
+          [(ngModel)]="sortOption"
+          (ngModelChange)="applyFilters()"
+          aria-label="Sort desserts"
+        >
+          <option value="default">Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A to Z</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <ul *ngIf="visibleDesserts.length > 0; else noDesserts" class="dessert-list__grid">
+    <app-dessert-card
+      *ngFor="let dessert of visibleDesserts; trackBy: trackByDessertId"
+      [dessert]="dessert"
+      [quantity]="quantityFor(dessert)"
+      (add)="onAdd($event)"
+      (increment)="onIncrement($event)"
+      (decrement)="onDecrement($event)"
+    ></app-dessert-card>
+  </ul>
+
+  <ng-template #noDesserts>
+    <p class="dessert-list__empty" role="status">
+      No desserts match the selected filter.
+    </p>
+  </ng-template>
+</section>

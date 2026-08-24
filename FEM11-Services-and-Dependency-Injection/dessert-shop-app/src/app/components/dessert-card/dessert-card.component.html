@@ -1,0 +1,59 @@
+<li class="dessert-card">
+  <div class="dessert-card__media" [ngClass]="{ 'dessert-card__media--selected': quantity > 0 }">
+    <picture>
+      <source media="(min-width: 1024px)" [srcset]="dessert.image.desktop" />
+      <source media="(min-width: 600px)" [srcset]="dessert.image.tablet" />
+      <img
+        class="dessert-card__image"
+        [src]="dessert.image.mobile"
+        [alt]="dessert.name + ' on a plate'"
+        width="240"
+        height="240"
+      />
+    </picture>
+
+    <div class="dessert-card__cta">
+      <button
+        *ngIf="quantity === 0; else stepper"
+        type="button"
+        class="btn btn--add-to-cart"
+        (click)="onAdd()"
+      >
+        <img src="assets/images/icon-add-to-cart.svg" alt="" aria-hidden="true" />
+        <span>Add to Cart</span>
+      </button>
+
+      <ng-template #stepper>
+        <div
+          class="quantity-stepper"
+          role="group"
+          [attr.aria-label]="'Quantity of ' + dessert.name + ' in cart'"
+        >
+          <button
+            type="button"
+            class="quantity-stepper__btn"
+            [attr.aria-label]="'Decrease quantity of ' + dessert.name"
+            (click)="onDecrement()"
+          >
+            <img src="assets/images/icon-decrement-quantity.svg" alt="" aria-hidden="true" />
+          </button>
+
+          <span class="quantity-stepper__value" aria-live="polite">{{ quantity }}</span>
+
+          <button
+            type="button"
+            class="quantity-stepper__btn"
+            [attr.aria-label]="'Increase quantity of ' + dessert.name"
+            (click)="onIncrement()"
+          >
+            <img src="assets/images/icon-increment-quantity.svg" alt="" aria-hidden="true" />
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <p class="dessert-card__category">{{ dessert.category }}</p>
+  <h3 class="dessert-card__name">{{ dessert.name }}</h3>
+  <p class="dessert-card__price">{{ dessert.price | currency }}</p>
+</li>

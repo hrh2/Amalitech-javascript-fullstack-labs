@@ -1,0 +1,80 @@
+/*
+ * Global styles: font loading, design tokens (from style-guide.md), and a
+ * minimal reset. Component-specific styles live with their components
+ * (see each component's *.component.css) thanks to Angular's view
+ * encapsulation, so this file only holds truly app-wide concerns.
+ */
+
+@font-face {
+  font-family: 'Red Hat Text';
+  src: url('/assets/fonts/RedHatText-VariableFont_wght.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Red Hat Text';
+  src: url('/assets/fonts/RedHatText-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 400 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* Colors — from style-guide.md */
+  --red: hsl(14, 86%, 42%);
+  --green: hsl(159, 69%, 38%);
+
+  --rose-50: hsl(20, 50%, 98%);
+  --rose-100: hsl(13, 31%, 94%);
+  --rose-300: hsl(14, 25%, 72%);
+  --rose-400: hsl(7, 20%, 60%);
+  --rose-500: hsl(12, 20%, 44%);
+  --rose-900: hsl(14, 65%, 9%);
+
+  --white: hsl(0, 0%, 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--rose-50);
+  color: var(--rose-900);
+  font-family: 'Red Hat Text', 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+img {
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+}
+
+/* Consistent, visible keyboard focus everywhere, even before a component
+   defines its own focus styling. */
+:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
