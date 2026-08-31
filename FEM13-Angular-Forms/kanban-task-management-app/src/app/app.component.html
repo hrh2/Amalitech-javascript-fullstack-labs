@@ -1,0 +1,24 @@
+<header class="app-header">
+  <div class="app-header__brand">
+    <span class="app-header__logo" aria-hidden="true">&#9635;</span>
+    <span>Kanban</span>
+  </div>
+
+  <nav class="app-nav" aria-label="Main navigation">
+    <a routerLink="/boards" routerLinkActive="app-nav__link--active" [routerLinkActiveOptions]="{ exact: true }" class="app-nav__link">
+      Boards
+    </a>
+    <a routerLink="/settings" routerLinkActive="app-nav__link--active" class="app-nav__link">
+      Settings
+    </a>
+  </nav>
+
+  <div class="app-header__auth">
+    <span class="app-header__status" *ngIf="authService.isLoggedIn()">Signed in</span>
+    <a routerLink="/login" class="app-nav__link" *ngIf="!authService.isLoggedIn()">Log in</a>
+  </div>
+</header>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>

@@ -1,0 +1,80 @@
+<section class="page-header">
+  <div>
+    <h1>Boards</h1>
+    <p class="page-header__subtitle">Every board is reachable at its own URL: /boards/&lt;id&gt;.</p>
+  </div>
+  <button type="button" class="btn btn--primary" (click)="toggleCreateForm()">
+    {{ isCreating ? 'Cancel' : '+ New board' }}
+  </button>
+</section>
+
+<!-- Template-driven form (FEM13 LO2): NgForm + ngModel two-way binding,
+     with template reference variables (#boardName="ngModel") exposing each
+     control's validation state directly in the template. -->
+<form class="card create-board-form" *ngIf="isCreating" #boardForm="ngForm" (ngSubmit)="createBoard(boardForm)" novalidate>
+  <div class="field">
+    <label for="board-name">Board name</label>
+    <input
+      id="board-name"
+      type="text"
+      name="boardName"
+      [(ngModel)]="newBoardName"
+      #boardName="ngModel"
+      required
+      minlength="3"
+      maxlength="40"
+      autofocus
+      [attr.aria-invalid]="boardName.invalid && (boardName.dirty || boardName.touched)"
+      [attr.aria-describedby]="boardName.invalid && (boardName.dirty || boardName.touched) ? 'board-name-error' : null"
+    />
+    <p id="board-name-error" class="field-error" role="alert" *ngIf="boardName.invalid && (boardName.dirty || boardName.touched)">
+      <ng-container *ngIf="boardName.errors?.['required']">Board name is required.</ng-container>
+      <ng-container *ngIf="boardName.errors?.['minlength']">Board name must be at least 3 characters.</ng-container>
+      <ng-container *ngIf="boardName.errors?.['maxlength']">Board name cannot exceed 40 characters.</ng-container>
+    </p>
+  </div>
+  <div class="field">
+    <label for="board-description">Description <span class="field-optional">(optional)</span></label>
+    <input
+      id="board-description"
+      type="text"
+      name="boardDescription"
+      [(ngModel)]="newBoardDescription"
+      #boardDescription="ngModel"
+      maxlength="120"
+      [attr.aria-invalid]="boardDescription.invalid && (boardDescription.dirty || boardDescription.touched)"
+      [attr.aria-describedby]="boardDescription.invalid && (boardDescription.dirty || boardDescription.touched) ? 'board-description-error' : null"
+    />
+    <p
+      id="board-description-error"
+      class="field-error"
+      role="alert"
+      *ngIf="boardDescription.invalid && (boardDescription.dirty || boardDescription.touched)"
+    >
+      Description cannot exceed 120 characters.
+    </p>
+  </div>
+  <button type="submit" class="btn btn--primary" [disabled]="boardForm.invalid">Create board</button>
+</form>
+
+<div class="sort-bar" role="group" aria-label="Sort boards">
+  <span class="sort-bar__label">Sort by:</span>
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'recent'">
+    Most recent
+  </a>
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'name'">
+    Name
+  </a>
+</div>
+
+<ul class="board-grid">
+  <li class="card board-card" *ngFor="let board of boards">
+    <a [routerLink]="['/boards', board.id]" class="board-card__link">
+      <h2 class="board-card__title">{{ board.name }}</h2>
+      <p class="board-card__description">{{ board.description }}</p>
+      <span class="board-card__meta">{{ board.tasks.length }} task(s) &middot; created {{ board.createdAt }}</span>
+    </a>
+  </li>
+</ul>
+
+<p class="empty-state" *ngIf="boards.length === 0">No boards yet. Create your first one above.</p>

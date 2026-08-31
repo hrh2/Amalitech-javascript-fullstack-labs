@@ -1,0 +1,45 @@
+<ng-container *ngIf="board">
+  <nav class="board-nav">
+    <a routerLink="/boards" class="btn">&larr; All boards</a>
+    <div class="board-nav__adjacent">
+      <a *ngIf="previousBoardId" [routerLink]="['/boards', previousBoardId]" class="btn">&larr; Previous board</a>
+      <a *ngIf="nextBoardId" [routerLink]="['/boards', nextBoardId]" class="btn">Next board &rarr;</a>
+    </div>
+  </nav>
+
+  <p class="banner banner--success" role="status" *ngIf="taskSavedMessage">
+    {{ taskSavedMessage }}
+    <button type="button" class="banner__dismiss" (click)="dismissTaskSavedMessage()" aria-label="Dismiss message">&times;</button>
+  </p>
+
+  <header class="board-header">
+    <div>
+      <h1>{{ board.name }}</h1>
+      <p class="board-header__description">{{ board.description }}</p>
+    </div>
+    <a [routerLink]="['new-task']" class="btn btn--primary">+ New task</a>
+  </header>
+
+  <ul class="task-list">
+    <li class="card task-row" *ngFor="let task of board.tasks">
+      <a [routerLink]="['edit', task.id]" routerLinkActive="task-row__link--active" class="task-row__link">
+        <span class="task-row__main">
+          <span class="task-row__title">{{ task.title }}</span>
+          <span class="task-row__meta" *ngIf="task.dueDate || task.subtasks.length > 0">
+            <span class="task-row__due" *ngIf="task.dueDate">Due {{ task.dueDate }}</span>
+            <span class="task-row__subtasks" *ngIf="task.subtasks.length > 0">{{ subtaskProgress(task) }} subtasks</span>
+          </span>
+        </span>
+        <span class="task-row__status task-row__status--{{ task.status }}">{{ task.status }}</span>
+      </a>
+    </li>
+  </ul>
+  <p class="empty-state" *ngIf="board.tasks.length === 0">This board has no tasks yet.</p>
+
+  <!-- Nested router-outlet: renders AddTaskComponent ('new-task') or
+       EditTaskComponent ('edit/:taskId') right inside this board's own
+       layout, without replacing the board header/task list above it. -->
+  <div class="task-detail-slot">
+    <router-outlet></router-outlet>
+  </div>
+</ng-container>

@@ -1,0 +1,9 @@
+<app-task-form
+  *ngIf="form"
+  [form]="form"
+  mode="create"
+  heading="Add task"
+  submitLabel="Create task"
+  (formSubmit)="save()"
+  (formCancel)="cancel()"
+></app-task-form>

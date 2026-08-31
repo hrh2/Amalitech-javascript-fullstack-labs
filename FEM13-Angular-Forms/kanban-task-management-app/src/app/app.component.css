@@ -1,0 +1,82 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+}
+
+.app-header__logo {
+  color: var(--color-primary);
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.app-nav__link {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.app-nav__link:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.app-nav__link--active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.app-header__auth {
+  display: flex;
+  align-items: center;
+}
+
+.app-header__status {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  padding: 0.4rem 0.8rem;
+}
+
+.app-main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    gap: 0.75rem;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
+}

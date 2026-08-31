@@ -1,0 +1,87 @@
+.task-form {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-color: var(--color-primary);
+}
+
+.task-form h2 {
+  margin: 0 0 1rem;
+}
+
+.field-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.field-row .field {
+  flex: 1 1 200px;
+}
+
+.subtasks__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subtask-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.subtask-row__title {
+  flex: 1 1 200px;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.subtask-row__done {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.empty-state--inline {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+}
+
+.task-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.task-form__hint {
+  font-size: 0.85rem;
+  color: var(--color-warning);
+}
+
+@media (max-width: 640px) {
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* .field-row .field's 200px flex-basis is meant for the horizontal
+     layout above; in a column flex container the main axis is vertical,
+     so that same basis would otherwise force each field to a 200px
+     minimum height and leave a large blank gap between them. */
+  .field-row .field {
+    flex-basis: auto;
+  }
+
+  .subtask-row {
+    align-items: stretch;
+  }
+}
