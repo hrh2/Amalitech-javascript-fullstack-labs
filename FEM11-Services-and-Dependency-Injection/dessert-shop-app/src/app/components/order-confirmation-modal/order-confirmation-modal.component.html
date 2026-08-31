@@ -18,7 +18,7 @@
 
     <ul class="modal__list">
       <app-cart-item
-        *ngFor="let line of cartService.cartLines(); trackBy: trackByDessertId"
+        *ngFor="let line of cartService.cartLines; trackBy: trackByDessertId"
         [line]="line"
         variant="summary"
       ></app-cart-item>
@@ -26,7 +26,7 @@
 
     <div class="modal__total-row">
       <span>Order Total</span>
-      <span class="modal__total-amount">{{ cartService.orderTotal() | currency }}</span>
+      <span class="modal__total-amount">{{ cartService.orderTotal | currency }}</span>
     </div>
 
     <button type="button" class="btn btn--confirm" (click)="cartService.startNewOrder()">

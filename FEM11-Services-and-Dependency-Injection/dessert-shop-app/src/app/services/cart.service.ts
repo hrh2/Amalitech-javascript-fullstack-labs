@@ -1,4 +1,4 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { CartLine, Dessert } from '../models/dessert.model';
 import { DessertDataService } from './dessert-data.service';
 import { LoggingService } from './logging.service';
@@ -23,7 +23,7 @@ const STORAGE_KEY = 'dessert-shop-cart';
  * everywhere it's requested.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CartService {
   private readonly dessertsById = new Map<number, Dessert>();
@@ -32,22 +32,24 @@ export class CartService {
 
   readonly isOrderConfirmed = this.orderConfirmed.asReadonly();
 
-  readonly cartLines = computed<CartLine[]>(() =>
-    Object.entries(this.quantities())
+  get cartLines(): CartLine[] {
+    return Object.entries(this.quantities())
       .map(([id, quantity]) => ({ dessert: this.dessertsById.get(Number(id)), quantity }))
-      .filter((line): line is CartLine => !!line.dessert && line.quantity > 0)
-  );
+      .filter((line): line is CartLine => !!line.dessert && line.quantity > 0);
+  };
 
-  readonly orderTotal = computed(() =>
-    this.utility.sum(this.cartLines().map((line) => this.utility.lineTotal(line.dessert.price, line.quantity)))
-  );
+  get orderTotal(): number {
+    return this.utility.sum(this.cartLines.map((line) => this.utility.lineTotal(line.dessert.price, line.quantity)));
+  };
 
-  readonly itemCount = computed(() => this.utility.sum(this.cartLines().map((line) => line.quantity)));
+  get itemCount(): number {
+    return this.utility.sum(this.cartLines.map((line) => line.quantity));
+  };
 
   constructor(
     dessertData: DessertDataService,
     private readonly logger: LoggingService,
-    private readonly utility: UtilityService
+    private readonly utility: UtilityService,
   ) {
     dessertData.getDesserts().forEach((dessert) => this.dessertsById.set(dessert.id, dessert));
   }
@@ -93,11 +95,11 @@ export class CartService {
   }
 
   confirmOrder(): void {
-    if (this.cartLines().length === 0) {
+    if (this.cartLines.length === 0) {
       return;
     }
     this.orderConfirmed.set(true);
-    this.logger.logInfo(`Order confirmed: ${this.itemCount()} item(s), total ${this.orderTotal()}`);
+    this.logger.logInfo(`Order confirmed: ${this.itemCount} item(s), total ${this.orderTotal}`);
   }
 
   startNewOrder(): void {
@@ -127,3 +129,5 @@ export class CartService {
     }
   }
 }
+
+

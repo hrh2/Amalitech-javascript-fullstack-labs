@@ -3,7 +3,7 @@
     Your Cart (<span aria-live="polite">{{ cartService.itemCount() }}</span>)
   </h2>
 
-  <div *ngIf="cartService.cartLines().length === 0; else hasItems" class="cart__empty">
+  <div *ngIf="cartService.cartLines.length === 0; else hasItems" class="cart__empty">
     <img
       src="assets/images/illustration-empty-cart.svg"
       alt=""
@@ -16,7 +16,7 @@
   <ng-template #hasItems>
     <ul class="cart__list">
       <app-cart-item
-        *ngFor="let line of cartService.cartLines(); trackBy: trackByDessertId"
+        *ngFor="let line of cartService.cartLines; trackBy: trackByDessertId"
         [line]="line"
         variant="cart"
         (remove)="cartService.removeFromCart($event)"
@@ -25,7 +25,7 @@
 
     <div class="cart__total-row">
       <span>Order Total</span>
-      <span class="cart__total-amount" aria-live="polite">{{ cartService.orderTotal() | currency }}</span>
+      <span class="cart__total-amount" aria-live="polite">{{ cartService.orderTotal | currency }}</span>
     </div>
 
     <p class="cart__carbon-note">
