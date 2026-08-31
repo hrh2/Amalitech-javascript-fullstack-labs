@@ -73,12 +73,12 @@ needed; the refactor is about *where logic lives*, not the shape of the data.
 - **Why it exists:** the cart — "what's in it and how much" — used to live on `AppComponent`
   and had to be threaded through `DessertList`, `DessertCard`, `Cart`, `CartItem`, and the
   confirmation modal via `@Input`/`@Output`. That's the exact problem Task 2 targets.
-- **Responsibility:** owns the single source of truth for the cart: a `dessertId -> quantity`
-  map (as an Angular **signal**), and every operation that changes it.
+- **Responsibility:** owns the single source of truth for the cart: a plain `dessertId -> quantity`
+  object property, and every operation that changes it.
 - **What it manages:** `addToCart`, `incrementQuantity`, `decrementQuantity`, `removeFromCart`,
-  `clearCart`, `confirmOrder`, `startNewOrder`; derived state `cartLines()`, `orderTotal()`,
-  `itemCount()` (all `computed()` signals, so they can never drift out of sync with the
-  underlying quantities); and `isOrderConfirmed()` for the order-confirmation flow.
+  `clearCart`, `confirmOrder`, `startNewOrder`; derived state `cartLines`, `orderTotal`,
+  `itemCount` (plain `get` accessors, recomputed from the underlying quantities every time a
+  component reads them); and `isOrderConfirmed()` for the order-confirmation flow.
 - **Which components use it:** `AppComponent`, `DessertListComponent`, `CartComponent`,
   `OrderConfirmationModalComponent` — four components with no parent/child relationship to each
   other beyond the app root, all sharing one instance.
@@ -197,19 +197,22 @@ transitive dependency of the service it wants — `CartService` alone would requ
   state originates from user interaction (clicking "Add to Cart", the stepper, "Remove") and,
   on load, from whatever was last saved to `localStorage`.
 - **How components access/modify data:** components never touch `localStorage`, the catalog
-  array, or a quantities object directly — they call methods on the injected services
+  array, or the quantities object directly — they call methods on the injected services
   (`cartService.addToCart(dessert)`, `productService.filterByCategory(...)`) and read derived
-  state through the services' signals/getters (`cartService.cartLines()`).
+  state through the services' getters (`cartService.cartLines`, `cartService.orderTotal`).
 - **How services participate:** `CartService` is the mutation boundary for the cart — every
-  state change goes through one of its methods, which updates its internal signal, persists to
-  `localStorage`, and calls `LoggingService`. `ProductService` is a pure transform step between
-  the raw catalog and what `DessertListComponent` renders. `UtilityService` is a pure calculation
-  step used wherever money needs totaling.
+  state change goes through one of its methods, which reassigns its internal `quantities`
+  property, persists to `localStorage`, and calls `LoggingService`. `ProductService` is a pure
+  transform step between the raw catalog and what `DessertListComponent` renders. `UtilityService`
+  is a pure calculation step used wherever money needs totaling.
 - **How parts communicate:** the *cart* is now shared purely through DI — any component that
-  injects `CartService` sees live updates via its `computed()` signals, with no `@Input`/
-  `@Output` involved. Purely local, presentational relationships (`DessertList` ↔ `DessertCard`,
-  `Cart`/modal ↔ `CartItem`) still use `@Input`/`@Output`, since that data genuinely is local to
-  one parent-child pair, not shared app-wide state.
+  injects `CartService` reads its getters directly, with no `@Input`/`@Output` involved. Because
+  every cart mutation happens inside a click handler or `(ngModelChange)` handler, Angular's
+  default zone-based change detection re-runs after the mutation and re-evaluates those getters
+  automatically — no manual "notify subscribers" step is needed. Purely local, presentational
+  relationships (`DessertList` ↔ `DessertCard`, `Cart`/modal ↔ `CartItem`) still use
+  `@Input`/`@Output`, since that data genuinely is local to one parent-child pair, not shared
+  app-wide state.
 
 ---
 
@@ -217,9 +220,9 @@ transitive dependency of the service it wants — `CartService` alone would requ
 
 |                                                   | FEM09                                                                                  | FEM11                                                                               |
 |---------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| Cart quantities                                   | `AppComponent.quantities` (plain object property)                                      | `CartService`'s private signal, `providedIn: 'root'`                                |
+| Cart quantities                                   | `AppComponent.quantities` (plain object property)                                      | `CartService`'s private `quantities` property, `providedIn: 'root'`                 |
 | Cart mutation methods                             | `AppComponent.addToCart/increment/decrement/removeFromCart/confirmOrder/startNewOrder` | Same operations, now methods on `CartService`                                       |
-| `cartLines`/`orderTotal`                          | Getters on `AppComponent`, recomputed from `quantities` + `desserts` on every read     | `computed()` signals on `CartService`, same derivation, now shared automatically    |
+| `cartLines`/`orderTotal`                          | Getters on `AppComponent`, recomputed from `quantities` + `desserts` on every read     | Same kind of getters, now on `CartService`, shared by every injecting component     |
 | Getting cart data into `Cart`/`DessertList`/modal | `@Input()` bindings from `AppComponent`, `@Output()` bubbling back up                  | Each component injects `CartService` directly                                       |
 | Catalog filter/sort                               | Didn't exist                                                                           | New `ProductService`, injected only into `DessertListComponent`                     |
 | Money calculations                                | Inlined (`quantity * price`) separately in `AppComponent` and `CartItemComponent`      | Centralized in `UtilityService`, used by both `CartService` and `CartItemComponent` |
@@ -249,7 +252,7 @@ transitive dependency of the service it wants — `CartService` alone would requ
 **Q: What is an Angular service?**
 A: A plain TypeScript class, marked `@Injectable()`, that holds logic or state not tied to any
 one component's template, so it can be shared and reused across the app. In this project,
-`CartService` is the clearest example — it's just a class with a signal and some methods; the
+`CartService` is the clearest example — it's just a class with a property and some methods; the
 `@Injectable` decorator is what makes Angular's DI system able to construct and hand it out.
 
 **Q: Why did you create `CartService`?**
@@ -322,12 +325,13 @@ and they're independently testable since they carry no template. As an app grows
 alternative — passing everything through ancestor components — gets combinatorially worse with
 every new component that needs the same data.
 
-**Q: Your `CartService` uses signals for state — why not a plain property, like FEM09 did?**
-A: A plain property still works, but `cartLines`/`orderTotal`/`itemCount` need to be *derived*
-from the quantities every time they change, and FEM09 did that with getters recomputed on every
-template read. `computed()` signals do the same derivation but make the dependency explicit and
-guarantee the derived values can never be read out of sync with the underlying quantities —
-useful now that multiple independent components read them.
+**Q: How does `CartService` keep `cartLines`/`orderTotal`/`itemCount` in sync with the cart?**
+A: The same way FEM09's `AppComponent` did: they're plain `get` accessors that recompute their
+value from the current `quantities` object every time they're read, rather than being stored and
+manually kept up to date. Because every cart mutation happens inside an event handler (a button
+click, `(ngModelChange)`, etc.), Angular's default change detection re-checks the component tree
+right after, which re-evaluates these getters and updates the template automatically — no extra
+wiring needed to keep them "in sync."
 
 **Q: Did you use `HttpClient`/an API for the dessert catalog?**
 A: No — the assigned lab task list (Tasks 1–8 in `tasks/Dessert Shop App (Part II – Services
@@ -338,11 +342,11 @@ real requirement — I focused the refactor on what the task actually asks for: 
 utility, and logging services plus provider-scope DI.
 
 **Q: How does the bonus local-storage feature work?**
-A: `CartService` reads `localStorage` once, in its constructor, to seed the initial quantities
-signal, and writes the current quantities back to `localStorage` after every mutation
+A: `CartService` reads `localStorage` once, in its constructor, to seed the initial `quantities`
+property, and writes the current quantities back to `localStorage` after every mutation
 (`addToCart`, `increment`/`decrementQuantity`, `removeFromCart`, `clearCart`). The "Clear Cart"
-button in the cart panel calls `clearCart()`, which empties both the in-memory signal and the
-stored value.
+button in the cart panel calls `clearCart()`, which empties both the in-memory `quantities`
+object and the stored value.
 
 ---
 
@@ -369,3 +373,37 @@ stored value.
   use plain `@Input`/`@Output` for their genuinely local parent-child data — services are for
   logic/state that's shared or reusable beyond one component relationship, not a blanket
   replacement for component properties.
+
+---
+
+## 9. Curriculum-Scope Audit
+
+An earlier draft of `CartService` held its cart state in an Angular **signal**
+(`signal<Record<number, number>>(...)`) with `computed()`-style derivations for `cartLines`,
+`orderTotal`, and `itemCount`. Signals are a real Angular feature, but they aren't taught until a
+module after FEM11, so that draft was refactored out in favor of the same plain-property-plus-getter
+pattern FEM09's `AppComponent` already used — the state itself didn't change, only which class it
+lives in. No RxJS, `Observable`, `subscribe()`, or `Subject` was ever introduced anywhere in this
+project.
+
+**✅ Concepts used, all covered by FEM09 → FEM11:**
+- Components, templates, property binding, event binding, two-way binding (`[(ngModel)]`),
+  structural directives (`*ngIf`, `*ngFor`, `ng-template`)
+- `@Input()` / `@Output()` / `EventEmitter` for local parent-child data (`DessertCard`, `CartItem`)
+- Lifecycle hooks (`AfterViewInit`/`ngAfterViewInit` in the confirmation modal, carried over from
+  FEM10) and `@HostListener` for the Escape-key handler
+- Plain TypeScript classes as services, `@Injectable()`, `providedIn: 'root'` vs. a component's own
+  `providers` array, and constructor-based dependency injection (component-to-service and
+  service-to-service)
+- Plain object/boolean properties for state, with `get` accessors recomputing derived values on
+  every read — relying on Angular's default zone-based change detection to re-run those getters
+  after any user-triggered event, exactly as FEM09's `AppComponent` did
+
+**❌ Concepts intentionally absent (belong to later modules):**
+- Signals (`signal()`, `computed()`, `effect()`) — removed from `CartService` during this refactor
+- RxJS / `Observable` / `subscribe()` / `Subject` / `BehaviorSubject` — never present in this project
+- Any other reactive/state-management library — not introduced
+
+If a later module reintroduces signals or RxJS as the taught pattern, this service is the natural
+place to revisit — but for FEM11, the getter/property approach is the correct, curriculum-appropriate
+choice, not a placeholder.

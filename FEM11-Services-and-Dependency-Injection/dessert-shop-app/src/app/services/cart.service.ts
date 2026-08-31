@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { CartLine, Dessert } from '../models/dessert.model';
 import { DessertDataService } from './dessert-data.service';
 import { LoggingService } from './logging.service';
@@ -13,9 +13,12 @@ const STORAGE_KEY = 'dessert-shop-cart';
  * any component can read or change the cart by injecting this service —
  * no prop-drilling through intermediate components required.
  *
- * State is held in signals so `cartLines`/`orderTotal`/`itemCount` stay
- * automatically in sync with the underlying quantities, the same
- * derivation the old getters on AppComponent performed by hand.
+ * State is held in a plain `quantities` object, and `cartLines`/`orderTotal`/
+ * `itemCount` are getters recomputed from it on every read — the same
+ * derivation FEM09's `AppComponent` getters performed by hand. Angular's
+ * default (zone.js) change detection re-evaluates these getters on every
+ * check cycle, which any user interaction (click, ngModel change, etc.)
+ * already triggers, so the template always sees current values.
  *
  * Root-provided (`providedIn: 'root'`): the cart must be a singleton —
  * every component needs to see the exact same cart, so Angular creates
@@ -27,13 +30,15 @@ const STORAGE_KEY = 'dessert-shop-cart';
 })
 export class CartService {
   private readonly dessertsById = new Map<number, Dessert>();
-  private readonly quantities = signal<Record<number, number>>(this.loadStoredQuantities());
-  private readonly orderConfirmed = signal(false);
+  private quantities: Record<number, number> = this.loadStoredQuantities();
+  private orderConfirmed = false;
 
-  readonly isOrderConfirmed = this.orderConfirmed.asReadonly();
+  isOrderConfirmed(): boolean {
+    return this.orderConfirmed;
+  }
 
   get cartLines(): CartLine[] {
-    return Object.entries(this.quantities())
+    return Object.entries(this.quantities)
       .map(([id, quantity]) => ({ dessert: this.dessertsById.get(Number(id)), quantity }))
       .filter((line): line is CartLine => !!line.dessert && line.quantity > 0);
   };
@@ -55,7 +60,7 @@ export class CartService {
   }
 
   quantityFor(dessertId: number): number {
-    return this.quantities()[dessertId] ?? 0;
+    return this.quantities[dessertId] ?? 0;
   }
 
   addToCart(dessert: Dessert): void {
@@ -80,16 +85,16 @@ export class CartService {
   }
 
   removeFromCart(dessert: Dessert): void {
-    const updated = { ...this.quantities() };
+    const updated = { ...this.quantities };
     delete updated[dessert.id];
-    this.quantities.set(updated);
+    this.quantities = updated;
     this.persist();
     this.logger.logInfo(`Removed "${dessert.name}" from cart`);
   }
 
   /** Empties the cart without affecting the "order confirmed" flow. */
   clearCart(): void {
-    this.quantities.set({});
+    this.quantities = {};
     this.persist();
     this.logger.logInfo('Cart cleared');
   }
@@ -98,23 +103,23 @@ export class CartService {
     if (this.cartLines.length === 0) {
       return;
     }
-    this.orderConfirmed.set(true);
+    this.orderConfirmed = true;
     this.logger.logInfo(`Order confirmed: ${this.itemCount} item(s), total ${this.orderTotal}`);
   }
 
   startNewOrder(): void {
     this.clearCart();
-    this.orderConfirmed.set(false);
+    this.orderConfirmed = false;
   }
 
   private setQuantity(dessertId: number, quantity: number): void {
-    this.quantities.set({ ...this.quantities(), [dessertId]: quantity });
+    this.quantities = { ...this.quantities, [dessertId]: quantity };
     this.persist();
   }
 
   private persist(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.quantities()));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.quantities));
     } catch {
       this.logger.logError('Unable to persist cart to local storage');
     }

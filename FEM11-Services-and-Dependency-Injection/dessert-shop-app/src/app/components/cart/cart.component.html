@@ -1,6 +1,6 @@
 <section class="cart" aria-labelledby="cart-heading">
   <h2 id="cart-heading" class="cart__heading">
-    Your Cart (<span aria-live="polite">{{ cartService.itemCount() }}</span>)
+    Your Cart (<span aria-live="polite">{{ cartService.itemCount }}</span>)
   </h2>
 
   <div *ngIf="cartService.cartLines.length === 0; else hasItems" class="cart__empty">
