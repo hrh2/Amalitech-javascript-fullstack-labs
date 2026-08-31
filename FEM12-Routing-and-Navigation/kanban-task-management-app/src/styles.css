@@ -1,0 +1,145 @@
+:root {
+  color-scheme: light dark;
+
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-hover: #eef0f4;
+  --color-border: #e0e2e8;
+  --color-text: #1b1e26;
+  --color-text-muted: #5a5f6d;
+  --color-primary: #4b5fe0;
+  --color-primary-hover: #3b4bc4;
+  --color-primary-soft: #e8eaff;
+  --color-danger: #d64545;
+  --color-success: #2f9e5c;
+  --color-warning: #b8860b;
+
+  --radius: 10px;
+  --shadow-card: 0 1px 3px rgba(20, 22, 30, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #14161c;
+    --color-surface: #1c1f28;
+    --color-surface-hover: #262a35;
+    --color-border: #2e323e;
+    --color-text: #e7e8ec;
+    --color-text-muted: #9a9fb0;
+    --color-primary: #8b98f5;
+    --color-primary-hover: #a3aef7;
+    --color-primary-soft: #2a2e4a;
+    --color-danger: #ef6b6b;
+    --color-success: #5cc98a;
+    --color-warning: #e0b13d;
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: var(--color-surface-hover);
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background: transparent;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}

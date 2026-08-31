@@ -1,0 +1,43 @@
+<section class="page-header">
+  <div>
+    <h1>Boards</h1>
+    <p class="page-header__subtitle">Every board is reachable at its own URL: /boards/&lt;id&gt;.</p>
+  </div>
+  <button type="button" class="btn btn--primary" (click)="toggleCreateForm()">
+    {{ isCreating ? 'Cancel' : '+ New board' }}
+  </button>
+</section>
+
+<form class="card create-board-form" *ngIf="isCreating" (ngSubmit)="createBoard()">
+  <div class="field">
+    <label for="board-name">Board name</label>
+    <input id="board-name" type="text" name="boardName" [(ngModel)]="newBoardName" required autofocus />
+  </div>
+  <div class="field">
+    <label for="board-description">Description</label>
+    <input id="board-description" type="text" name="boardDescription" [(ngModel)]="newBoardDescription" />
+  </div>
+  <button type="submit" class="btn btn--primary">Create board</button>
+</form>
+
+<div class="sort-bar" role="group" aria-label="Sort boards">
+  <span class="sort-bar__label">Sort by:</span>
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'recent'">
+    Most recent
+  </a>
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'name'">
+    Name
+  </a>
+</div>
+
+<ul class="board-grid">
+  <li class="card board-card" *ngFor="let board of boards">
+    <a [routerLink]="['/boards', board.id]" class="board-card__link">
+      <h2 class="board-card__title">{{ board.name }}</h2>
+      <p class="board-card__description">{{ board.description }}</p>
+      <span class="board-card__meta">{{ board.tasks.length }} task(s) &middot; created {{ board.createdAt }}</span>
+    </a>
+  </li>
+</ul>
+
+<p class="empty-state" *ngIf="boards.length === 0">No boards yet. Create your first one above.</p>

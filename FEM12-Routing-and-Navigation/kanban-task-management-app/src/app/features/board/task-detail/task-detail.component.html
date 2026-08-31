@@ -1,0 +1,34 @@
+<section class="card task-detail" *ngIf="task">
+  <div class="task-detail__header">
+    <h2>Edit task</h2>
+    <a [routerLink]="['/boards', boardId]" class="btn">&times; Close</a>
+  </div>
+
+  <div class="field">
+    <label for="task-title">Title</label>
+    <input id="task-title" type="text" name="title" [(ngModel)]="title" />
+  </div>
+
+  <div class="field">
+    <label for="task-description">Description</label>
+    <textarea id="task-description" name="description" rows="3" [(ngModel)]="description"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="task-status">Status</label>
+    <select id="task-status" name="status" [(ngModel)]="status">
+      <option value="todo">To do</option>
+      <option value="in-progress">In progress</option>
+      <option value="done">Done</option>
+    </select>
+  </div>
+
+  <div class="task-detail__actions">
+    <button type="button" class="btn btn--primary" (click)="saveTask()" [disabled]="!hasUnsavedChanges()">
+      Save changes
+    </button>
+    <span class="task-detail__hint" *ngIf="hasUnsavedChanges()">
+      Unsaved changes - navigating away will ask for confirmation.
+    </span>
+  </div>
+</section>

@@ -1,0 +1,27 @@
+.task-detail {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border-color: var(--color-primary);
+}
+
+.task-detail__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.task-detail__header h2 {
+  margin: 0;
+}
+
+.task-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.task-detail__hint {
+  font-size: 0.85rem;
+  color: var(--color-warning);
+}
