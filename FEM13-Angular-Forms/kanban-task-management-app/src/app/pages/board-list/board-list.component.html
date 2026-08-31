@@ -10,8 +10,13 @@
 
 <!-- Template-driven form (FEM13 LO2): NgForm + ngModel two-way binding,
      with template reference variables (#boardName="ngModel") exposing each
-     control's validation state directly in the template. -->
-<form class="card create-board-form" *ngIf="isCreating" #boardForm="ngForm" (ngSubmit)="createBoard(boardForm)" novalidate>
+     control's validation state directly in the template. This is the one
+     form in the app that predates FEM13 as a plain, manually-bound input
+     (see the Routing & Navigation module) - here it's upgraded to
+     demonstrate ngModel/NgForm for the first time, alongside the Reactive
+     Forms used by the task form below. -->
+<form class="card create-board-panel" *ngIf="isCreating" #boardForm="ngForm" (ngSubmit)="createBoard(boardForm)" novalidate>
+  <h2>New board</h2>
   <div class="field">
     <label for="board-name">Board name</label>
     <input
@@ -57,12 +62,12 @@
   <button type="submit" class="btn btn--primary" [disabled]="boardForm.invalid">Create board</button>
 </form>
 
-<div class="sort-bar" role="group" aria-label="Sort boards">
-  <span class="sort-bar__label">Sort by:</span>
-  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'recent'">
+<div class="toolbar" role="group" aria-label="Sort boards">
+  <span class="toolbar__label">Sort by:</span>
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'recent'">
     Most recent
   </a>
-  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'name'">
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'name'">
     Name
   </a>
 </div>
@@ -72,7 +77,12 @@
     <a [routerLink]="['/boards', board.id]" class="board-card__link">
       <h2 class="board-card__title">{{ board.name }}</h2>
       <p class="board-card__description">{{ board.description }}</p>
-      <span class="board-card__meta">{{ board.tasks.length }} task(s) &middot; created {{ board.createdAt }}</span>
+      <div class="board-card__counts" *ngIf="board.tasks.length > 0">
+        <span class="status-badge status-badge--todo">{{ todoCount(board) }} to do</span>
+        <span class="status-badge status-badge--in-progress">{{ inProgressCount(board) }} in progress</span>
+        <span class="status-badge status-badge--done">{{ doneCount(board) }} done</span>
+      </div>
+      <span class="board-card__meta">Created {{ board.createdAt }}</span>
     </a>
   </li>
 </ul>

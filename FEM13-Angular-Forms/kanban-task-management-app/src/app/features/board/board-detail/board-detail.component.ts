@@ -3,8 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Board } from '../../../core/models/board.model';
-import { Task } from '../../../core/models/task.model';
+import { Task, TaskStatus } from '../../../core/models/task.model';
 import { BoardService } from '../../../core/services/board.service';
+
+interface StatusColumn {
+  status: TaskStatus;
+  label: string;
+}
 
 @Component({
   selector: 'app-board-detail',
@@ -17,6 +22,14 @@ export class BoardDetailComponent implements OnInit, OnDestroy {
   boardId!: number;
   previousBoardId?: number;
   nextBoardId?: number;
+
+  // Same Kanban-column grouping as the Routing & Navigation module's board
+  // detail view - just a different display of the same `board.tasks`.
+  readonly statusColumns: StatusColumn[] = [
+    { status: 'todo', label: 'To do' },
+    { status: 'in-progress', label: 'In progress' },
+    { status: 'done', label: 'Done' },
+  ];
 
   // Set from the ?taskSaved=created|updated query param that
   // AddTaskComponent/EditTaskComponent attach when they navigate back
@@ -62,6 +75,10 @@ export class BoardDetailComponent implements OnInit, OnDestroy {
 
   subtaskProgress(task: Task): string {
     return `${task.subtasks.filter((subtask) => subtask.completed).length}/${task.subtasks.length}`;
+  }
+
+  tasksByStatus(status: TaskStatus): Task[] {
+    return this.board?.tasks.filter((task) => task.status === status) ?? [];
   }
 
   private loadBoard(): void {

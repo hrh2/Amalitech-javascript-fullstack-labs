@@ -60,6 +60,18 @@ export class BoardListComponent implements OnInit, OnDestroy {
     this.newBoardDescription = '';
   }
 
+  todoCount(board: Board): number {
+    return board.tasks.filter((task) => task.status === 'todo').length;
+  }
+
+  inProgressCount(board: Board): number {
+    return board.tasks.filter((task) => task.status === 'in-progress').length;
+  }
+
+  doneCount(board: Board): number {
+    return board.tasks.filter((task) => task.status === 'done').length;
+  }
+
   createBoard(boardForm: NgForm): void {
     if (boardForm.invalid) {
       // Reveals every field's error state even if the user never blurred

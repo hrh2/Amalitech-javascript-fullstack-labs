@@ -7,6 +7,8 @@ They will explore both **template-driven** and **reactive forms**, apply **form 
 
 This lab focuses on building clean, interactive, and user-friendly forms that integrate seamlessly with Angular's routing structure and component architecture.
 
+> **Scope note — which form uses which approach:** The task forms (Task 2's Add Task / Edit Task components) need a dynamic subtasks list (Bonus Task) and a cross-record validator (no duplicate titles on the same board) — both are far more naturally expressed as a **Reactive form** (`FormGroup`/`FormBuilder`/`FormArray`) than a template-driven one. To still satisfy this lab's "explore both template-driven and reactive forms" objective, use the simpler, already-existing "Create board" input from the Routing & Navigation module as the **template-driven** (`NgForm`/`[(ngModel)]`) example, upgrading it with real validation here. This is the one point where this lab's forms work extends outside the task components themselves.
+
 ## Learning Objectives
 
 By the end of this lab, learners should be able to:
@@ -41,8 +43,8 @@ By the end of this lab, learners should be able to:
 ### Task 2: Create Task Form Components
 
 - Create a dedicated component for adding new tasks and another for editing existing tasks.
-- Integrate both into the routing system using appropriate routes (e.g., `/board/:id/new-task` and `/board/:id/edit/:taskId`).
-- Ensure that the form components are structured for clarity and reusability.
+- Integrate both into the routing system using appropriate routes nested under a board (e.g., `/boards/:boardId/new-task` and `/boards/:boardId/edit/:taskId`, matching this app's existing `boards/:boardId` route convention from the Routing & Navigation module).
+- Ensure that the form components are structured for clarity and reusability — sharing the actual field markup/validation between the two routed components (e.g., via a presentational child component fed by `@Input()`) is encouraged over duplicating the form twice.
 
 ### Task 3: Build the Form Structure
 

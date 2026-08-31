@@ -20,25 +20,33 @@
     <a [routerLink]="['new-task']" class="btn btn--primary">+ New task</a>
   </header>
 
-  <ul class="task-list">
-    <li class="card task-row" *ngFor="let task of board.tasks">
-      <a [routerLink]="['edit', task.id]" routerLinkActive="task-row__link--active" class="task-row__link">
-        <span class="task-row__main">
-          <span class="task-row__title">{{ task.title }}</span>
-          <span class="task-row__meta" *ngIf="task.dueDate || task.subtasks.length > 0">
-            <span class="task-row__due" *ngIf="task.dueDate">Due {{ task.dueDate }}</span>
-            <span class="task-row__subtasks" *ngIf="task.subtasks.length > 0">{{ subtaskProgress(task) }} subtasks</span>
-          </span>
-        </span>
-        <span class="task-row__status task-row__status--{{ task.status }}">{{ task.status }}</span>
-      </a>
-    </li>
-  </ul>
-  <p class="empty-state" *ngIf="board.tasks.length === 0">This board has no tasks yet.</p>
+  <div class="kanban-board">
+    <section class="kanban-column" *ngFor="let column of statusColumns">
+      <header class="kanban-column__header kanban-column__header--{{ column.status }}">
+        <h2>{{ column.label }}</h2>
+        <span class="kanban-column__count">{{ tasksByStatus(column.status).length }}</span>
+      </header>
+
+      <ul class="kanban-column__list">
+        <li class="card kanban-card" *ngFor="let task of tasksByStatus(column.status)">
+          <a [routerLink]="['edit', task.id]" routerLinkActive="kanban-card__link--active" class="kanban-card__link">
+            <span class="kanban-card__title">{{ task.title }}</span>
+            <span class="kanban-card__description" *ngIf="task.description">{{ task.description }}</span>
+            <span class="kanban-card__meta" *ngIf="task.dueDate || task.subtasks.length > 0">
+              <span class="kanban-card__due" *ngIf="task.dueDate">Due {{ task.dueDate }}</span>
+              <span class="kanban-card__subtasks" *ngIf="task.subtasks.length > 0">{{ subtaskProgress(task) }} subtasks</span>
+            </span>
+          </a>
+        </li>
+      </ul>
+
+      <p class="empty-state empty-state--column" *ngIf="tasksByStatus(column.status).length === 0">No tasks.</p>
+    </section>
+  </div>
 
   <!-- Nested router-outlet: renders AddTaskComponent ('new-task') or
        EditTaskComponent ('edit/:taskId') right inside this board's own
-       layout, without replacing the board header/task list above it. -->
+       layout, without replacing the board header/columns above it. -->
   <div class="task-detail-slot">
     <router-outlet></router-outlet>
   </div>
