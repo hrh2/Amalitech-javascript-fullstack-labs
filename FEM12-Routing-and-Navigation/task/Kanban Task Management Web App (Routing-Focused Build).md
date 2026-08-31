@@ -7,6 +7,8 @@ They will configure routes, implement different navigation methods, create modul
 
 This lab focuses on building a **Single Page Application (SPA)** architecture with clean route organization and scalable design patterns for larger Angular applications.
 
+> **Scope note:** This lab is routing-focused. Where a task below needs some editable field (e.g., to give the deactivation guard in Task 7 something real to protect), implement it with plain Angular template syntax — property binding (`[value]`) plus event binding (`(input)`/`(change)`/`(submit)`) — not two-way binding (`[(ngModel)]`) or the `FormsModule`/`ReactiveFormsModule` APIs. Those belong to the later **Forms & Validation** module, which revisits this same Kanban app to build proper validated forms on top of the routes and guards built here. A board- or task-editing feature that appears in this lab should look like "a few inputs wired up by hand," not a form.
+
 ## Learning Objectives
 
 By the end of this lab, learners should be able to:
@@ -76,8 +78,8 @@ By the end of this lab, learners should be able to:
 ### Task 7: Implement Route Guards
 
 - Create guards to protect specific routes and control navigation flow.
-- Apply authentication guards to restrict access to certain pages.
-- Add deactivation guards to prevent users from losing unsaved changes when navigating away.
+- Apply authentication guards (`CanActivate`) to restrict access to certain pages.
+- Add deactivation guards (`CanDeactivate`) to prevent users from losing unsaved changes when navigating away from a view with editable fields (see the Scope note above — the editable fields themselves should not use `ngModel`/`FormsModule`; only the guard mechanism is required here).
 - Review how route guards enhance application security and user experience.
 
 ### Task 8: Testing and Verification
@@ -98,6 +100,7 @@ By the end of this lab, learners should be able to:
 - Create a shared layout that includes elements such as a persistent sidebar or header across all routes.
 - Add redirect rules to handle default routes (e.g., redirecting `/` to `/boards`).
 - Implement a custom "Page Not Found" view for undefined routes.
+- Optional stretch ideas (also called out in this module's own reference notes): a "Create Board" flow that calls `Router.navigate()` programmatically after a successful save (practicing the `routerLink`-vs-`Router`-service distinction from Task 4); a second, independent guard (e.g., confirming a board id actually exists) applied alongside the authentication guard on the same route; a query-parameter-driven sort/filter on the board list, preserved across navigation.
 
 ## Assessment Criteria
 

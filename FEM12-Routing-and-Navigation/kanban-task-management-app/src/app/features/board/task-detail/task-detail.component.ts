@@ -1,15 +1,24 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Task, TaskStatus } from '../../../core/models/task.model';
 import { BoardService } from '../../../core/services/board.service';
 import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes.guard';
 
+/**
+ * Deliberately does NOT use FormsModule/ngModel: two-way binding is a
+ * FEM13 (Forms) concept. Each field here is plain one-way property
+ * binding ([value]/[ngValue]-less <select>) paired with an (input)/
+ * (change) event handler that updates the matching component field -
+ * exactly the manual pattern ngModel is syntactic sugar over, using only
+ * FEM09-level template syntax. This still gives unsavedChangesGuard
+ * (CanDeactivate) real editable state to compare against, satisfying the
+ * FEM12 task spec's Task 7 without borrowing FEM13's forms machinery.
+ */
 @Component({
   selector: 'app-task-detail',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './task-detail.component.html',
   styleUrl: './task-detail.component.css',
 })
@@ -53,6 +62,18 @@ export class TaskDetailComponent implements OnInit, OnDestroy, HasUnsavedChanges
     this.title = this.task.title;
     this.description = this.task.description;
     this.status = this.task.status;
+  }
+
+  onTitleInput(value: string): void {
+    this.title = value;
+  }
+
+  onDescriptionInput(value: string): void {
+    this.description = value;
+  }
+
+  onStatusChange(value: string): void {
+    this.status = value as TaskStatus;
   }
 
   // Consulted by unsavedChangesGuard (CanDeactivate) before letting the

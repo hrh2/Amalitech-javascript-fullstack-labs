@@ -8,24 +8,28 @@
   </button>
 </section>
 
-<form class="card create-board-form" *ngIf="isCreating" (ngSubmit)="createBoard()">
+<!-- No FormsModule/ngModel here on purpose - see board-list.component.ts.
+     Values are read straight off the inputs via template reference
+     variables when the native (submit) event fires. -->
+<form class="card create-board-panel" *ngIf="isCreating" (submit)="onCreateSubmit($event, boardNameInput.value, boardDescriptionInput.value)">
+  <h2>New board</h2>
   <div class="field">
     <label for="board-name">Board name</label>
-    <input id="board-name" type="text" name="boardName" [(ngModel)]="newBoardName" required autofocus />
+    <input id="board-name" type="text" #boardNameInput required autofocus />
   </div>
   <div class="field">
-    <label for="board-description">Description</label>
-    <input id="board-description" type="text" name="boardDescription" [(ngModel)]="newBoardDescription" />
+    <label for="board-description">Description <span class="field-optional">(optional)</span></label>
+    <input id="board-description" type="text" #boardDescriptionInput />
   </div>
   <button type="submit" class="btn btn--primary">Create board</button>
 </form>
 
-<div class="sort-bar" role="group" aria-label="Sort boards">
-  <span class="sort-bar__label">Sort by:</span>
-  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'recent'">
+<div class="toolbar" role="group" aria-label="Sort boards">
+  <span class="toolbar__label">Sort by:</span>
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'recent'">
     Most recent
   </a>
-  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="sort-bar__link" [class.sort-bar__link--active]="sortOrder === 'name'">
+  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'name'">
     Name
   </a>
 </div>
@@ -35,7 +39,12 @@
     <a [routerLink]="['/boards', board.id]" class="board-card__link">
       <h2 class="board-card__title">{{ board.name }}</h2>
       <p class="board-card__description">{{ board.description }}</p>
-      <span class="board-card__meta">{{ board.tasks.length }} task(s) &middot; created {{ board.createdAt }}</span>
+      <div class="board-card__counts" *ngIf="board.tasks.length > 0">
+        <span class="status-badge status-badge--todo">{{ todoCount(board) }} to do</span>
+        <span class="status-badge status-badge--in-progress">{{ inProgressCount(board) }} in progress</span>
+        <span class="status-badge status-badge--done">{{ doneCount(board) }} done</span>
+      </div>
+      <span class="board-card__meta">Created {{ board.createdAt }}</span>
     </a>
   </li>
 </ul>

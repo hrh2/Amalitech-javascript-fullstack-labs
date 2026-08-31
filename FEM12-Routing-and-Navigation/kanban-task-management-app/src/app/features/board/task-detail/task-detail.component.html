@@ -4,19 +4,31 @@
     <a [routerLink]="['/boards', boardId]" class="btn">&times; Close</a>
   </div>
 
+  <!-- One-way [value] binding + an (input)/(change) handler, not
+       [(ngModel)] - see task-detail.component.ts. -->
   <div class="field">
     <label for="task-title">Title</label>
-    <input id="task-title" type="text" name="title" [(ngModel)]="title" />
+    <input
+      id="task-title"
+      type="text"
+      [value]="title"
+      (input)="onTitleInput($any($event.target).value)"
+    />
   </div>
 
   <div class="field">
     <label for="task-description">Description</label>
-    <textarea id="task-description" name="description" rows="3" [(ngModel)]="description"></textarea>
+    <textarea
+      id="task-description"
+      rows="3"
+      [value]="description"
+      (input)="onDescriptionInput($any($event.target).value)"
+    ></textarea>
   </div>
 
   <div class="field">
     <label for="task-status">Status</label>
-    <select id="task-status" name="status" [(ngModel)]="status">
+    <select id="task-status" [value]="status" (change)="onStatusChange($any($event.target).value)">
       <option value="todo">To do</option>
       <option value="in-progress">In progress</option>
       <option value="done">Done</option>

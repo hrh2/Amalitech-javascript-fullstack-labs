@@ -1,39 +1,48 @@
 :root {
-  color-scheme: light dark;
+  /* Light mode only, deliberately: this app does not offer a dark theme,
+     so color-scheme stays 'light' and there is no
+     prefers-color-scheme: dark override block below. */
+  color-scheme: light;
 
-  --color-bg: #f5f6f8;
+  /* Neutrals */
+  --color-bg: #f6f7fb;
   --color-surface: #ffffff;
-  --color-surface-hover: #eef0f4;
-  --color-border: #e0e2e8;
-  --color-text: #1b1e26;
-  --color-text-muted: #5a5f6d;
-  --color-primary: #4b5fe0;
-  --color-primary-hover: #3b4bc4;
-  --color-primary-soft: #e8eaff;
-  --color-danger: #d64545;
-  --color-success: #2f9e5c;
-  --color-warning: #b8860b;
+  --color-surface-alt: #f1f2f7;
+  --color-surface-hover: #eceefa;
+  --color-border: #e3e5ee;
+  --color-border-strong: #d3d6e3;
+  --color-text: #171a24;
+  --color-text-muted: #666b80;
+  --color-text-faint: #8f93a6;
 
+  /* Brand / accent */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-soft: #eef0fe;
+  --color-primary-strong: #3730a3;
+
+  /* Status */
+  --color-danger: #dc2626;
+  --color-danger-soft: #fdecec;
+  --color-success: #15803d;
+  --color-success-soft: #e6f6ec;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf1de;
+
+  /* Shape & elevation */
+  --radius-sm: 6px;
   --radius: 10px;
-  --shadow-card: 0 1px 3px rgba(20, 22, 30, 0.08);
-}
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(23, 26, 36, 0.06);
+  --shadow-card: 0 1px 2px rgba(23, 26, 36, 0.04), 0 4px 10px rgba(23, 26, 36, 0.06);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #14161c;
-    --color-surface: #1c1f28;
-    --color-surface-hover: #262a35;
-    --color-border: #2e323e;
-    --color-text: #e7e8ec;
-    --color-text-muted: #9a9fb0;
-    --color-primary: #8b98f5;
-    --color-primary-hover: #a3aef7;
-    --color-primary-soft: #2a2e4a;
-    --color-danger: #ef6b6b;
-    --color-success: #5cc98a;
-    --color-warning: #e0b13d;
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
-  }
+  /* Spacing scale (used loosely via rem multiples in individual stylesheets) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
 }
 
 * {
@@ -55,6 +64,7 @@ body {
     sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -72,31 +82,47 @@ textarea {
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 h1,
 h2,
 h3 {
-  line-height: 1.2;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
+
+p {
+  line-height: 1.5;
+}
+
+/* Buttons */
 
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   padding: 0.55rem 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-text);
   font-weight: 600;
   font-size: 0.9rem;
+  line-height: 1.2;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .btn:hover {
   background: var(--color-surface-hover);
+  border-color: var(--color-primary);
 }
 
 .btn--primary {
@@ -107,19 +133,44 @@ h3 {
 
 .btn--primary:hover {
   background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .btn--danger {
   color: var(--color-danger);
-  border-color: var(--color-danger);
+  border-color: var(--color-border-strong);
   background: transparent;
 }
+
+.btn--danger:hover {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+}
+
+.btn--primary:disabled:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Form fields (shared by every plain input/select/textarea in both apps,
+   whether it's manually bound (FEM12) or backed by ngModel/a FormGroup
+   (FEM13)) */
 
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
 }
 
 .field label {
@@ -128,18 +179,109 @@ h3 {
   color: var(--color-text-muted);
 }
 
+.field-optional {
+  font-weight: 400;
+  text-transform: none;
+  color: var(--color-text-faint);
+}
+
 .field input,
 .field textarea,
 .field select {
-  padding: 0.55rem 0.7rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
   background: var(--color-surface);
+  font-size: 0.95rem;
 }
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'],
+.field select[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+/* Cards & surfaces */
 
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Status badges (shared between board-list summaries and Kanban cards) */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status-badge--todo {
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+}
+
+.status-badge--in-progress {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.status-badge--done {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+/* Success/info banners */
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.banner--success {
+  background: var(--color-success-soft);
+  color: #0f5a2c;
+  border: 1px solid #bfe6cd;
+}
+
+.banner__dismiss {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
 }

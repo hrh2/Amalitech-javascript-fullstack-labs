@@ -3,7 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Board } from '../../../core/models/board.model';
+import { Task, TaskStatus } from '../../../core/models/task.model';
 import { BoardService } from '../../../core/services/board.service';
+
+interface StatusColumn {
+  status: TaskStatus;
+  label: string;
+}
 
 @Component({
   selector: 'app-board-detail',
@@ -16,6 +22,15 @@ export class BoardDetailComponent implements OnInit, OnDestroy {
   boardId!: number;
   previousBoardId?: number;
   nextBoardId?: number;
+
+  // A Kanban board is naturally organized into status columns; this just
+  // groups the same `board.tasks` array by status for display purposes -
+  // no new data or routing concept, just a different view of it.
+  readonly statusColumns: StatusColumn[] = [
+    { status: 'todo', label: 'To do' },
+    { status: 'in-progress', label: 'In progress' },
+    { status: 'done', label: 'Done' },
+  ];
 
   private paramSubscription?: Subscription;
 
@@ -39,6 +54,10 @@ export class BoardDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.paramSubscription?.unsubscribe();
+  }
+
+  tasksByStatus(status: TaskStatus): Task[] {
+    return this.board?.tasks.filter((task) => task.status === status) ?? [];
   }
 
   private loadBoard(): void {
