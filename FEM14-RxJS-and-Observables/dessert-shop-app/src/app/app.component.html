@@ -1,0 +1,13 @@
+<a class="skip-link" href="#dessert-list-heading">Skip to desserts</a>
+
+<div class="layout">
+  <main class="layout__main">
+    <app-dessert-list></app-dessert-list>
+  </main>
+
+  <aside class="layout__cart" aria-label="Shopping cart">
+    <app-cart></app-cart>
+  </aside>
+</div>
+
+<app-order-confirmation-modal *ngIf="cartService.isOrderConfirmed$ | async"></app-order-confirmation-modal>

@@ -1,0 +1,47 @@
+<section class="cart" aria-labelledby="cart-heading">
+  <h2 id="cart-heading" class="cart__heading">
+    Your Cart (<span aria-live="polite">{{ cartService.itemCount$ | async }}</span>)
+  </h2>
+
+  <ng-container *ngIf="cartService.cartLines$ | async as lines">
+    <div *ngIf="lines.length === 0; else hasItems" class="cart__empty">
+      <img
+        src="assets/images/illustration-empty-cart.svg"
+        alt=""
+        aria-hidden="true"
+        class="cart__empty-illustration"
+      />
+      <p>Your added items will appear here</p>
+    </div>
+
+    <ng-template #hasItems>
+      <ul class="cart__list">
+        <app-cart-item
+          *ngFor="let line of lines; trackBy: trackByDessertId"
+          [line]="line"
+          variant="cart"
+          (remove)="cartService.removeFromCart($event)"
+        ></app-cart-item>
+      </ul>
+
+      <div class="cart__total-row">
+        <span>Order Total</span>
+        <span class="cart__total-amount" aria-live="polite">{{ cartService.orderTotal$ | async | currency }}</span>
+      </div>
+
+      <p class="cart__carbon-note">
+        <img src="assets/images/icon-carbon-neutral.svg" alt="" aria-hidden="true" />
+        This is a <strong>carbon-neutral</strong> delivery
+      </p>
+
+      <div class="cart__actions">
+        <button type="button" class="btn btn--confirm" (click)="cartService.confirmOrder()">
+          Confirm Order
+        </button>
+        <button type="button" class="btn btn--clear" (click)="cartService.clearCart()">
+          Clear Cart
+        </button>
+      </div>
+    </ng-template>
+  </ng-container>
+</section>
