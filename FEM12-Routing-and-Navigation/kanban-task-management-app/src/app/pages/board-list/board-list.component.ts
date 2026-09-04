@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Board } from '../../core/models/board.model';
-import { BoardService } from '../../core/services/board.service';
+import { BoardService } from '../../core/services/board-service/board.service';
 
 type SortOrder = 'name' | 'recent';
 
@@ -24,7 +24,6 @@ type SortOrder = 'name' | 'recent';
 export class BoardListComponent implements OnInit, OnDestroy {
   boards: Board[] = [];
   sortOrder: SortOrder = 'recent';
-  isCreating = false;
 
   private queryParamSubscription?: Subscription;
 
@@ -58,9 +57,6 @@ export class BoardListComponent implements OnInit, OnDestroy {
     this.boards = boards;
   }
 
-  toggleCreateForm(): void {
-    this.isCreating = !this.isCreating;
-  }
 
   todoCount(board: Board): number {
     return board.tasks.filter((task) => task.status === 'todo').length;
@@ -72,22 +68,5 @@ export class BoardListComponent implements OnInit, OnDestroy {
 
   doneCount(board: Board): number {
     return board.tasks.filter((task) => task.status === 'done').length;
-  }
-
-  // The native (submit) event, not Angular's (ngSubmit) - (ngSubmit) is
-  // only emitted by the NgForm directive that FormsModule provides.
-  onCreateSubmit(event: Event, name: string, description: string): void {
-    event.preventDefault();
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      return;
-    }
-    const board = this.boardService.addBoard(trimmedName, description.trim());
-    this.isCreating = false;
-
-    // Programmatic navigation: navigating to the new board is a
-    // *consequence* of successfully saving it, not a direct link click,
-    // so the Router service is used instead of routerLink here.
-    this.router.navigate(['/boards', board.id]);
   }
 }

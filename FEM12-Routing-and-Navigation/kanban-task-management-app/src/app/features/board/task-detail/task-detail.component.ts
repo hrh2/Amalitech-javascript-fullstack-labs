@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Task, TaskStatus } from '../../../core/models/task.model';
-import { BoardService } from '../../../core/services/board.service';
+import { BoardService } from '../../../core/services/board-service/board.service';
 import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes.guard';
 
 /**

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } fr
 import { Subscription } from 'rxjs';
 import { Board } from '../../../core/models/board.model';
 import { Task, TaskStatus } from '../../../core/models/task.model';
-import { BoardService } from '../../../core/services/board.service';
+import { BoardService } from '../../../core/services/board-service/board.service';
 
 interface StatusColumn {
   status: TaskStatus;

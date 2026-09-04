@@ -1,6 +1,6 @@
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subtask, Task, TaskStatus } from '../../../core/models/task.model';
-import { BoardService } from '../../../core/services/board.service';
+import { BoardService } from '../../../core/services/board-service/board.service';
 import { duplicateTitleValidator, dueDateNotInPastValidator } from '../../../core/validators/task-validators';
 
 /**

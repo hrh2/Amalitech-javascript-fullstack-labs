@@ -3,26 +3,7 @@
     <h1>Boards</h1>
     <p class="page-header__subtitle">Every board is reachable at its own URL: /boards/&lt;id&gt;.</p>
   </div>
-  <button type="button" class="btn btn--primary" (click)="toggleCreateForm()">
-    {{ isCreating ? 'Cancel' : '+ New board' }}
-  </button>
 </section>
-
-<!-- No FormsModule/ngModel here on purpose - see board-list.component.ts.
-     Values are read straight off the inputs via template reference
-     variables when the native (submit) event fires. -->
-<form class="card create-board-panel" *ngIf="isCreating" (submit)="onCreateSubmit($event, boardNameInput.value, boardDescriptionInput.value)">
-  <h2>New board</h2>
-  <div class="field">
-    <label for="board-name">Board name</label>
-    <input id="board-name" type="text" #boardNameInput required autofocus />
-  </div>
-  <div class="field">
-    <label for="board-description">Description <span class="field-optional">(optional)</span></label>
-    <input id="board-description" type="text" #boardDescriptionInput />
-  </div>
-  <button type="submit" class="btn btn--primary">Create board</button>
-</form>
 
 <div class="toolbar" role="group" aria-label="Sort boards">
   <span class="toolbar__label">Sort by:</span>

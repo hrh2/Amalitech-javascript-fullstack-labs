@@ -1,5 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { BoardService } from '../services/board.service';
+import { BoardService } from '../services/board-service/board.service';
 
 /**
  * Custom validator: rejects a title that another task on the same board

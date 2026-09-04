@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { BoardService } from '../../../core/services/board.service';
+import { BoardService } from '../../../core/services/board-service/board.service';
 import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes.guard';
 import { TaskFormComponent } from '../task-form/task-form.component';
 import { TaskFormValue, applyDuplicateTitleValidator, buildTaskForm } from '../task-form/task-form.factory';

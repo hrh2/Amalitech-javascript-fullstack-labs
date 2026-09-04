@@ -4,7 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Board } from '../../core/models/board.model';
-import { BoardService } from '../../core/services/board.service';
+import { BoardService } from '../../core/services/board-service/board.service';
 
 type SortOrder = 'name' | 'recent';
 
