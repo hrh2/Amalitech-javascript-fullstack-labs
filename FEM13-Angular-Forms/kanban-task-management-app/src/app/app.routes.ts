@@ -9,7 +9,7 @@ export const routes: Routes = [
   // Bonus task: redirect the default route to the boards list.
   { path: '', pathMatch: 'full', redirectTo: 'boards' },
 
-  { path: 'boards', component: BoardListComponent },
+  { path: 'boards', component: BoardListComponent ,canActivate: [authGuard] },
 
   // The whole "board" feature area (board detail + nested task detail) is
   // lazy-loaded: its code is only downloaded the first time a user actually
