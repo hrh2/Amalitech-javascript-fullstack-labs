@@ -1,0 +1,119 @@
+<header class="app-header">
+  <div class="app-header__inner">
+    <p class="app-header__logo">Recipe <span>finder</span></p>
+
+    <div class="app-header__icons">
+      <button type="button" class="app-header__icon-btn" aria-label="Jump to search" (click)="searchInput.focus()">
+        <!-- Icon/Regular/MagnifyingGlass -->
+        <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12.6875 21.875C17.7616 21.875 21.875 17.7616 21.875 12.6875C21.875 7.61338 17.7616 3.5 12.6875 3.5C7.61338 3.5 3.5 7.61338 3.5 12.6875C3.5 17.7616 7.61338 21.875 12.6875 21.875Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.1846 19.1846L24.5002 24.5002" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        class="app-header__icon-btn"
+        [class.app-header__icon-btn--active]="favoritesOnly()"
+        [attr.aria-pressed]="favoritesOnly()"
+        [disabled]="!hasFavorites()"
+        [attr.title]="hasFavorites() ? 'Show favorites only' : 'Favorite a recipe to enable this filter'"
+        aria-label="Show favorites only"
+        (click)="onFavoritesOnlyToggle()"
+      >
+        <!-- Icon/Regular/Heart -->
+        <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 25.3125C15 25.3125 3.28125 18.75 3.28125 10.7813C3.28125 9.37252 3.76933 8.00731 4.66245 6.91788C5.55556 5.82845 6.79855 5.08211 8.17992 4.80584C9.56129 4.52956 10.9957 4.74042 12.2391 5.40254C13.4826 6.06466 14.4582 7.13714 15 8.4375C15.5418 7.13714 16.5174 6.06466 17.7609 5.40254C19.0043 4.74042 20.4387 4.52956 21.8201 4.80584C23.2015 5.08211 24.4444 5.82845 25.3376 6.91788C26.2307 8.00731 26.7188 9.37252 26.7188 10.7813C26.7188 18.75 15 25.3125 15 25.3125Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <span class="app-header__icon-static" aria-hidden="true">
+        <!-- Icon/Regular/User (decorative — no profile/auth feature in this lab) -->
+        <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18.75C19.1421 18.75 22.5 15.3921 22.5 11.25C22.5 7.10786 19.1421 3.75 15 3.75C10.8579 3.75 7.5 7.10786 7.5 11.25C7.5 15.3921 10.8579 18.75 15 18.75Z" stroke="currentColor" stroke-width="2" stroke-miterlimit="10"/>
+          <path d="M3.63281 25.3125C4.78469 23.317 6.4416 21.6598 8.43698 20.5077C10.4324 19.3555 12.6959 18.749 15 18.749C17.3041 18.749 19.5676 19.3555 21.563 20.5077C23.5584 21.6598 25.2153 23.317 26.3672 25.3125" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="search-bar-wrap">
+  <label class="search-bar">
+    <span class="search-bar__icon" aria-hidden="true">
+      <!-- Icon/Light/MagnifyingGlass -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10.875 18.75C15.2242 18.75 18.75 15.2242 18.75 10.875C18.75 6.52576 15.2242 3 10.875 3C6.52576 3 3 6.52576 3 10.875C3 15.2242 6.52576 18.75 10.875 18.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16.4443 16.4438L21.0006 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <input
+      #searchInput
+      type="search"
+      class="search-bar__input"
+      placeholder="Search recipes by name or ingredient…"
+      [value]="searchTerm()"
+      (input)="onSearchTermChange($any($event.target).value)"
+    />
+  </label>
+</div>
+
+<main class="page">
+  <section class="intro">
+    <h1 class="intro__title">Healthy Recipes</h1>
+    <p class="intro__subtitle">search &amp; filter, powered by signals</p>
+  </section>
+
+  <section class="toolbar" aria-label="Filter recipes">
+    <label class="toolbar__field toolbar__field--slider">
+      <span class="toolbar__label">Max cook time: {{ maxCookTime() }} min</span>
+      <input
+        type="range"
+        class="toolbar__slider"
+        min="5"
+        [max]="maxCookTimeLimit"
+        step="5"
+        [value]="maxCookTime()"
+        (input)="onMaxCookTimeChange($any($event.target).value)"
+        aria-valuetext="{{ maxCookTime() }} minutes"
+      />
+    </label>
+
+    <label class="toolbar__field toolbar__field--checkbox">
+      <input
+        type="checkbox"
+        [checked]="favoritesOnly()"
+        [disabled]="!hasFavorites()"
+        (change)="onFavoritesOnlyToggle()"
+      />
+      <span>Favorites only</span>
+    </label>
+
+    <button type="button" class="toolbar__clear" (click)="clearFilters()">
+      Clear filters
+    </button>
+  </section>
+
+  <p class="result-count" aria-live="polite">
+    {{ resultCount() }} {{ resultCount() === 1 ? 'recipe' : 'recipes' }} found
+  </p>
+
+  @if (filteredRecipes().length > 0) {
+    <section class="recipe-grid" aria-label="Recipe results">
+      @for (recipe of filteredRecipes(); track recipe.id) {
+        <app-recipe-card
+          [recipe]="recipe"
+          [isFavorited]="isFavorited(recipe.id)"
+          (toggleFavorite)="onToggleFavorite($event)"
+        />
+      }
+    </section>
+  } @else {
+    <section class="empty-state" role="status">
+      <p class="empty-state__emoji" aria-hidden="true">🍽️</p>
+      <p class="empty-state__title">No recipes match your search</p>
+      <p class="empty-state__body">Try a shorter search term or increase the max cook time.</p>
+      <button type="button" class="toolbar__clear" (click)="clearFilters()">Clear filters</button>
+    </section>
+  }
+</main>

@@ -5,6 +5,8 @@ In this lab, learners will build a simplified **Recipe Finder** application usin
 
 The project focuses on creating a responsive, interactive interface where users can search and filter recipes — all powered by **Signals**, `computed()`, and `effect()`.
 
+* [Figma Design](https://www.figma.com/design/bFS76MJxeewgyPcIWoA9oK/Recipe-Finder-App---Landinge-page-Responsive-design---Community---Copy-?node-id=92-125&t=HUkVcXvMl7T8BagL-1)
+* Quick design images are in dir `./sample-design-imgs`
 ## Scenario
 
 Your challenge is to build a reactive Recipe Finder interface where users can:
@@ -51,10 +53,10 @@ You'll manage all app state using Angular's **Signals API** — no RxJS or exter
 
 ## Evaluation Criteria
 
-| Criterion | Weight | Performance Indicators |
-|---|---|---|
-| Signal Usage | 30% | Uses `signal()` appropriately to store and update app state. |
-| Computed & Derived State | 25% | Implements `computed()` correctly for filtering or totals. |
-| Effects & Reactivity | 20% | Uses `effect()` for reactive side effects (logs, UI feedback, persistence). |
-| UI Responsiveness & Accessibility | 15% | Clean, responsive layout with clear hover/focus states. |
-| Code Quality & Structure | 10% | Organized, readable, and maintainable component code. |
+| Criterion                         | Weight | Performance Indicators                                                      |
+|-----------------------------------|--------|-----------------------------------------------------------------------------|
+| Signal Usage                      | 30%    | Uses `signal()` appropriately to store and update app state.                |
+| Computed & Derived State          | 25%    | Implements `computed()` correctly for filtering or totals.                  |
+| Effects & Reactivity              | 20%    | Uses `effect()` for reactive side effects (logs, UI feedback, persistence). |
+| UI Responsiveness & Accessibility | 15%    | Clean, responsive layout with clear hover/focus states.                     |
+| Code Quality & Structure          | 10%    | Organized, readable, and maintainable component code.                       |

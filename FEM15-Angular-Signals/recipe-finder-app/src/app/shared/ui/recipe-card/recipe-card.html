@@ -1,0 +1,32 @@
+<article class="recipe-card">
+  <div class="recipe-card__pill">
+    <div class="recipe-card__photo-wrap">
+      <div class="recipe-card__photo" aria-hidden="true">
+        <span class="recipe-card__emoji">{{ recipe().image }}</span>
+      </div>
+
+      <span class="recipe-card__badge" [attr.aria-label]="'Cook time: ' + recipe().cookTimeMinutes + ' minutes'">
+        {{ recipe().cookTimeMinutes }}m
+      </span>
+    </div>
+
+    <button
+      type="button"
+      class="recipe-card__fav"
+      [class.recipe-card__fav--active]="isFavorited()"
+      [attr.aria-pressed]="isFavorited()"
+      [attr.aria-label]="(isFavorited() ? 'Remove ' : 'Add ') + recipe().name + ' to favorites'"
+      (click)="onToggleFavorite()"
+    >
+      <!-- Icon/Light/Heart, exported from the Figma "Weekly pick" like button -->
+      <svg width="15" height="13" viewBox="0 0 15.1174 13.1143" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8.80762 2.69672C9.89833 1.72056 11.6197 1.53823 12.8223 2.25239L13.0557 2.40766C14.4053 3.40763 14.4572 5.12208 13.2725 6.18305V6.18403L7.56738 11.2924C7.56488 11.2929 7.56166 11.2944 7.55762 11.2944C7.55265 11.2944 7.54853 11.293 7.5459 11.2924L1.84277 6.18403C0.660094 5.12311 0.711528 3.4068 2.06152 2.40668L2.0625 2.40766C3.2664 1.51771 5.14978 1.65569 6.30957 2.69575L6.31055 2.6977L6.89258 3.21723L7.55859 3.81293L8.22559 3.21723L8.80664 2.6977L8.80762 2.69672Z" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+    </button>
+
+    <div class="recipe-card__body">
+      <h3 class="recipe-card__title">{{ recipe().name }}</h3>
+      <p class="recipe-card__ingredients">{{ ingredientsPreview() }}</p>
+    </div>
+  </div>
+</article>
