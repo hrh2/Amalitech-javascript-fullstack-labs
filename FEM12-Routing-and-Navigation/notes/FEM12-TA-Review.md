@@ -303,6 +303,39 @@ requires horizontal scrolling on a phone.
 The whole app (this project and FEM13's) shares one **light-mode-only** design system (`styles.css`): a single set
 of CSS custom properties for color/spacing/radius/shadow, with no `prefers-color-scheme: dark` override anywhere.
 
+### 5.1 Design alignment
+
+An initial pass at this app's UI was decided without a real design reference. Exported design images for the
+Kanban app later became available (`FEM16-State-Management/task/sample-design-imgs/`, shared across the whole
+Kanban project) and were used here as the **visual source of truth** for this pass's palette and column styling:
+
+- `--color-primary` moved to the reference's signature purple (`#635fc7`, hover `#a8a4ff`), and the neutral palette
+  (`--color-bg`, `--color-border`, `--color-text-muted`, etc.) was retuned to the reference's light-grey/near-black
+  values instead of the previous generic indigo/slate palette.
+- Each Kanban column header now carries the reference's small colored dot (`.column-dot--todo/in-progress/done`,
+  cyan/purple/green) plus an uppercase, letter-spaced label reading `TODO (4)` — matching the design image exactly
+  — instead of the previous colored-underline treatment.
+- Board-list status badges reuse the same three column colors, so a board card's "1 to do / 1 in progress / 1
+  done" counts visually agree with the column dots you see once inside that board.
+
+**Deliberately not adopted here** (present in the reference images but out of this module's routing scope, or
+belonging to functionality this Kanban build doesn't implement yet):
+
+- The dark-mode toggle and the persistent left sidebar (board switcher) shown in the reference — both are stateful
+  UI/interaction features, not routing concepts, and the sidebar in particular would blur this module's explicit
+  "a main boards view" route requirement (Task 2) into a single always-visible nav element. `styles.css` keeps
+  `color-scheme: light` with no dark override for the same reason noted above.
+- The "Add New Task" button and its modal, and the "Add new board" modal shown in the reference — this app has no
+  task-creation flow at all yet (only board creation and editing an existing task), so adding those buttons now
+  would imply functionality that isn't actually there. Modals as a UI pattern are also not a routing/forms concept.
+- Task viewing as a modal overlay — this app deliberately keeps task detail as its own **routed, nested** view
+  (`boards/:boardId/tasks/:taskId`) instead, since a real child route with its own URL, guard, and parameter
+  reading is the entire point of this lab; the reference's modal presentation is a UI choice for a later stage of
+  the same project, not a routing requirement.
+
+The result reads as "the same design system, applied only to what this lab actually builds" rather than a
+different, invented look — verified live in §10 below.
+
 ---
 
 ## 6. Navigation Flow — realistic user paths through the app
@@ -373,6 +406,13 @@ lazily-loaded child route module, and both `CanActivate` and `CanDeactivate` gua
   data-bound destination. The `Router` service is imperative, for navigation triggered by logic — e.g. redirecting
   after `authGuard` denies access, or navigating to a newly created board right after `BoardService.addBoard()`
   returns. See the table in §3.3 for every concrete example in this app.
+
+**Design**
+
+- *Why doesn't this app have the sidebar/dark-mode toggle/modals shown in the reference design images?* Those are
+  either stateful UI features unrelated to routing (dark-mode toggle, modals) or would conflict with this module's
+  explicit requirement for a distinct "main boards view" route (a persistent sidebar board-switcher). Only the
+  reference's palette and column styling were adopted here — see §5.1 for the full reasoning per omitted element.
 
 **Parameters**
 
@@ -456,6 +496,14 @@ lazily-loaded child route module, and both `CanActivate` and `CanDeactivate` gua
 - **Bug watch:** none found in this session's redesign pass; the refactor (dropping `FormsModule`, adding Kanban
   columns) was verified against the exact same functional checks the app already had, plus the new column-layout
   checks above.
+- **Design-alignment pass (§5.1):** re-verified live with `ng build` (still succeeds, `board-routes` still a
+  separate lazy chunk) and a headless-Chrome/CDP driven `ng serve` session, with zero console errors:
+  - Boards list, board detail (post-login), the nested task-detail panel, and a 390px mobile viewport were each
+    screenshotted and visually compared against `Kanban Desktop Lightmode.png`/`Kanban Mobile .png` — purple accent,
+    column dot colors, and card styling match.
+  - `authGuard` redirect (`/boards/1` → `/login?returnUrl=...`) and the post-login `navigateByUrl(returnUrl)` still
+    both fire correctly through the new styles, confirming the palette change touched only CSS/template markup,
+    not the routing logic itself.
 
 ---
 
@@ -491,6 +539,7 @@ pattern this module teaches for `CanActivate` — see §3.7.
 | Kanban app with routing/navigation implemented | ✅ Done, verified live |
 | Organized routing structure, nav links, and guards | ✅ Done |
 | Redesigned, light-mode, Kanban-column UI shared with FEM13 | ✅ Done, verified live |
+| UI aligned to the Kanban design reference images (§5.1) | ✅ Palette, column dots, and card styling aligned; sidebar/dark-mode/modals deliberately deferred (out of routing scope) |
 | No FEM13 (Forms) concepts leaking into this build | ✅ Verified via grep + manual review (§4, §10) |
 | Public GitHub repo with clean history/documentation | ⚠️ Not done by this session — requires pushing to a GitHub remote, which needs explicit authorization; the app is ready to commit whenever you'd like |
 | Deployed live app URL (Netlify/Vercel) | ⚠️ Not done by this session — requires an external hosting account/deployment step outside an automated coding session's scope; app builds cleanly and is deploy-ready (`ng build` output verified) |
