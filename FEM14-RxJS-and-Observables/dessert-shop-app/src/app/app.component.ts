@@ -4,8 +4,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { DessertListComponent } from './components/dessert-list/dessert-list.component';
 import { CartComponent } from './components/cart/cart.component';
 import { OrderConfirmationModalComponent } from './components/order-confirmation-modal/order-confirmation-modal.component';
-import { CartService } from './services/cart.service';
-import { LoggingService } from './services/logging.service';
+import { CartService } from './services/cart-service/cart.service';
+import { LoggingService } from './services/logging-service/logging.service';
 
 /**
  * Root component. No longer owns any cart state itself — that responsibility

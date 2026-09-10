@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CartLine, Dessert } from '../../models/dessert.model';
-import { UtilityService } from '../../services/utility.service';
+import { UtilityService } from '../../services/utility-service/utility.service';
 
 /**
  * A single cart row. Reused in two places with slightly different

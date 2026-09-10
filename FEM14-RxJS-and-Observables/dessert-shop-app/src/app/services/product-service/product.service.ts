@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Dessert } from '../models/dessert.model';
+import { Dessert } from '../../models/dessert.model';
 
 export type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
 

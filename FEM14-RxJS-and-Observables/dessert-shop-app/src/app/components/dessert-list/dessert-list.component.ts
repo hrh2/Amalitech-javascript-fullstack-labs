@@ -17,11 +17,11 @@ import {
 } from 'rxjs';
 import { DessertCardComponent } from '../dessert-card/dessert-card.component';
 import { Dessert } from '../../models/dessert.model';
-import { CartService } from '../../services/cart.service';
-import { DessertDataService } from '../../services/dessert-data.service';
-import { ProductService, SortOption } from '../../services/product.service';
-import { LoggingService } from '../../services/logging.service';
-import { UtilityService } from '../../services/utility.service';
+import { CartService } from '../../services/cart-service/cart.service';
+import { DessertDataService } from '../../services/dessert-data-service/dessert-data.service';
+import { ProductService, SortOption } from '../../services/product-service/product.service';
+import { LoggingService } from '../../services/logging-service/logging.service';
+import { UtilityService } from '../../services/utility-service/utility.service';
 
 /** A dessert paired with its current cart quantity, ready for the template. */
 export interface DessertViewModel {

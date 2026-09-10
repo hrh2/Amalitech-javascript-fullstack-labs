@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable, take } from 'rxjs';
-import { CartLine, Dessert } from '../models/dessert.model';
-import { DessertDataService } from './dessert-data.service';
-import { LoggingService } from './logging.service';
-import { UtilityService } from './utility.service';
+import { CartLine, Dessert } from '../../models/dessert.model';
+import { DessertDataService } from '../dessert-data-service/dessert-data.service';
+import { LoggingService } from '../logging-service/logging.service';
+import { UtilityService } from '../utility-service/utility.service';
 
 const STORAGE_KEY = 'dessert-shop-cart';
 
@@ -59,18 +59,10 @@ export class CartService {
     private readonly logger: LoggingService,
     private readonly utility: UtilityService,
   ) {
-    // One-time lookup of the catalog so cart lines can resolve a dessert id to
-    // its full details. `take(1)` documents that only the first emission is
-    // wanted, even though this particular source already completes on its
-    // own after one value — it keeps this subscription safe to leave running
-    // with no explicit unsubscribe.
+
     dessertData.getDesserts().pipe(take(1)).subscribe({
       next: (desserts) => {
         desserts.forEach((dessert) => this.dessertsById.set(dessert.id, dessert));
-        // Re-emit the current quantities so cartLines$ (and everything derived
-        // from it) recomputes now that dessertsById is actually populated —
-        // relevant for a returning shopper whose cart was restored from
-        // localStorage before the catalog finished "loading".
         this.quantities$.next(this.quantities$.value);
       },
       error: () => this.logger.logError('CartService: failed to load the dessert catalog for cart lookups'),

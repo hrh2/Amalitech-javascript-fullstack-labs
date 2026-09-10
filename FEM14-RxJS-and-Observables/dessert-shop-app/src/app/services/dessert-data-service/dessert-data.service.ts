@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { delay, map, Observable, of } from 'rxjs';
-import { Dessert } from '../models/dessert.model';
+import { Dessert } from '../../models/dessert.model';
 
 /**
  * Provides the dessert catalog for the shop.

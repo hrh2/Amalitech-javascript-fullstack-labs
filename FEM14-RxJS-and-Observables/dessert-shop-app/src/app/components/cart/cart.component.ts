@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { CartItemComponent } from '../cart-item/cart-item.component';
 import { CartLine } from '../../models/dessert.model';
-import { CartService } from '../../services/cart.service';
+import { CartService } from '../../services/cart-service/cart.service';
 
 /**
  * The sidebar cart panel: item count, line items (or an empty state),

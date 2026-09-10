@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CartItemComponent } from '../cart-item/cart-item.component';
 import { CartLine } from '../../models/dessert.model';
-import { CartService } from '../../services/cart.service';
+import { CartService } from '../../services/cart-service/cart.service';
 
 /**
  * Modal dialog shown after "Confirm Order" is clicked. Reuses CartItemComponent
