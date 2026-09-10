@@ -1,11 +1,5 @@
-.task-form {
-  margin-top: 1rem;
-  padding: 1.25rem;
-  border-color: var(--color-primary);
-}
-
 .task-form h2 {
-  margin: 0 0 1rem;
+  margin: 0 0 1.5rem;
 }
 
 .field-row {
@@ -18,26 +12,26 @@
   flex: 1 1 200px;
 }
 
-.subtasks__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.subtasks label {
+  display: block;
+  margin-bottom: 0.75rem;
 }
 
 .subtask-row {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.6rem;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
 .subtask-row__title {
   flex: 1 1 200px;
-  padding: 0.5rem 0.65rem;
-  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
+  font-size: 0.8rem;
 }
 
 .subtask-row__done {
@@ -49,22 +43,44 @@
   white-space: nowrap;
 }
 
+.subtask-row__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.subtask-row__remove:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
 .empty-state--inline {
-  margin: 0.6rem 0 0;
+  margin: 0 0 0.75rem;
   font-size: 0.85rem;
 }
 
 .task-form__actions {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
-  margin-top: 1.25rem;
-  flex-wrap: wrap;
+  margin-top: 1.5rem;
 }
 
 .task-form__hint {
-  font-size: 0.85rem;
-  color: var(--color-warning);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 @media (max-width: 640px) {
@@ -79,9 +95,5 @@
      minimum height and leave a large blank gap between them. */
   .field-row .field {
     flex-basis: auto;
-  }
-
-  .subtask-row {
-    align-items: stretch;
   }
 }

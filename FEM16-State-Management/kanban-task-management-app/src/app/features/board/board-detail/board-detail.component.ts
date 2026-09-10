@@ -28,8 +28,8 @@ export class BoardDetailComponent implements OnInit, OnDestroy {
   // Same Kanban-column grouping as the Routing & Navigation module's board
   // detail view - just a different display of the same `board.tasks`.
   readonly statusColumns: StatusColumn[] = [
-    { status: 'todo', label: 'To do' },
-    { status: 'in-progress', label: 'In progress' },
+    { status: 'todo', label: 'Todo' },
+    { status: 'in-progress', label: 'Doing' },
     { status: 'done', label: 'Done' },
   ];
 

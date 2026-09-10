@@ -1,60 +1,84 @@
+/* Design tokens sampled directly from the Kanban design reference images
+   (FEM16-State-Management/task/sample-design-imgs/) - shared, pixel-checked
+   values, not an invented palette. Light values come from
+   "Kanban Desktop Lightmode.png"; dark values from
+   "Kanban Desktop Darkmode.png". Both themes are real here: the sidebar's
+   sun/moon toggle flips `data-theme` on <html>, matching the reference's
+   own light/dark screenshots - this is plain CSS custom properties plus a
+   class toggle, not a state-management concept, so it's in scope at any
+   module level. */
 :root {
-  /* Light mode only, deliberately: this app does not offer a dark theme,
-     so color-scheme stays 'light' and there is no
-     prefers-color-scheme: dark override block below. A dark theme is
-     part of the Kanban design reference (task/sample-design-imgs in the
-     FEM16 lab), but the theme *toggle* itself is a stateful UI feature
-     unrelated to forms - out of scope here; only the reference's color
-     language and layout are adopted (see FEM12's own note on this). */
   color-scheme: light;
 
-  /* Neutrals - tuned to the Kanban design reference's light palette */
   --color-bg: #f4f7fd;
   --color-surface: #ffffff;
-  --color-surface-alt: #f4f7fd;
-  --color-surface-hover: #eef1fb;
+  --color-surface-hover: #f4f7fd;
   --color-border: #e4ebfa;
-  --color-border-strong: #d8dcec;
   --color-text: #000112;
   --color-text-muted: #828fa3;
-  --color-text-faint: #a1a7bc;
+  --color-text-faint: #828fa3;
+  --color-backdrop: rgba(9, 8, 22, 0.5);
 
-  /* Brand / accent - the design reference's signature purple */
   --color-primary: #635fc7;
   --color-primary-hover: #a8a4ff;
   --color-primary-soft: #f0effc;
-  --color-primary-strong: #4c48a8;
 
-  /* Status */
   --color-danger: #ea5555;
+  --color-danger-hover: #ff9898;
   --color-danger-soft: #fdecec;
-  --color-success: #15803d;
+  --color-success: #219653;
   --color-success-soft: #e6f6ec;
-  --color-warning: #b45309;
-  --color-warning-soft: #fdf1de;
+  --color-warning: #8471f2;
+  --color-warning-soft: #f0effc;
 
-  /* Kanban column indicators - the design reference marks each column
-     with a small colored dot (todo/doing/done) rather than a color on
-     the whole card; kept as their own tokens so any future column gets
-     a sensible next color instead of reusing todo/in-progress/done. */
   --color-column-todo: #49c4e5;
   --color-column-in-progress: #8471f2;
   --color-column-done: #67e2ae;
 
-  /* Shape & elevation */
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 2px rgba(23, 26, 36, 0.06);
-  --shadow-card: 0 1px 2px rgba(23, 26, 36, 0.04), 0 4px 10px rgba(23, 26, 36, 0.06);
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-card: 0 4px 6px rgba(54, 78, 126, 0.1);
+  --shadow-modal: 0 20px 40px rgba(9, 8, 22, 0.25);
 
-  /* Spacing scale (used loosely via rem multiples in individual stylesheets) */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
+  --sidebar-width: 260px;
+  --header-height: 80px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #20212c;
+  --color-surface: #2b2c37;
+  --color-surface-hover: #20212c;
+  --color-border: #3e3f4e;
+  --color-text: #ffffff;
+  --color-text-muted: #828fa3;
+  --color-text-faint: #828fa3;
+  --color-backdrop: rgba(0, 0, 0, 0.6);
+
+  --color-primary-soft: #2b2c37;
+  --color-danger-soft: #2b2c37;
+  --color-success-soft: #2b2c37;
+  --color-warning-soft: #2b2c37;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-bg: #20212c;
+    --color-surface: #2b2c37;
+    --color-surface-hover: #20212c;
+    --color-border: #3e3f4e;
+    --color-text: #ffffff;
+    --color-text-muted: #828fa3;
+    --color-text-faint: #828fa3;
+    --color-backdrop: rgba(0, 0, 0, 0.6);
+    --color-primary-soft: #2b2c37;
+    --color-danger-soft: #2b2c37;
+    --color-success-soft: #2b2c37;
+    --color-warning-soft: #2b2c37;
+  }
 }
 
 * {
@@ -68,15 +92,13 @@ body {
 
 body {
   margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 a {
@@ -109,19 +131,21 @@ p {
   line-height: 1.5;
 }
 
-/* Buttons */
+/* Buttons - the design's "+ Add New Task"/"Create Board" style: fully
+   rounded pill, bold white label on solid purple; a lighter, soft-purple
+   "secondary" pill for things like "+ Add New Column"/"+ Add New Subtask". */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding: 0.55rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-strong);
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
   line-height: 1.2;
   cursor: pointer;
@@ -148,9 +172,20 @@ p {
   border-color: var(--color-primary-hover);
 }
 
+.btn--secondary {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.btn--secondary:hover {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+
 .btn--danger {
   color: var(--color-danger);
-  border-color: var(--color-border-strong);
+  border-color: transparent;
   background: transparent;
 }
 
@@ -166,7 +201,7 @@ p {
 
 .btn:disabled:hover {
   background: var(--color-surface);
-  border-color: var(--color-border-strong);
+  border-color: var(--color-border);
 }
 
 .btn--primary:disabled:hover {
@@ -174,20 +209,25 @@ p {
   border-color: var(--color-primary);
 }
 
-/* Form fields (shared by every plain input/select/textarea in both apps,
-   whether it's manually bound (FEM12) or backed by ngModel/a FormGroup
-   (FEM13)) */
+.btn--block {
+  width: 100%;
+}
+
+/* Form fields - the design's input style: small bold muted label, thin
+   rounded border, purple focus ring. Shared by every plain input/select/
+   textarea in every lab, whether it's manually bound, ngModel, or a
+   FormGroup. */
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1.1rem;
+  gap: 0.5rem;
+  margin-bottom: 1.35rem;
 }
 
 .field label {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--color-text-muted);
 }
 
@@ -200,18 +240,25 @@ p {
 .field input,
 .field textarea,
 .field select {
-  padding: 0.6rem 0.75rem;
+  padding: 0.6rem 1rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-border);
   background: var(--color-surface);
-  font-size: 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.5;
 }
 
 .field input:focus-visible,
 .field textarea:focus-visible,
 .field select:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 1px;
+  outline: none;
+  border-color: var(--color-primary);
 }
 
 .field input[aria-invalid='true'],
@@ -226,11 +273,48 @@ p {
   color: var(--color-danger);
 }
 
+/* Page chrome - shared by every routed page's own in-page header (boards
+   list, a specific board, settings, login, not-found), so each page's top
+   row lines up with the sidebar's logo row (both are --header-height
+   tall) exactly like the design reference. */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--header-height);
+  padding: 0 2rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.page-content {
+  padding: 2rem;
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    height: auto;
+    min-height: 4rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .page-content {
+    padding: 1.25rem;
+  }
+}
+
 /* Cards & surfaces */
 
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
 }
@@ -240,55 +324,33 @@ p {
   font-size: 0.9rem;
 }
 
-/* Status badges (shared between board-list summaries and Kanban cards) */
+/* Status badges (board-list summaries) - reuse the same three column
+   colors as the Kanban board itself, so a board card's counts visually
+   agree with its columns once opened. */
 
 .status-badge {
   display: inline-flex;
   align-items: center;
   font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
   white-space: nowrap;
 }
 
 .status-badge--todo {
-  background: color-mix(in srgb, var(--color-column-todo) 15%, white);
-  color: color-mix(in srgb, var(--color-column-todo) 70%, black);
+  background: color-mix(in srgb, var(--color-column-todo) 15%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-column-todo) 70%, var(--color-text));
 }
 
 .status-badge--in-progress {
-  background: color-mix(in srgb, var(--color-column-in-progress) 15%, white);
+  background: color-mix(in srgb, var(--color-column-in-progress) 15%, var(--color-surface));
   color: var(--color-column-in-progress);
 }
 
 .status-badge--done {
-  background: color-mix(in srgb, var(--color-column-done) 20%, white);
-  color: color-mix(in srgb, var(--color-column-done) 60%, black);
-}
-
-/* Column indicator dot - the small colored circle the design reference
-   places before each Kanban column's label (Todo/Doing/Done). */
-.column-dot {
-  display: inline-block;
-  width: 0.85rem;
-  height: 0.85rem;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.column-dot--todo {
-  background: var(--color-column-todo);
-}
-
-.column-dot--in-progress {
-  background: var(--color-column-in-progress);
-}
-
-.column-dot--done {
-  background: var(--color-column-done);
+  background: color-mix(in srgb, var(--color-column-done) 20%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-column-done) 55%, var(--color-text));
 }
 
 /* Success/info banners */
@@ -306,8 +368,8 @@ p {
 
 .banner--success {
   background: var(--color-success-soft);
-  color: #0f5a2c;
-  border: 1px solid #bfe6cd;
+  color: var(--color-success);
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
 }
 
 .banner__dismiss {
@@ -318,4 +380,38 @@ p {
   line-height: 1;
   cursor: pointer;
   padding: 0;
+}
+
+/* Modal overlay - shared by every routed "panel" that the design shows as
+   a centered modal (create board, add/edit task). The component behind it
+   is still reached by ordinary routing (a real URL, guards, etc.); only
+   its presentation is an overlay instead of inline page content. */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+  z-index: 40;
+}
+
+.modal-panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  padding: 2rem;
+  width: 100%;
+  max-width: 30rem;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  .modal-panel {
+    padding: 1.5rem;
+  }
 }

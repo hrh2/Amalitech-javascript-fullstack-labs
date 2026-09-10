@@ -1,4 +1,4 @@
-<form class="card task-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+<form class="modal-panel task-form" [formGroup]="form" (ngSubmit)="onSubmit()" (click)="$event.stopPropagation()" novalidate>
   <h2>{{ heading }}</h2>
 
   <div class="field">
@@ -46,8 +46,8 @@
         [attr.aria-invalid]="status.invalid && (status.dirty || status.touched)"
         [attr.aria-describedby]="status.invalid && (status.dirty || status.touched) ? 'task-status-error' : null"
       >
-        <option value="todo">To do</option>
-        <option value="in-progress">In progress</option>
+        <option value="todo">Todo</option>
+        <option value="in-progress">Doing</option>
         <option value="done">Done</option>
       </select>
       <p id="task-status-error" class="field-error" role="alert" *ngIf="status.invalid && (status.dirty || status.touched)">
@@ -76,10 +76,7 @@
   </div>
 
   <div class="field subtasks" formArrayName="subtasks">
-    <div class="subtasks__header">
-      <label>Subtasks <span class="field-optional">(optional)</span></label>
-      <button type="button" class="btn" (click)="addSubtask()">+ Add subtask</button>
-    </div>
+    <label>Subtasks <span class="field-optional">(optional)</span></label>
 
     <div class="subtask-row" *ngFor="let subtaskGroup of subtasks.controls; let i = index" [formGroupName]="i">
       <input
@@ -94,8 +91,13 @@
         <input type="checkbox" formControlName="completed" />
         Done
       </label>
-      <button type="button" class="btn btn--danger" (click)="removeSubtask(i)" [attr.aria-label]="'Remove subtask ' + (i + 1)">
-        Remove
+      <button
+        type="button"
+        class="subtask-row__remove"
+        (click)="removeSubtask(i)"
+        [attr.aria-label]="'Remove subtask ' + (i + 1)"
+      >
+        &times;
       </button>
       <p
         class="field-error"
@@ -108,11 +110,13 @@
     </div>
 
     <p class="empty-state empty-state--inline" *ngIf="subtasks.length === 0">No subtasks yet.</p>
+
+    <button type="button" class="btn btn--secondary btn--block" (click)="addSubtask()">+ Add New Subtask</button>
   </div>
 
   <div class="task-form__actions">
-    <button type="submit" class="btn btn--primary" [disabled]="form.invalid">{{ submitLabel }}</button>
-    <button type="button" class="btn" (click)="onCancel()">Cancel</button>
+    <button type="submit" class="btn btn--primary btn--block" [disabled]="form.invalid">{{ submitLabel }}</button>
+    <button type="button" class="btn btn--secondary btn--block" (click)="onCancel()">Cancel</button>
     <span class="task-form__hint" *ngIf="form.dirty">Unsaved changes - navigating away will ask for confirmation.</span>
   </div>
 </form>

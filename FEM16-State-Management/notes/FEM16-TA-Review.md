@@ -246,25 +246,24 @@ instead of a service call.
 
 ---
 
-## 7. Design Alignment (No New UI Work Required)
+## 7. Design Alignment
 
-The design references in `task/sample-design-imgs/` (desktop light/dark, mobile, the board-switcher dropdown, and
-the add-board/add-task/view-task modals) were reviewed before starting this module, per the task's instructions.
-None of them changed anything about this module's implementation, for two reasons:
+A dedicated visual-fidelity pass (after this module's state-management work was already complete and verified)
+brought this app's UI, and FEM12/13's, up to a much closer match against every image in `task/sample-design-imgs/`
+— see FEM12's TA review §5.1 for the full, pixel-sampled reasoning (exact colors read via Python/Pillow, why the
+column-header dot was removed on evidence, etc.), which applies here identically: the sidebar, the dark/light
+theme toggle, the mobile board-switcher dropdown, and true modal-style Add New Task/Edit Task/Add New Board forms
+are all implemented, matching the reference screens directly rather than approximating them.
 
-1. **FEM16's own task spec is entirely about state management** — it says nothing about a sidebar, a theme
-   toggle, or modal dialogs. Building any of those now would be introducing later-lab functionality prematurely,
-   exactly the mistake FEM12/13's own design-alignment passes were careful to avoid (see FEM12's TA review §5.1).
-2. **The one design detail that *could* have affected this module's data shape** — the "Add new board" modal shows
-   a "Board Columns" list (`Todo`, `Doing`, `+ Add New Column`), implying per-board custom columns rather than this
-   app's fixed to-do/in-progress/done three-status model. Adding that would be a data-model/feature change, not a
-   state-management one, and it isn't required by this module's task or checklist. It's noted here, deliberately
-   left as a future-module concern (most naturally, a later revisit of the "boards" feature itself), and the
-   existing fixed-status model is what `BoardState`/the reducer/selectors are built around.
+**Why this was safe to do without touching this module's actual scope:** every one of those changes is CSS/template
+markup around components whose *behavior* (dispatching actions, reading selectors, the Effect, the guards) is
+untouched. `AppComponent`'s sidebar reads boards via `store.select(selectAllBoards)` — the same selector
+`BoardListComponent` already used — so adding the sidebar didn't introduce a new data path, just a second place
+that reads the existing one. No action, reducer case, selector, or Effect changed as part of this pass.
 
-The palette, column-dot styling, and card treatment already aligned to these same references in FEM12/13 carry
-over unchanged — this module didn't touch any `.css`/`.html` file for visual reasons, only to add a loading state
-(§4.8) where data is now asynchronous.
+**Still deliberately not implemented**, exactly as before: per-board custom columns (the "Add new board" modal's
+"Board Columns" list) — a data-model change, not a visual one, and outside this module's task/checklist. The
+existing fixed todo/doing/done model is what `BoardState`/the reducer/selectors are built around.
 
 ---
 
@@ -358,8 +357,8 @@ dispatch-and-select.
 - [ ] Why the duplicate-title validator's signature changed from FEM13, specifically (§6).
 - [ ] The required reflection (§5): a concrete, app-specific reason NgRx's structure earns its extra code here,
       not just a restatement of the module's general argument.
-- [ ] Why no new UI (sidebar, modals, dark mode) was added despite the design references showing them, and the one
-      design detail (per-board custom columns) that was deliberately left as a future-module concern (§7).
+- [ ] How the sidebar/dark-mode toggle/modal forms (§7) were added without touching any action, reducer, selector,
+      or Effect, and the one design detail (per-board custom columns) deliberately left as a future concern.
 
 ---
 
@@ -400,8 +399,7 @@ streams instead of `HttpClient` responses.
 "outside this module's required depth," and the lab's stretch challenge frames it as "document, without
 necessarily implementing" (see §7's reasoning for why it wasn't needed at this app's current scale either); NgRx
 Router Store; meta-reducers; NgRx Signal Store; reducer/effect/selector unit tests (flagged "outside this module");
-any actual `HttpClient`/real backend (still FEM17); a sidebar, dark-mode toggle, or modal dialogs (§7); per-board
-custom columns (§7).
+any actual `HttpClient`/real backend (still FEM17); per-board custom columns (§7).
 
 ---
 
@@ -416,6 +414,6 @@ custom columns (§7).
 | Every component migrated from the service to dispatch/select | ✅ Done — §4, §6 |
 | NgRx DevTools installed and configured | ✅ Done — §4.6 |
 | Written reflection on service vs. NgRx trade-offs, specific to this app | ✅ Done — §5 |
-| UI aligned to the Kanban design reference images | ✅ No new UI required — inherited from FEM12/13's alignment pass; deliberate scope decisions documented in §7 |
+| UI faithfully reproduces the Kanban design reference images | ✅ Sidebar, dark/light theme, and modal-style forms implemented and pixel-checked, matching FEM12/13; no store/action/reducer/selector touched to do it (§7) |
 | Public GitHub repo with clean commit history | ⚠️ Not done by this session — requires pushing to a remote, which needs explicit authorization |
 | Deployed live app URL (Netlify/Vercel) | ⚠️ Not done by this session — requires an external hosting account/deployment step; `ng build` output verified clean and deploy-ready |

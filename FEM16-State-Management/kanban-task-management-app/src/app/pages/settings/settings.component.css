@@ -1,6 +1,10 @@
 .settings-card {
   max-width: 520px;
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
 .settings-card__note {

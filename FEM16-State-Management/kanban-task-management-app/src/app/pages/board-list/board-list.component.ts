@@ -46,6 +46,12 @@ export class BoardListComponent implements OnInit, OnDestroy {
       this.isLoading = isLoading;
       this.sortOrder = (params.get('sort') as SortOrder) ?? 'recent';
       this.boards = this.sortBoards(boards, this.sortOrder);
+      // ?create=1 (set by the sidebar's "+ Create New Board" link, reachable
+      // from any page) opens the create-board modal automatically once this
+      // route loads, since the panel itself only exists on this page.
+      if (params.get('create') && !this.isCreating) {
+        this.isCreating = true;
+      }
     });
   }
 
