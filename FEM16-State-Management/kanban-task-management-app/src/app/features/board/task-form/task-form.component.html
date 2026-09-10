@@ -1,0 +1,118 @@
+<form class="card task-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <h2>{{ heading }}</h2>
+
+  <div class="field">
+    <label for="task-title">Title</label>
+    <input
+      id="task-title"
+      type="text"
+      formControlName="title"
+      [attr.aria-invalid]="title.invalid && (title.dirty || title.touched)"
+      [attr.aria-describedby]="title.invalid && (title.dirty || title.touched) ? 'task-title-error' : null"
+    />
+    <p id="task-title-error" class="field-error" role="alert" *ngIf="title.invalid && (title.dirty || title.touched)">
+      <ng-container *ngIf="title.errors?.['required']">Title is required.</ng-container>
+      <ng-container *ngIf="title.errors?.['minlength']">Title must be at least 3 characters.</ng-container>
+      <ng-container *ngIf="title.errors?.['maxlength']">Title cannot exceed 60 characters.</ng-container>
+      <ng-container *ngIf="title.errors?.['duplicateTitle']">A task with this title already exists on this board.</ng-container>
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="task-description">Description</label>
+    <textarea
+      id="task-description"
+      formControlName="description"
+      rows="3"
+      [attr.aria-invalid]="description.invalid && (description.dirty || description.touched)"
+      [attr.aria-describedby]="description.invalid && (description.dirty || description.touched) ? 'task-description-error' : null"
+    ></textarea>
+    <p
+      id="task-description-error"
+      class="field-error"
+      role="alert"
+      *ngIf="description.invalid && (description.dirty || description.touched)"
+    >
+      Description cannot exceed 300 characters.
+    </p>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="task-status">Status</label>
+      <select
+        id="task-status"
+        formControlName="status"
+        [attr.aria-invalid]="status.invalid && (status.dirty || status.touched)"
+        [attr.aria-describedby]="status.invalid && (status.dirty || status.touched) ? 'task-status-error' : null"
+      >
+        <option value="todo">To do</option>
+        <option value="in-progress">In progress</option>
+        <option value="done">Done</option>
+      </select>
+      <p id="task-status-error" class="field-error" role="alert" *ngIf="status.invalid && (status.dirty || status.touched)">
+        Status is required.
+      </p>
+    </div>
+
+    <div class="field">
+      <label for="task-due-date">Due date <span class="field-optional">(optional)</span></label>
+      <input
+        id="task-due-date"
+        type="date"
+        formControlName="dueDate"
+        [attr.aria-invalid]="dueDate.invalid && (dueDate.dirty || dueDate.touched)"
+        [attr.aria-describedby]="dueDate.invalid && (dueDate.dirty || dueDate.touched) ? 'task-due-date-error' : null"
+      />
+      <p
+        id="task-due-date-error"
+        class="field-error"
+        role="alert"
+        *ngIf="dueDate.invalid && (dueDate.dirty || dueDate.touched)"
+      >
+        Due date cannot be in the past.
+      </p>
+    </div>
+  </div>
+
+  <div class="field subtasks" formArrayName="subtasks">
+    <div class="subtasks__header">
+      <label>Subtasks <span class="field-optional">(optional)</span></label>
+      <button type="button" class="btn" (click)="addSubtask()">+ Add subtask</button>
+    </div>
+
+    <div class="subtask-row" *ngFor="let subtaskGroup of subtasks.controls; let i = index" [formGroupName]="i">
+      <input
+        type="text"
+        class="subtask-row__title"
+        [attr.aria-label]="'Subtask ' + (i + 1) + ' title'"
+        formControlName="title"
+        placeholder="Subtask title"
+        [attr.aria-invalid]="subtaskGroup.get('title')?.invalid && (subtaskGroup.get('title')?.dirty || subtaskGroup.get('title')?.touched)"
+      />
+      <label class="subtask-row__done">
+        <input type="checkbox" formControlName="completed" />
+        Done
+      </label>
+      <button type="button" class="btn btn--danger" (click)="removeSubtask(i)" [attr.aria-label]="'Remove subtask ' + (i + 1)">
+        Remove
+      </button>
+      <p
+        class="field-error"
+        role="alert"
+        *ngIf="subtaskGroup.get('title')?.invalid && (subtaskGroup.get('title')?.dirty || subtaskGroup.get('title')?.touched)"
+      >
+        <ng-container *ngIf="subtaskGroup.get('title')?.errors?.['required']">Subtask title is required.</ng-container>
+        <ng-container *ngIf="subtaskGroup.get('title')?.errors?.['maxlength']">Subtask title cannot exceed 80 characters.</ng-container>
+      </p>
+    </div>
+
+    <p class="empty-state empty-state--inline" *ngIf="subtasks.length === 0">No subtasks yet.</p>
+  </div>
+
+  <div class="task-form__actions">
+    <button type="submit" class="btn btn--primary" [disabled]="form.invalid">{{ submitLabel }}</button>
+    <button type="button" class="btn" (click)="onCancel()">Cancel</button>
+    <span class="task-form__hint" *ngIf="form.dirty">Unsaved changes - navigating away will ask for confirmation.</span>
+  </div>
+</form>

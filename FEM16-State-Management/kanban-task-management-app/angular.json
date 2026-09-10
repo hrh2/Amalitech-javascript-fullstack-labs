@@ -1,0 +1,111 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm"
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "kanban-task-management-app": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:class": {
+          "skipTests": true
+        },
+        "@schematics/angular:component": {
+          "skipTests": true,
+          "type": "component",
+          "addTypeToClassName": true
+        },
+        "@schematics/angular:directive": {
+          "skipTests": true,
+          "type": "directive",
+          "addTypeToClassName": true
+        },
+        "@schematics/angular:guard": {
+          "skipTests": true,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+          "skipTests": true,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+          "skipTests": true,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+          "skipTests": true,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:service": {
+          "skipTests": true,
+          "type": "service",
+          "addTypeToClassName": true
+        },
+        "@schematics/angular:module": {
+          "typeSeparator": "."
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": [
+              "src/styles.css"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "kanban-task-management-app:build:production"
+            },
+            "development": {
+              "buildTarget": "kanban-task-management-app:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
+}

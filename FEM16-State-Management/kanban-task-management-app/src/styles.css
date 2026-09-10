@@ -1,0 +1,321 @@
+:root {
+  /* Light mode only, deliberately: this app does not offer a dark theme,
+     so color-scheme stays 'light' and there is no
+     prefers-color-scheme: dark override block below. A dark theme is
+     part of the Kanban design reference (task/sample-design-imgs in the
+     FEM16 lab), but the theme *toggle* itself is a stateful UI feature
+     unrelated to forms - out of scope here; only the reference's color
+     language and layout are adopted (see FEM12's own note on this). */
+  color-scheme: light;
+
+  /* Neutrals - tuned to the Kanban design reference's light palette */
+  --color-bg: #f4f7fd;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f4f7fd;
+  --color-surface-hover: #eef1fb;
+  --color-border: #e4ebfa;
+  --color-border-strong: #d8dcec;
+  --color-text: #000112;
+  --color-text-muted: #828fa3;
+  --color-text-faint: #a1a7bc;
+
+  /* Brand / accent - the design reference's signature purple */
+  --color-primary: #635fc7;
+  --color-primary-hover: #a8a4ff;
+  --color-primary-soft: #f0effc;
+  --color-primary-strong: #4c48a8;
+
+  /* Status */
+  --color-danger: #ea5555;
+  --color-danger-soft: #fdecec;
+  --color-success: #15803d;
+  --color-success-soft: #e6f6ec;
+  --color-warning: #b45309;
+  --color-warning-soft: #fdf1de;
+
+  /* Kanban column indicators - the design reference marks each column
+     with a small colored dot (todo/doing/done) rather than a color on
+     the whole card; kept as their own tokens so any future column gets
+     a sensible next color instead of reusing todo/in-progress/done. */
+  --color-column-todo: #49c4e5;
+  --color-column-in-progress: #8471f2;
+  --color-column-done: #67e2ae;
+
+  /* Shape & elevation */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(23, 26, 36, 0.06);
+  --shadow-card: 0 1px 2px rgba(23, 26, 36, 0.04), 0 4px 10px rgba(23, 26, 36, 0.06);
+
+  /* Spacing scale (used loosely via rem multiples in individual stylesheets) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+p {
+  line-height: 1.5;
+}
+
+/* Buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.btn:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn--danger {
+  color: var(--color-danger);
+  border-color: var(--color-border-strong);
+  background: transparent;
+}
+
+.btn--danger:hover {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+}
+
+.btn--primary:disabled:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Form fields (shared by every plain input/select/textarea in both apps,
+   whether it's manually bound (FEM12) or backed by ngModel/a FormGroup
+   (FEM13)) */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.1rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.field-optional {
+  font-weight: 400;
+  text-transform: none;
+  color: var(--color-text-faint);
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  font-size: 0.95rem;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'],
+.field select[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  margin: 0.3rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+/* Cards & surfaces */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Status badges (shared between board-list summaries and Kanban cards) */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status-badge--todo {
+  background: color-mix(in srgb, var(--color-column-todo) 15%, white);
+  color: color-mix(in srgb, var(--color-column-todo) 70%, black);
+}
+
+.status-badge--in-progress {
+  background: color-mix(in srgb, var(--color-column-in-progress) 15%, white);
+  color: var(--color-column-in-progress);
+}
+
+.status-badge--done {
+  background: color-mix(in srgb, var(--color-column-done) 20%, white);
+  color: color-mix(in srgb, var(--color-column-done) 60%, black);
+}
+
+/* Column indicator dot - the small colored circle the design reference
+   places before each Kanban column's label (Todo/Doing/Done). */
+.column-dot {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.column-dot--todo {
+  background: var(--color-column-todo);
+}
+
+.column-dot--in-progress {
+  background: var(--color-column-in-progress);
+}
+
+.column-dot--done {
+  background: var(--color-column-done);
+}
+
+/* Success/info banners */
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.banner--success {
+  background: var(--color-success-soft);
+  color: #0f5a2c;
+  border: 1px solid #bfe6cd;
+}
+
+.banner__dismiss {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}

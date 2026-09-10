@@ -1,0 +1,9 @@
+<app-task-form
+  *ngIf="form"
+  [form]="form"
+  mode="edit"
+  heading="Edit task"
+  submitLabel="Save changes"
+  (formSubmit)="save()"
+  (formCancel)="cancel()"
+></app-task-form>
