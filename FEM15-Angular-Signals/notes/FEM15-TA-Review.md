@@ -34,14 +34,15 @@ src/app/
 │   └── models/
 │       └── recipe.model.ts              Recipe interface (id, name, ingredients, cookTimeMinutes, image)
 │
-├── shared/
-│   └── ui/
-│       └── recipe-card/                 Presentational card: signal-based inputs, @Output() for the favorite click
-│
 └── features/
     └── recipe-finder/
-        └── recipe-finder.ts/html/css    All state lives here: the static RECIPES array, every signal/computed/
-                                          effect, and the search/filter/grid/empty-state template
+        ├── recipe-finder.ts/html/css    The "smart" container: owns every signal/computed/effect, the static
+        │                                 RECIPES array, and composes the pieces below — no presentation markup
+        │                                 of its own beyond the intro heading, result count, grid, and empty state
+        ├── header/                      Presentational: logo, search/favorite/user icons, the floating search
+        │                                 bar — signal inputs in, @Output() events out, no state of its own
+        ├── filter-toolbar/               Presentational: cook-time slider, favorites-only checkbox, clear button
+        └── recipe-card/                  Presentational: one recipe — signal-based inputs, @Output() for favorite
 ```
 
 **Why no `core/services/` or `core/guards/`:** the task specification is explicit — *"No routing, services, or
@@ -50,12 +51,30 @@ async API calls — use static data defined in the component file."* `RECIPES` i
 the fuller "Putting It Together" architecture sketched in the module's own reference notes (which uses a
 `RecipeDataService` + `toSignal()`) — that sketch is a *bigger*, optional shape; the task specification you were
 actually assigned is narrower, and it is the source of truth. `core/models/` stays because a plain TypeScript
-interface isn't a service — it doesn't fetch, mutate, or own state.
+interface isn't a service — it doesn't fetch, mutate, or own state. §2.1 below explains why a service still
+wasn't introduced even when a later review pass specifically asked whether one would clean things up.
 
-**Why `shared/ui/recipe-card/` exists at all, given the "no services" restriction doesn't forbid components:**
-splitting the card out of the finder template is what makes signal-based **inputs** (Section 6 of the module notes)
-demonstrable at all — `RecipeCard` receives `recipe`/`isFavorited` as `input.required()`/`input()`, not `@Input()`,
-which is one of the module's own required concepts (see the checklist in §8/§9).
+**Why there's no `shared/` folder:** an earlier pass put `RecipeCard` under `shared/ui/recipe-card/`, on the
+assumption that "reusable-looking" UI belongs in `shared/` by convention. But this app has exactly one feature —
+there is nothing else for `recipe-card`, `header`, or `filter-toolbar` to be shared *with*. A `shared/` folder
+holding components only one feature ever imports isn't shared, it's just a longer path to the same feature's own
+components. All three now live directly under `features/recipe-finder/`, and `shared/` was deleted. `core/` earns
+its keep for a different reason: `Recipe` is a domain type the *whole app's* state is built around, not a UI
+concern any one component owns — that's genuinely core, regardless of how many features exist.
+
+### 2.1 Why a service still wasn't introduced (a deliberate re-check, not an oversight)
+
+A later architecture-review pass specifically asked: would moving recipe data or filtering logic into an
+`@Injectable` service make this cleaner? The answer stayed no, for a reason worth being able to state precisely:
+the task's technical guidelines rule out services categorically ("No routing, services, or async API calls"), not
+just HTTP-backed ones — and unlike the Kanban labs' `BoardService`/`AuthService` (FEM11), there's no cross-component
+sharing problem here that a service would actually solve. `RECIPES` is read by exactly one component
+(`RecipeFinder`); wrapping it in a service with a `getRecipes()` method would add a class, a constructor injection
+point, and a lifecycle to reason about, for zero behavioral gain — the textbook shape of an unnecessary
+abstraction. The separation this review pass *did* apply instead — pulling `Header` and `FilterToolbar` out as
+presentational components — achieves the same underlying goal ("keep components focused, don't let one component
+do everything") through a mechanism this lab is actually about: Signals-based data flow (state down via signal
+inputs, events up via `@Output()`), not dependency injection.
 
 ---
 
@@ -130,6 +149,42 @@ Per the module's own scope note (Section 6): refactoring **inputs** to `input()`
 module's objective; `@Output()`/`EventEmitter` for the favorite-click event is explicitly still correct at this
 stage (`output()` is flagged "🔒 Coming Later" in the reference notes) — so the mix here is intentional, not an
 oversight.
+
+### 3.5 The same pattern, applied to two more presentational components
+
+An architecture-review pass split `Header` and `FilterToolbar` out of `RecipeFinder`'s template (see §2's
+structure and §2.1's rationale). Both follow the exact same signal-input/`@Output()` shape as `RecipeCard`, just
+with different data:
+
+```typescript
+// header.ts
+searchTerm = input('');
+favoritesOnly = input(false);
+hasFavorites = input(false);
+@Output() searchTermChange = new EventEmitter<string>();
+@Output() favoritesOnlyToggle = new EventEmitter<void>();
+
+// filter-toolbar.ts
+maxCookTime = input.required<number>();
+maxCookTimeLimit = input.required<number>();
+favoritesOnly = input(false);
+hasFavorites = input(false);
+@Output() maxCookTimeChange = new EventEmitter<number>();
+@Output() favoritesOnlyToggle = new EventEmitter<void>();
+@Output() clear = new EventEmitter<void>();
+```
+
+Neither component holds any state of its own — every value they render is read from `RecipeFinder`'s signals
+(passed down as plain input values, e.g. `[searchTerm]="searchTerm()"`), and every user action they handle is
+reported back up as an `@Output()` event for `RecipeFinder`'s existing methods (`onSearchTermChange`,
+`onMaxCookTimeChange`, `onFavoritesOnlyToggle`, `clearFilters`) to act on. This is worth being able to state
+plainly: **`RecipeFinder` is the only place in this app signals are written**; `Header`, `FilterToolbar`, and
+`RecipeCard` only ever *read* signal values (via `input()`) and *emit* intent (via `@Output()`) — they never call
+`.set()`/`.update()` on anything themselves. One small deliberate difference from `RecipeCard`: `FilterToolbar`
+converts the slider's raw string DOM value to a number itself (`onSliderInput(value: string)` calling
+`Number(value)`) before emitting, rather than emitting the raw string — Angular template expressions can't call a
+global function like `Number(...)` directly (they only have access to the component instance and a few
+whitelisted operators), so that conversion has to happen in a real method.
 
 ---
 
@@ -325,6 +380,21 @@ real-world flavors), and signal-based component inputs.
   top-level `const` in `recipe-finder.ts`.
 - *Isn't `core/models/recipe.model.ts` a service?* No — it's a plain TypeScript interface with no injectable class,
   no methods, no state. It doesn't fetch or own anything; it just describes the shape of a `Recipe`.
+- *A later review pass asked you to consider a service for the recipe data or filtering logic — why didn't you add
+  one?* Two independent reasons, either of which would be enough alone: the task specification categorically rules
+  services out, and — separately — nothing in this app actually needs one, since `RECIPES` and the filtering
+  `computed()`s are read by exactly one component. Introducing a service here would be reaching for a FEM11 tool
+  because it was available, not because this app has the cross-component-sharing problem a service exists to solve
+  (see §2.1).
+- *Why is there no `shared/` folder, when the original structure had one?* Nothing in this app is actually shared
+  across multiple features — there's only one feature. `shared/ui/recipe-card/` was a folder created for symmetry
+  with a `core`/`shared`/`features` template, not because anything needed sharing; a later review removed it and
+  moved `recipe-card/` (plus the two new components) directly under `features/recipe-finder/` (§2).
+- *Why did you split `Header` and `FilterToolbar` out of `RecipeFinder` instead of adding a service?* Because the
+  actual problem — `RecipeFinder`'s template mixing state ownership with three visually distinct UI regions — is a
+  presentation-layer problem, not a data/business-logic problem. Splitting into presentational components with
+  signal inputs and `@Output()` events (the same pattern `RecipeCard` already used) solves it using this module's
+  own tools, without inventing a reason to inject a service (§2.1, §3.5).
 
 ---
 
@@ -336,6 +406,10 @@ real-world flavors), and signal-based component inputs.
 - [ ] The immutable `.update()` pattern for `favoriteIds`, and why `.push()`/`.mutate()` would be wrong.
 - [ ] `RecipeCard`'s signal-based inputs vs. its still-`@Output()`-based event, and why that mix is correct here.
 - [ ] Why there is no service/HTTP/router layer in this app, and where the static data actually lives.
+- [ ] Why `Header` and `FilterToolbar` exist as separate components (§3.5), what they receive as signal inputs vs.
+      what they emit, and why `RecipeFinder` is the *only* place any signal is actually written to.
+- [ ] Why `shared/` was removed and `core/` was kept (§2) — the actual test being "is anything genuinely shared
+      across more than one feature," not "does this look like reusable UI."
 - [ ] The empty-state path: what makes `filteredRecipes()` become `[]`, and what the guarded effect logs when it
       does.
 - [ ] The `localStorage` favorites round-trip: written by an effect, read back in the signal's own initializer.
@@ -371,6 +445,20 @@ real-world flavors), and signal-based component inputs.
   glyphs, and header/search-bar layout all matched. The full functional test suite (search, slider, favorites
   toggle + persistence, empty state, responsive columns) was re-run after the redesign with the same results as
   before, confirming the visual changes didn't regress any behavior — see the earlier bullets above.
+- **Architecture-review pass (§2, §2.1, §3.5):** re-ran the full functional test suite (search, slider, favorites
+  toggle + persistence, empty state, empty-state's own "Clear filters" button, the search-icon-focuses-input
+  interaction) against the decomposed `Header`/`FilterToolbar`/`RecipeCard` components — identical results to
+  before the split, confirming the refactor changed structure, not behavior. Also re-screenshotted at 1440px and
+  compared pixel-for-pixel against the pre-refactor screenshot: no visual difference, as expected for a pass that
+  only moved markup between component boundaries. `grep` re-confirmed no `HttpClient`/`Router`/`*Service`/RxJS
+  anywhere in `src/app` after the restructuring.
+- **Unrelated build fragility found and fixed during this pass:** `ng build`'s default (production) configuration
+  inlines Google Fonts by fetching them at build time — an `ng new` default, not something this lab added — which
+  hung/failed in this environment when that network call was unreliable. Since a production build shouldn't depend
+  on live internet access to succeed, `angular.json`'s production configuration now sets
+  `"optimization": { "fonts": false }`, and `ng build` completes in ~2–3 seconds regardless of network conditions.
+  This has no visible effect on the app — `index.html`'s Google Fonts `<link>` still loads Urbanist normally in the
+  browser at runtime; only the build-time inlining step (an optimization, not a feature) was disabled.
 
 ---
 
@@ -409,3 +497,4 @@ file."* Where the two disagree, the task specification — the literal deliverab
 | Stretch: favorites toggle | ✅ Done — header icon + per-card heart, immutable `.update()` |
 | Stretch: persist favorites via `localStorage` | ✅ Done — effect-driven, verified across a reload |
 | Stretch: sorting / theme toggle | ⚠️ Not implemented — both are optional; scope kept to the required criteria plus the two stretch goals above |
+| Architecture/code-quality review (services, structure, decomposition) | ✅ Done — `shared/` removed as unwarranted, `Header`/`FilterToolbar` split out of `RecipeFinder` as presentational components; no service introduced, per §2.1's reasoning; re-verified functionally and visually with no regressions |

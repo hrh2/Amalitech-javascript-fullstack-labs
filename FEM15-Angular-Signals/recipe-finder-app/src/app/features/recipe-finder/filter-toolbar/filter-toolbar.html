@@ -1,0 +1,29 @@
+<section class="toolbar" aria-label="Filter recipes">
+  <label class="toolbar__field toolbar__field--slider">
+    <span class="toolbar__label">Max cook time: {{ maxCookTime() }} min</span>
+    <input
+      type="range"
+      class="toolbar__slider"
+      min="5"
+      [max]="maxCookTimeLimit()"
+      step="5"
+      [value]="maxCookTime()"
+      (input)="onSliderInput($any($event.target).value)"
+      aria-valuetext="{{ maxCookTime() }} minutes"
+    />
+  </label>
+
+  <label class="toolbar__field toolbar__field--checkbox">
+    <input
+      type="checkbox"
+      [checked]="favoritesOnly()"
+      [disabled]="!hasFavorites()"
+      (change)="favoritesOnlyToggle.emit()"
+    />
+    <span>Favorites only</span>
+  </label>
+
+  <button type="button" class="toolbar__clear" (click)="clear.emit()">
+    Clear filters
+  </button>
+</section>
