@@ -79,13 +79,30 @@ user feedback before bad data ever reaches `BoardService`.
 
 ### 2.1 Design alignment and the `'boards'` guard
 
-Both apps' `styles.css` were re-tuned to the Kanban design reference images that later became available
-(`FEM16-State-Management/task/sample-design-imgs/`, shared across the whole Kanban project): the signature purple
-(`#635fc7`/`#a8a4ff`), the light neutral palette, and colored column-header dots (cyan/purple/green, `TODO (4)`
-style) replacing the earlier generic indigo palette and colored-underline column headers. This was carried over
-identically from FEM12's own design-alignment pass so the two apps stay visually identical where their features
-overlap — see FEM12's TA review §5.1 for the full reasoning on what *wasn't* adopted (sidebar, dark-mode toggle,
-modals) and why, which applies here unchanged.
+This app's UI was brought through the same visual-fidelity pass as FEM12's, kept in lockstep so the two apps read
+as two stages of one project rather than two different-looking builds — see FEM12's TA review §5.1 for the full,
+pixel-sampled reasoning (exact colors, why the column-header dot was removed, etc.), which applies here unchanged.
+FEM13-specific consequences of that pass:
+
+- **The "Add New Task"/"Add New Board" forms are now real modal overlays** (`.modal-backdrop`/`.modal-panel`),
+  matching `New Task model.jpg`/`New Board model.png` closely — subtask rows now use a small "✕" icon button
+  instead of a text "Remove" button, and the subtask/board-name inputs carry the reference's exact placeholder
+  copy ("e.g. Web Design", "e.g. Take coffee break"-style hints). None of this changed the underlying
+  `FormGroup`/`NgForm` wiring, validators, or `CanDeactivate` behavior — only the template markup and CSS around
+  them.
+- **The sidebar's "+ Create New Board" link** works from any page (it's in the persistent shell), by navigating to
+  `/boards?create=1`; `BoardListComponent` opens its modal automatically when that query param is present — reusing
+  the same `?sort=...` query-param-reading pattern this component already had, not a new mechanism.
+- **On mobile**, the board-detail page's own `<h1>` is hidden (the mobile top bar already shows the board name), but
+  its "+ Add New Task" button stays visible, right-aligned — a fix made during this pass after an earlier attempt
+  hid the whole header and accidentally took the button with it.
+
+Separately (not part of the design pass), `'boards'` picked up `canActivate: [authGuard]` at some point in this
+project's history — a deliberate divergence from FEM12, where the board list was left public specifically to
+demonstrate that not every route needs a guard. Now that this list is the on-ramp into real, validated create/edit
+task forms, an unauthenticated visitor seeing (if not editing) other users' board contents no longer fit the app's
+intent, so the guard was extended to cover it too. A TA comparing the two apps side by side will notice `/boards`
+behaves differently between FEM12 and FEM13 — this is that difference, and it's intentional.
 
 Separately (not part of the design pass), `'boards'` picked up `canActivate: [authGuard]` at some point in this
 project's history — a deliberate divergence from FEM12, where the board list was left public specifically to
@@ -415,7 +432,7 @@ own `dirty` flag, which is squarely a FEM13 (forms state) concept.
 | Bonus: subtasks via `FormArray` | ✅ Done, verified live |
 | Template-driven form (`ngModel`) demonstrated, distinct from FEM12's manual binding | ✅ Done, verified live |
 | Light-mode theme, visually consistent with FEM12 | ✅ Done — shared `styles.css`, shared Kanban-column layout |
-| UI aligned to the Kanban design reference images (§2.1) | ✅ Palette and column dots aligned, identically to FEM12; sidebar/dark-mode/modals deliberately deferred |
+| UI faithfully reproduces the Kanban design reference images (§2.1) | ✅ Sidebar, dark/light theme, and true modal-style Add/Edit Task and Add Board forms, matching FEM12; pixel-checked against every reference screen |
 | This TA review document | ✅ `notes/FEM13-TA-Review.md` |
 | Public GitHub repo with clean commit history | ⚠️ Not done by this session — requires pushing to a remote, which needs explicit authorization; the app is ready to commit whenever you'd like |
 | Deployed live app URL (Netlify/Vercel) | ⚠️ Not done by this session — requires an external hosting account/deployment step outside an automated coding session's scope; `ng build` output verified clean and deploy-ready |

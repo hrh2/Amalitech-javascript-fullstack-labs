@@ -1,9 +1,10 @@
-<app-task-form
-  *ngIf="form"
-  [form]="form"
-  mode="edit"
-  heading="Edit task"
-  submitLabel="Save changes"
-  (formSubmit)="save()"
-  (formCancel)="cancel()"
-></app-task-form>
+<div class="modal-backdrop" *ngIf="form" (click)="cancel()">
+  <app-task-form
+    [form]="form"
+    mode="edit"
+    heading="Edit Task"
+    submitLabel="Save Changes"
+    (formSubmit)="save()"
+    (formCancel)="cancel()"
+  ></app-task-form>
+</div>

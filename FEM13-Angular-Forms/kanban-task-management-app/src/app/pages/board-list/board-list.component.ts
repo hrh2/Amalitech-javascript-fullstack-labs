@@ -31,12 +31,16 @@ export class BoardListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Optional query parameter (?sort=name|recent) driving how the board
-    // list is displayed - read reactively so the list re-sorts if the
-    // query parameter changes without leaving this route.
+    // Optional query parameters: ?sort=name|recent drives display order;
+    // ?create=1 (set by the sidebar's "+ Create New Board" link, reachable
+    // from any page) opens the create-board modal automatically once this
+    // route loads, since the panel itself only exists on this page.
     this.queryParamSubscription = this.route.queryParamMap.subscribe((params) => {
       this.sortOrder = (params.get('sort') as SortOrder) ?? 'recent';
       this.applySort();
+      if (params.get('create') && !this.isCreating) {
+        this.isCreating = true;
+      }
     });
   }
 

@@ -1,53 +1,57 @@
 <ng-container *ngIf="board">
-  <nav class="board-nav">
-    <a routerLink="/boards" class="btn">&larr; All boards</a>
-    <div class="board-nav__adjacent">
-      <a *ngIf="previousBoardId" [routerLink]="['/boards', previousBoardId]" class="btn">&larr; Previous board</a>
-      <a *ngIf="nextBoardId" [routerLink]="['/boards', nextBoardId]" class="btn">Next board &rarr;</a>
-    </div>
-  </nav>
-
-  <p class="banner banner--success" role="status" *ngIf="taskSavedMessage">
-    {{ taskSavedMessage }}
-    <button type="button" class="banner__dismiss" (click)="dismissTaskSavedMessage()" aria-label="Dismiss message">&times;</button>
-  </p>
-
-  <header class="board-header">
-    <div>
-      <h1>{{ board.name }}</h1>
-      <p class="board-header__description">{{ board.description }}</p>
-    </div>
-    <a [routerLink]="['new-task']" class="btn btn--primary">+ New task</a>
+  <header class="page-header">
+    <h1>{{ board.name }}</h1>
+    <a [routerLink]="['new-task']" class="btn btn--primary">+ Add New Task</a>
   </header>
 
-  <div class="kanban-board">
-    <section class="kanban-column" *ngFor="let column of statusColumns">
-      <header class="kanban-column__header">
-        <span class="column-dot column-dot--{{ column.status }}" aria-hidden="true"></span>
-        <h2>{{ column.label }} ({{ tasksByStatus(column.status).length }})</h2>
-      </header>
+  <div class="page-content">
+    <!-- FEM12 Level 2 exercise, still reused here: next/previous board
+         links using this same component instance without a full route
+         reload - the design reference doesn't show this control at all
+         (it relies on the sidebar instead), but the routing module's own
+         exercise requires it, so it's kept as a small, secondary row
+         rather than removed. -->
+    <nav class="board-subnav" aria-label="Board navigation">
+      <a routerLink="/boards" class="subnav-link">&larr; All boards</a>
+      <div class="board-subnav__adjacent">
+        <a *ngIf="previousBoardId" [routerLink]="['/boards', previousBoardId]" class="subnav-link">&larr; Previous</a>
+        <a *ngIf="nextBoardId" [routerLink]="['/boards', nextBoardId]" class="subnav-link">Next &rarr;</a>
+      </div>
+    </nav>
 
-      <ul class="kanban-column__list">
-        <li class="card kanban-card" *ngFor="let task of tasksByStatus(column.status)">
-          <a [routerLink]="['edit', task.id]" routerLinkActive="kanban-card__link--active" class="kanban-card__link">
-            <span class="kanban-card__title">{{ task.title }}</span>
-            <span class="kanban-card__description" *ngIf="task.description">{{ task.description }}</span>
-            <span class="kanban-card__meta" *ngIf="task.dueDate || task.subtasks.length > 0">
-              <span class="kanban-card__due" *ngIf="task.dueDate">Due {{ task.dueDate }}</span>
-              <span class="kanban-card__subtasks" *ngIf="task.subtasks.length > 0">{{ subtaskProgress(task) }} subtasks</span>
-            </span>
-          </a>
-        </li>
-      </ul>
+    <p class="banner banner--success" role="status" *ngIf="taskSavedMessage">
+      {{ taskSavedMessage }}
+      <button type="button" class="banner__dismiss" (click)="dismissTaskSavedMessage()" aria-label="Dismiss message">&times;</button>
+    </p>
 
-      <p class="empty-state empty-state--column" *ngIf="tasksByStatus(column.status).length === 0">No tasks.</p>
-    </section>
+    <p class="board-header__description" *ngIf="board.description">{{ board.description }}</p>
+
+    <div class="kanban-board">
+      <section class="kanban-column" *ngFor="let column of statusColumns">
+        <header class="kanban-column__header">
+          <h2>{{ column.label }} ({{ tasksByStatus(column.status).length }})</h2>
+        </header>
+
+        <ul class="kanban-column__list">
+          <li class="card kanban-card" *ngFor="let task of tasksByStatus(column.status)">
+            <a [routerLink]="['edit', task.id]" routerLinkActive="kanban-card__link--active" class="kanban-card__link">
+              <span class="kanban-card__title">{{ task.title }}</span>
+              <span class="kanban-card__description" *ngIf="task.description">{{ task.description }}</span>
+              <span class="kanban-card__meta" *ngIf="task.dueDate || task.subtasks.length > 0">
+                <span class="kanban-card__due" *ngIf="task.dueDate">Due {{ task.dueDate }}</span>
+                <span class="kanban-card__subtasks" *ngIf="task.subtasks.length > 0">{{ subtaskProgress(task) }} subtasks</span>
+              </span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="empty-state empty-state--column" *ngIf="tasksByStatus(column.status).length === 0">No tasks.</p>
+      </section>
+    </div>
   </div>
 
   <!-- Nested router-outlet: renders AddTaskComponent ('new-task') or
-       EditTaskComponent ('edit/:taskId') right inside this board's own
-       layout, without replacing the board header/columns above it. -->
-  <div class="task-detail-slot">
-    <router-outlet></router-outlet>
-  </div>
+       EditTaskComponent ('edit/:taskId') as a modal overlay right on top
+       of this board's own layout - see task-form.component.css. -->
+  <router-outlet></router-outlet>
 </ng-container>
