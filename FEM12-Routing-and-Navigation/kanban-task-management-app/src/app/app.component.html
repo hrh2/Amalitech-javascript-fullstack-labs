@@ -1,24 +1,102 @@
-<header class="app-header">
-  <div class="app-header__brand">
-    <span class="app-header__logo" aria-hidden="true">&#9635;</span>
-    <span>Kanban</span>
+<ng-template #boardNav>
+  <p class="sidebar__label">All Boards ({{ boards.length }})</p>
+  <a
+    *ngFor="let board of boards"
+    [routerLink]="['/boards', board.id]"
+    routerLinkActive="sidebar__board--active"
+    (click)="closeMobileMenu()"
+    class="sidebar__board"
+  >
+    <svg class="sidebar__board-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M0 2a2 2 0 0 1 2-2h4.5a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2Z"
+        fill="currentColor"
+      />
+      <path
+        d="M9.5 2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v1.5a2 2 0 0 1-2 2h-2.5a2 2 0 0 1-2-2V2ZM0 11.5a2 2 0 0 1 2-2h2.5a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5ZM9.5 8a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2.5a2 2 0 0 1-2-2V8Z"
+        fill="currentColor"
+        opacity="0.5"
+      />
+    </svg>
+    {{ board.name }}
+  </a>
+  <a [routerLink]="['/boards']" (click)="closeMobileMenu()" class="sidebar__board sidebar__board--create">
+    <span class="sidebar__board-icon" aria-hidden="true"></span>
+    + Create New Board
+  </a>
+</ng-template>
+
+<ng-template #themeToggle>
+  <div class="theme-toggle">
+    <span class="theme-toggle__icon" aria-hidden="true">&#9728;</span>
+    <button
+      type="button"
+      role="switch"
+      [attr.aria-checked]="isDarkMode"
+      aria-label="Toggle dark mode"
+      class="theme-switch"
+      [class.theme-switch--on]="isDarkMode"
+      (click)="toggleTheme()"
+    >
+      <span class="theme-switch__knob"></span>
+    </button>
+    <span class="theme-toggle__icon" aria-hidden="true">&#9789;</span>
   </div>
+</ng-template>
 
-  <nav class="app-nav" aria-label="Main navigation">
-    <a routerLink="/boards" routerLinkActive="app-nav__link--active" [routerLinkActiveOptions]="{ exact: true }" class="app-nav__link">
-      Boards
-    </a>
-    <a routerLink="/settings" routerLinkActive="app-nav__link--active" class="app-nav__link">
-      Settings
-    </a>
-  </nav>
+<div class="shell">
+  <aside class="sidebar" *ngIf="!isSidebarCollapsed">
+    <div class="sidebar__brand">
+      <span class="logo-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="logo-text">kanban</span>
+    </div>
 
-  <div class="app-header__auth">
-    <span class="app-header__status" *ngIf="authService.isLoggedIn()">Signed in</span>
-    <a routerLink="/login" class="app-nav__link" *ngIf="!authService.isLoggedIn()">Log in</a>
+    <nav class="sidebar__nav">
+      <ng-container [ngTemplateOutlet]="boardNav"></ng-container>
+    </nav>
+
+    <div class="sidebar__footer">
+      <ng-container [ngTemplateOutlet]="themeToggle"></ng-container>
+
+      <nav class="sidebar__utility-nav" aria-label="Utility navigation">
+        <a routerLink="/settings" routerLinkActive="sidebar__utility-link--active" class="sidebar__utility-link">Settings</a>
+        <span class="sidebar__utility-link" *ngIf="authService.isLoggedIn()">Signed in</span>
+        <a routerLink="/login" class="sidebar__utility-link" *ngIf="!authService.isLoggedIn()">Log in</a>
+      </nav>
+
+      <button type="button" class="sidebar__hide-btn" (click)="isSidebarCollapsed = true">
+        <span aria-hidden="true">&#128065;</span> Hide Sidebar
+      </button>
+    </div>
+  </aside>
+
+  <button type="button" class="sidebar-show-btn" *ngIf="isSidebarCollapsed" (click)="isSidebarCollapsed = false" aria-label="Show sidebar">
+    &#128065;
+  </button>
+
+  <div class="app-column">
+    <header class="mobile-topbar">
+      <span class="logo-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+      <button
+        type="button"
+        class="mobile-topbar__trigger"
+        [attr.aria-expanded]="isMobileMenuOpen"
+        (click)="toggleMobileMenu()"
+      >
+        {{ currentBoardName || 'Boards' }}
+        <span class="mobile-topbar__chevron" [class.mobile-topbar__chevron--open]="isMobileMenuOpen" aria-hidden="true"></span>
+      </button>
+    </header>
+
+    <div class="mobile-menu-backdrop" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()">
+      <div class="mobile-menu card" (click)="$event.stopPropagation()">
+        <ng-container [ngTemplateOutlet]="boardNav"></ng-container>
+        <ng-container [ngTemplateOutlet]="themeToggle"></ng-container>
+      </div>
+    </div>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
   </div>
-</header>
-
-<main class="app-main">
-  <router-outlet></router-outlet>
-</main>
+</div>

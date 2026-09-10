@@ -1,46 +1,53 @@
-<section class="card task-detail" *ngIf="task">
-  <div class="task-detail__header">
-    <h2>Edit task</h2>
-    <a [routerLink]="['/boards', boardId]" class="btn">&times; Close</a>
-  </div>
+<!-- Presented as a modal overlay, matching the design reference's "View
+     Task"/"Edit Task" screens - but this is still the exact same routed
+     child component ('tasks/:taskId') as before; only its CSS changed
+     (see task-detail.component.css), so the guard/parameter-reading
+     behaviour this route demonstrates is unaffected. -->
+<div class="modal-backdrop" *ngIf="task" (click)="close()">
+  <section class="modal-panel task-detail" (click)="$event.stopPropagation()">
+    <div class="task-detail__header">
+      <h2>Edit Task</h2>
+      <button type="button" class="task-detail__close" (click)="close()" aria-label="Close">&times;</button>
+    </div>
 
-  <!-- One-way [value] binding + an (input)/(change) handler, not
-       [(ngModel)] - see task-detail.component.ts. -->
-  <div class="field">
-    <label for="task-title">Title</label>
-    <input
-      id="task-title"
-      type="text"
-      [value]="title"
-      (input)="onTitleInput($any($event.target).value)"
-    />
-  </div>
+    <!-- One-way [value] binding + an (input)/(change) handler, not
+         [(ngModel)] - see task-detail.component.ts. -->
+    <div class="field">
+      <label for="task-title">Title</label>
+      <input
+        id="task-title"
+        type="text"
+        [value]="title"
+        (input)="onTitleInput($any($event.target).value)"
+      />
+    </div>
 
-  <div class="field">
-    <label for="task-description">Description</label>
-    <textarea
-      id="task-description"
-      rows="3"
-      [value]="description"
-      (input)="onDescriptionInput($any($event.target).value)"
-    ></textarea>
-  </div>
+    <div class="field">
+      <label for="task-description">Description</label>
+      <textarea
+        id="task-description"
+        rows="4"
+        [value]="description"
+        (input)="onDescriptionInput($any($event.target).value)"
+      ></textarea>
+    </div>
 
-  <div class="field">
-    <label for="task-status">Status</label>
-    <select id="task-status" [value]="status" (change)="onStatusChange($any($event.target).value)">
-      <option value="todo">To do</option>
-      <option value="in-progress">In progress</option>
-      <option value="done">Done</option>
-    </select>
-  </div>
+    <div class="field">
+      <label for="task-status">Status</label>
+      <select id="task-status" [value]="status" (change)="onStatusChange($any($event.target).value)">
+        <option value="todo">Todo</option>
+        <option value="in-progress">Doing</option>
+        <option value="done">Done</option>
+      </select>
+    </div>
 
-  <div class="task-detail__actions">
-    <button type="button" class="btn btn--primary" (click)="saveTask()" [disabled]="!hasUnsavedChanges()">
-      Save changes
-    </button>
-    <span class="task-detail__hint" *ngIf="hasUnsavedChanges()">
-      Unsaved changes - navigating away will ask for confirmation.
-    </span>
-  </div>
-</section>
+    <div class="task-detail__actions">
+      <button type="button" class="btn btn--primary btn--block" (click)="saveTask()" [disabled]="!hasUnsavedChanges()">
+        Save changes
+      </button>
+      <span class="task-detail__hint" *ngIf="hasUnsavedChanges()">
+        Unsaved changes - navigating away will ask for confirmation.
+      </span>
+    </div>
+  </section>
+</div>

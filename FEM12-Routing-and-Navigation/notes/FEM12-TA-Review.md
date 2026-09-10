@@ -300,41 +300,55 @@ This is presentation only — no new data, no new routing concept, just `*ngFor`
 tablet/desktop; below 860px the grid collapses to a single stacked column so nothing is ever squeezed sideways or
 requires horizontal scrolling on a phone.
 
-The whole app (this project and FEM13's) shares one **light-mode-only** design system (`styles.css`): a single set
-of CSS custom properties for color/spacing/radius/shadow, with no `prefers-color-scheme: dark` override anywhere.
+The whole app (this project and FEM13's/FEM16's) shares one design system (`styles.css`): a single set of CSS
+custom properties for color/spacing/radius/shadow, with a real light **and** dark theme (see §5.1).
 
-### 5.1 Design alignment
+### 5.1 Design alignment — visual fidelity pass
 
-An initial pass at this app's UI was decided without a real design reference. Exported design images for the
-Kanban app later became available (`FEM16-State-Management/task/sample-design-imgs/`, shared across the whole
-Kanban project) and were used here as the **visual source of truth** for this pass's palette and column styling:
+Two earlier passes existed on this app's UI: the first was invented without any design reference at all; the
+second adopted the reference images' color palette but kept the top-nav-bar layout and added a column-header dot
+that, on closer inspection, turned out to be inconsistent across the reference set (see below). This third pass
+treats the design images in `FEM16-State-Management/task/sample-design-imgs/` as a **specification**, sampled
+pixel-by-pixel (Python/Pillow) rather than eyeballed, and reproduces the structure they show, not just their
+colors:
 
-- `--color-primary` moved to the reference's signature purple (`#635fc7`, hover `#a8a4ff`), and the neutral palette
-  (`--color-bg`, `--color-border`, `--color-text-muted`, etc.) was retuned to the reference's light-grey/near-black
-  values instead of the previous generic indigo/slate palette.
-- Each Kanban column header now carries the reference's small colored dot (`.column-dot--todo/in-progress/done`,
-  cyan/purple/green) plus an uppercase, letter-spaced label reading `TODO (4)` — matching the design image exactly
-  — instead of the previous colored-underline treatment.
-- Board-list status badges reuse the same three column colors, so a board card's "1 to do / 1 in progress / 1
-  done" counts visually agree with the column dots you see once inside that board.
+- **Exact colors, sampled from the images**: light `--color-bg: #f4f7fd`, `--color-surface: #fff`,
+  `--color-text: #000112`; dark `--color-bg: #20212c`, `--color-surface: #2b2c37`; both share
+  `--color-text-muted: #828fa3` and the primary purple `#635fc7`/`#a8a4ff`. These are the literal pixel values in
+  `Kanban Desktop Lightmode.png`/`Darkmode.png`, not an approximation.
+- **A real sidebar**, matching the reference's actual layout: `AppComponent` now renders a persistent left rail
+  (board list with an active purple pill, a theme toggle, and this app's own Settings/Log-in links tucked into its
+  footer) instead of a top nav bar. The board-list *page* (a grid of board cards) is kept as its own route — the
+  reference has no such page, but Task 2 explicitly requires "a main boards view" as a distinct routed page, so the
+  sidebar and that page coexist: the sidebar is the reference's fast board-switcher, the grid page is this lab's
+  required deliverable.
+- **A working dark/light toggle**: `styles.css` defines both palettes behind `[data-theme]`; `AppComponent` flips
+  the attribute and remembers the choice in `localStorage`. This is plain CSS custom properties plus a class swap —
+  no new Angular concept, so it carries no module-scope risk.
+- **Modal-style presentation, without changing the routing**: `TaskDetailComponent` (still the exact same routed
+  child of `boards/:boardId`, with the exact same guard) is now rendered as a centered overlay with a dark backdrop,
+  matching the reference's "Edit Task" screen, purely via CSS (`.modal-backdrop`/`.modal-panel` in `styles.css`).
+  Nothing about *how* it's reached, guarded, or parameterized changed.
+- **Mobile**: below 860px the sidebar is replaced by a compact top bar (logo + the current board's name + a
+  chevron) that opens a dropdown reproducing the sidebar's own content, matching `Kanban Mobile.png`/
+  `Mobile Board Dropdown.png`.
+- **The column-header dot was removed, on evidence, not by default.** The two task-modal reference images
+  (`New Task model.jpg`/`View Task model.jpg`) show a colored dot before `TODO (4)`; the three images that actually
+  depict the board itself (`Kanban Desktop Lightmode.png`, `Darkmode.png`, `Kanban Mobile.png`) do not — verified
+  by cropping and zooming each image, not by assumption. Since three independent, dedicated "this is the board"
+  screenshots agree with each other and disagree with the two modal screenshots (whose board is only dimmed
+  background context), this pass follows the majority and drops the dot, using the exact wording those three
+  images show: `Todo (4)`, `Doing (6)`, `Done (7)` (labels renamed from "To do"/"In progress" to match).
 
-**Deliberately not adopted here** (present in the reference images but out of this module's routing scope, or
-belonging to functionality this Kanban build doesn't implement yet):
+**Still deliberately not implemented** (present in the reference but genuinely out of this module's scope):
 
-- The dark-mode toggle and the persistent left sidebar (board switcher) shown in the reference — both are stateful
-  UI/interaction features, not routing concepts, and the sidebar in particular would blur this module's explicit
-  "a main boards view" route requirement (Task 2) into a single always-visible nav element. `styles.css` keeps
-  `color-scheme: light` with no dark override for the same reason noted above.
-- The "Add New Task" button and its modal, and the "Add new board" modal shown in the reference — this app has no
-  task-creation flow at all yet (only board creation and editing an existing task), so adding those buttons now
-  would imply functionality that isn't actually there. Modals as a UI pattern are also not a routing/forms concept.
-- Task viewing as a modal overlay — this app deliberately keeps task detail as its own **routed, nested** view
-  (`boards/:boardId/tasks/:taskId`) instead, since a real child route with its own URL, guard, and parameter
-  reading is the entire point of this lab; the reference's modal presentation is a UI choice for a later stage of
-  the same project, not a routing requirement.
+- The "+ Add New Task" button and any task-creation flow — this app still only supports board creation and editing
+  an *existing* task; adding a create-task button now would imply functionality this lab never built.
+- Per-board custom columns (the "Add new board" modal's "Board Columns" list) — this app's fixed
+  todo/in-progress/done model is unchanged; that's a data-model question, not a routing or visual one.
 
-The result reads as "the same design system, applied only to what this lab actually builds" rather than a
-different, invented look — verified live in §10 below.
+Re-verified live (headless Chrome) against every reference screen after this pass: desktop light, desktop dark,
+mobile board view, the mobile board dropdown, and the task modal — see §10.
 
 ---
 
@@ -409,10 +423,16 @@ lazily-loaded child route module, and both `CanActivate` and `CanDeactivate` gua
 
 **Design**
 
-- *Why doesn't this app have the sidebar/dark-mode toggle/modals shown in the reference design images?* Those are
-  either stateful UI features unrelated to routing (dark-mode toggle, modals) or would conflict with this module's
-  explicit requirement for a distinct "main boards view" route (a persistent sidebar board-switcher). Only the
-  reference's palette and column styling were adopted here — see §5.1 for the full reasoning per omitted element.
+- *How closely does this app match the design reference now?* Sidebar, dark/light theme, the task modal's overlay
+  presentation, and mobile behavior all match — see §5.1. What's *not* implemented is task creation and per-board
+  custom columns, since neither is functionality this lab (or FEM13) actually built.
+- *Why doesn't the Kanban board show a colored dot before each column's label, when two of the reference images
+  do?* The two images with a dot are the task-modal mockups, where the board behind the modal is just dimmed
+  context; the three images that are actually *about* the board (desktop light, desktop dark, mobile) all agree
+  there's no dot. This was verified by cropping and zooming each reference image, not assumed — see §5.1.
+- *Why is the board-list grid page still a separate route if the design doesn't show one?* Task 2 explicitly
+  requires "a main boards view" as one of this lab's routed pages; the sidebar (which the design does show) is
+  simply the faster way to switch boards once you're already inside one.
 
 **Parameters**
 
@@ -539,7 +559,7 @@ pattern this module teaches for `CanActivate` — see §3.7.
 | Kanban app with routing/navigation implemented | ✅ Done, verified live |
 | Organized routing structure, nav links, and guards | ✅ Done |
 | Redesigned, light-mode, Kanban-column UI shared with FEM13 | ✅ Done, verified live |
-| UI aligned to the Kanban design reference images (§5.1) | ✅ Palette, column dots, and card styling aligned; sidebar/dark-mode/modals deliberately deferred (out of routing scope) |
+| UI faithfully reproduces the Kanban design reference images (§5.1) | ✅ Sidebar, dark/light theme, modal-style task view, and mobile dropdown all implemented and pixel-checked; task creation and per-board custom columns deliberately not added (no such functionality exists in this lab) |
 | No FEM13 (Forms) concepts leaking into this build | ✅ Verified via grep + manual review (§4, §10) |
 | Public GitHub repo with clean history/documentation | ⚠️ Not done by this session — requires pushing to a GitHub remote, which needs explicit authorization; the app is ready to commit whenever you'd like |
 | Deployed live app URL (Netlify/Vercel) | ⚠️ Not done by this session — requires an external hosting account/deployment step outside an automated coding session's scope; app builds cleanly and is deploy-ready (`ng build` output verified) |

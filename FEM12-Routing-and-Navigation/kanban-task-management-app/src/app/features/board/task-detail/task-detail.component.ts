@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Task, TaskStatus } from '../../../core/models/task.model';
 import { BoardService } from '../../../core/services/board-service/board.service';
@@ -18,7 +18,7 @@ import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes.guard';
  */
 @Component({
   selector: 'app-task-detail',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './task-detail.component.html',
   styleUrl: './task-detail.component.css',
 })
@@ -94,5 +94,9 @@ export class TaskDetailComponent implements OnInit, OnDestroy, HasUnsavedChanges
 
   saveTask(): void {
     this.boardService.updateTask(this.boardId, this.taskId, this.title, this.description, this.status);
+  }
+
+  close(): void {
+    this.router.navigate(['/boards', this.boardId]);
   }
 }

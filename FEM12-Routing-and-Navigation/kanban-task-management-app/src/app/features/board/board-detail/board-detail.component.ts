@@ -27,8 +27,8 @@ export class BoardDetailComponent implements OnInit, OnDestroy {
   // groups the same `board.tasks` array by status for display purposes -
   // no new data or routing concept, just a different view of it.
   readonly statusColumns: StatusColumn[] = [
-    { status: 'todo', label: 'To do' },
-    { status: 'in-progress', label: 'In progress' },
+    { status: 'todo', label: 'Todo' },
+    { status: 'in-progress', label: 'Doing' },
     { status: 'done', label: 'Done' },
   ];
 

@@ -1,33 +1,32 @@
-<section class="page-header">
-  <div>
-    <h1>Boards</h1>
-    <p class="page-header__subtitle">Every board is reachable at its own URL: /boards/&lt;id&gt;.</p>
-  </div>
-</section>
+<header class="page-header">
+  <h1>Boards</h1>
+</header>
 
-<div class="toolbar" role="group" aria-label="Sort boards">
-  <span class="toolbar__label">Sort by:</span>
-  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'recent'">
-    Most recent
-  </a>
-  <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'name'">
-    Name
-  </a>
-</div>
-
-<ul class="board-grid">
-  <li class="card board-card" *ngFor="let board of boards">
-    <a [routerLink]="['/boards', board.id]" class="board-card__link">
-      <h2 class="board-card__title">{{ board.name }}</h2>
-      <p class="board-card__description">{{ board.description }}</p>
-      <div class="board-card__counts" *ngIf="board.tasks.length > 0">
-        <span class="status-badge status-badge--todo">{{ todoCount(board) }} to do</span>
-        <span class="status-badge status-badge--in-progress">{{ inProgressCount(board) }} in progress</span>
-        <span class="status-badge status-badge--done">{{ doneCount(board) }} done</span>
-      </div>
-      <span class="board-card__meta">Created {{ board.createdAt }}</span>
+<div class="page-content">
+  <div class="toolbar" role="group" aria-label="Sort boards">
+    <span class="toolbar__label">Sort by:</span>
+    <a [routerLink]="['/boards']" [queryParams]="{ sort: 'recent' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'recent'">
+      Most recent
     </a>
-  </li>
-</ul>
+    <a [routerLink]="['/boards']" [queryParams]="{ sort: 'name' }" class="toolbar__link" [class.toolbar__link--active]="sortOrder === 'name'">
+      Name
+    </a>
+  </div>
 
-<p class="empty-state" *ngIf="boards.length === 0">No boards yet. Create your first one above.</p>
+  <ul class="board-grid">
+    <li class="card board-card" *ngFor="let board of boards">
+      <a [routerLink]="['/boards', board.id]" class="board-card__link">
+        <h2 class="board-card__title">{{ board.name }}</h2>
+        <p class="board-card__description">{{ board.description }}</p>
+        <div class="board-card__counts" *ngIf="board.tasks.length > 0">
+          <span class="status-badge status-badge--todo">{{ todoCount(board) }} todo</span>
+          <span class="status-badge status-badge--in-progress">{{ inProgressCount(board) }} doing</span>
+          <span class="status-badge status-badge--done">{{ doneCount(board) }} done</span>
+        </div>
+        <span class="board-card__meta">Created {{ board.createdAt }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <p class="empty-state" *ngIf="boards.length === 0">No boards yet.</p>
+</div>
