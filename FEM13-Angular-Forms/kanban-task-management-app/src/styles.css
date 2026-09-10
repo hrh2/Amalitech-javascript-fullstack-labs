@@ -1,33 +1,45 @@
 :root {
   /* Light mode only, deliberately: this app does not offer a dark theme,
      so color-scheme stays 'light' and there is no
-     prefers-color-scheme: dark override block below. */
+     prefers-color-scheme: dark override block below. A dark theme is
+     part of the Kanban design reference (task/sample-design-imgs in the
+     FEM16 lab), but the theme *toggle* itself is a stateful UI feature
+     unrelated to forms - out of scope here; only the reference's color
+     language and layout are adopted (see FEM12's own note on this). */
   color-scheme: light;
 
-  /* Neutrals */
-  --color-bg: #f6f7fb;
+  /* Neutrals - tuned to the Kanban design reference's light palette */
+  --color-bg: #f4f7fd;
   --color-surface: #ffffff;
-  --color-surface-alt: #f1f2f7;
-  --color-surface-hover: #eceefa;
-  --color-border: #e3e5ee;
-  --color-border-strong: #d3d6e3;
-  --color-text: #171a24;
-  --color-text-muted: #666b80;
-  --color-text-faint: #8f93a6;
+  --color-surface-alt: #f4f7fd;
+  --color-surface-hover: #eef1fb;
+  --color-border: #e4ebfa;
+  --color-border-strong: #d8dcec;
+  --color-text: #000112;
+  --color-text-muted: #828fa3;
+  --color-text-faint: #a1a7bc;
 
-  /* Brand / accent */
-  --color-primary: #4f46e5;
-  --color-primary-hover: #4338ca;
-  --color-primary-soft: #eef0fe;
-  --color-primary-strong: #3730a3;
+  /* Brand / accent - the design reference's signature purple */
+  --color-primary: #635fc7;
+  --color-primary-hover: #a8a4ff;
+  --color-primary-soft: #f0effc;
+  --color-primary-strong: #4c48a8;
 
   /* Status */
-  --color-danger: #dc2626;
+  --color-danger: #ea5555;
   --color-danger-soft: #fdecec;
   --color-success: #15803d;
   --color-success-soft: #e6f6ec;
   --color-warning: #b45309;
   --color-warning-soft: #fdf1de;
+
+  /* Kanban column indicators - the design reference marks each column
+     with a small colored dot (todo/doing/done) rather than a color on
+     the whole card; kept as their own tokens so any future column gets
+     a sensible next color instead of reusing todo/in-progress/done. */
+  --color-column-todo: #49c4e5;
+  --color-column-in-progress: #8471f2;
+  --color-column-done: #67e2ae;
 
   /* Shape & elevation */
   --radius-sm: 6px;
@@ -243,18 +255,40 @@ p {
 }
 
 .status-badge--todo {
-  background: var(--color-surface-alt);
-  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-column-todo) 15%, white);
+  color: color-mix(in srgb, var(--color-column-todo) 70%, black);
 }
 
 .status-badge--in-progress {
-  background: var(--color-warning-soft);
-  color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-column-in-progress) 15%, white);
+  color: var(--color-column-in-progress);
 }
 
 .status-badge--done {
-  background: var(--color-success-soft);
-  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-column-done) 20%, white);
+  color: color-mix(in srgb, var(--color-column-done) 60%, black);
+}
+
+/* Column indicator dot - the small colored circle the design reference
+   places before each Kanban column's label (Todo/Doing/Done). */
+.column-dot {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.column-dot--todo {
+  background: var(--color-column-todo);
+}
+
+.column-dot--in-progress {
+  background: var(--color-column-in-progress);
+}
+
+.column-dot--done {
+  background: var(--color-column-done);
 }
 
 /* Success/info banners */

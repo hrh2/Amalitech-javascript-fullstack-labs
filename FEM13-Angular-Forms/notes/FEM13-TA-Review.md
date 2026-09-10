@@ -74,6 +74,25 @@ user feedback before bad data ever reaches `BoardService`.
 | `features/board/board.routes.ts` | `tasks/:taskId` → `new-task` and `edit/:taskId`, both `canDeactivate: [unsavedChangesGuard]`. |
 | `features/board/board-detail/*` | Kanban-column task cards now link to `edit/:taskId` (was `tasks/:taskId`); added a "+ New task" link; added a dismissible success banner driven by a `?taskSaved=created\|updated` query param; task cards show due date / subtask progress. |
 | `pages/board-list/*` | The existing manually-bound "Create board" panel is rebuilt as a real `NgForm`/`[(ngModel)]` **template-driven form** with `minlength`/`maxlength` validators, live error messages, and a disabled-until-valid submit button — see §3. |
+| `app.routes.ts` | `'boards'` gained `canActivate: [authGuard]` (it was intentionally public in FEM12, to show not every route needs a guard). Once this list's boards lead straight into real create/edit forms, leaving it visible to a logged-out visitor no longer made sense — see §2.1. |
+| `styles.css`, `features/board/board-detail/*` | Design-alignment pass — see §2.1. |
+
+### 2.1 Design alignment and the `'boards'` guard
+
+Both apps' `styles.css` were re-tuned to the Kanban design reference images that later became available
+(`FEM16-State-Management/task/sample-design-imgs/`, shared across the whole Kanban project): the signature purple
+(`#635fc7`/`#a8a4ff`), the light neutral palette, and colored column-header dots (cyan/purple/green, `TODO (4)`
+style) replacing the earlier generic indigo palette and colored-underline column headers. This was carried over
+identically from FEM12's own design-alignment pass so the two apps stay visually identical where their features
+overlap — see FEM12's TA review §5.1 for the full reasoning on what *wasn't* adopted (sidebar, dark-mode toggle,
+modals) and why, which applies here unchanged.
+
+Separately (not part of the design pass), `'boards'` picked up `canActivate: [authGuard]` at some point in this
+project's history — a deliberate divergence from FEM12, where the board list was left public specifically to
+demonstrate that not every route needs a guard. Now that this list is the on-ramp into real, validated create/edit
+task forms, an unauthenticated visitor seeing (if not editing) other users' board contents no longer fit the app's
+intent, so the guard was extended to cover it too. A TA comparing the two apps side by side will notice `/boards`
+behaves differently between FEM12 and FEM13 — this is that difference, and it's intentional.
 
 ---
 
@@ -263,6 +282,11 @@ error messages and the disabled submit button.
 
 **Integration & relationship to FEM12**
 
+- *Why is `/boards` guarded here but not in FEM12?* See §2.1 — FEM12 deliberately left it public to show a guard
+  isn't automatic on every route; FEM13 extends the guard to it once it leads straight into real create/edit forms.
+- *Why does this app's palette/column styling look different from an earlier version of FEM12?* Design reference
+  images for the Kanban app became available after the first UI pass on both apps; §2.1 covers what was adopted
+  (palette, column dots) and what wasn't (sidebar, dark-mode toggle, modals) and why, matching FEM12's own reasoning.
 - *What exactly changed between FEM12's "create board" panel and FEM13's?* FEM12's used
   `#boardNameInput`/`#boardDescriptionInput` template reference variables and a native `(submit)` handler — no
   `FormsModule` at all. FEM13 rebuilt the same panel with `[(ngModel)]`, `#boardName="ngModel"`, an `#boardForm=
@@ -321,6 +345,10 @@ error messages and the disabled submit button.
 
 - `ng build` succeeds with no errors; the `board-routes` lazy chunk is still separate from the initial bundle
   (FEM12's lazy loading is untouched).
+- Design-alignment pass (§2.1) re-verified live via a headless-Chrome/CDP driven `ng serve` session, zero console
+  errors: the boards list (post-login), a board's Kanban columns, the Edit Task reactive form, and the template-driven
+  "New board" panel were each screenshotted and confirmed to use the new purple/column-dot palette identically to
+  FEM12; `/boards` correctly redirects to `/login` when logged out, confirming the newly-added guard.
 - An automated headless-browser run (Playwright, driving the live `ng serve` dev server) covered, with **zero
   console/page errors** throughout:
   - `authGuard` redirect to `/login` and back for a guarded board route (unchanged from FEM12).
@@ -387,6 +415,7 @@ own `dirty` flag, which is squarely a FEM13 (forms state) concept.
 | Bonus: subtasks via `FormArray` | ✅ Done, verified live |
 | Template-driven form (`ngModel`) demonstrated, distinct from FEM12's manual binding | ✅ Done, verified live |
 | Light-mode theme, visually consistent with FEM12 | ✅ Done — shared `styles.css`, shared Kanban-column layout |
+| UI aligned to the Kanban design reference images (§2.1) | ✅ Palette and column dots aligned, identically to FEM12; sidebar/dark-mode/modals deliberately deferred |
 | This TA review document | ✅ `notes/FEM13-TA-Review.md` |
 | Public GitHub repo with clean commit history | ⚠️ Not done by this session — requires pushing to a remote, which needs explicit authorization; the app is ready to commit whenever you'd like |
 | Deployed live app URL (Netlify/Vercel) | ⚠️ Not done by this session — requires an external hosting account/deployment step outside an automated coding session's scope; `ng build` output verified clean and deploy-ready |

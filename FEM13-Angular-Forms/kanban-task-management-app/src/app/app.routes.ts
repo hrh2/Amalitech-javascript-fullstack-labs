@@ -9,7 +9,11 @@ export const routes: Routes = [
   // Bonus task: redirect the default route to the boards list.
   { path: '', pathMatch: 'full', redirectTo: 'boards' },
 
-  { path: 'boards', component: BoardListComponent ,canActivate: [authGuard] },
+  // Unlike FEM12 (where the board list was left public on purpose to show
+  // that not every route needs a guard), this build protects it too: once
+  // real forms can create/edit tasks from this list's boards, letting a
+  // logged-out visitor see board contents at all no longer made sense.
+  { path: 'boards', component: BoardListComponent, canActivate: [authGuard] },
 
   // The whole "board" feature area (board detail + nested task detail) is
   // lazy-loaded: its code is only downloaded the first time a user actually

@@ -22,9 +22,9 @@
 
   <div class="kanban-board">
     <section class="kanban-column" *ngFor="let column of statusColumns">
-      <header class="kanban-column__header kanban-column__header--{{ column.status }}">
-        <h2>{{ column.label }}</h2>
-        <span class="kanban-column__count">{{ tasksByStatus(column.status).length }}</span>
+      <header class="kanban-column__header">
+        <span class="column-dot column-dot--{{ column.status }}" aria-hidden="true"></span>
+        <h2>{{ column.label }} ({{ tasksByStatus(column.status).length }})</h2>
       </header>
 
       <ul class="kanban-column__list">
