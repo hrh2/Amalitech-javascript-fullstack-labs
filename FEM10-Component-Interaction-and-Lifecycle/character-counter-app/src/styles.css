@@ -1,0 +1,113 @@
+/* ==========================================
+   DESIGN TOKENS — shared across every component
+   ========================================== */
+:root {
+  --neutral-900: #12131a;
+  --neutral-800: #21222c;
+  --neutral-700: #2a2b37;
+  --neutral-600: #404254;
+  --neutral-200: #e4e4ef;
+  --neutral-100: #f2f2f7;
+  --neutral-0: #ffffff;
+
+  --blue-400: #d3a0fa;
+  --blue-500: #c27cf8;
+
+  --yellow-500: #ff9f00;
+
+  --orange-500: #fe8159;
+  --orange-800: #da3701;
+
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-16: 16px;
+  --radius-full: 999px;
+
+  --spacing-050: 4px;
+  --spacing-075: 6px;
+  --spacing-100: 8px;
+  --spacing-150: 12px;
+  --spacing-200: 16px;
+  --spacing-250: 20px;
+  --spacing-300: 24px;
+  --spacing-400: 32px;
+  --spacing-500: 40px;
+  --spacing-600: 48px;
+  --spacing-800: 64px;
+  --spacing-1000: 80px;
+
+  --font-family: "DM Sans", sans-serif;
+
+  --bg: var(--neutral-900);
+  --surface: var(--neutral-700);
+  --surface-border: var(--neutral-700);
+  --text-primary: var(--neutral-0);
+  --text-heading: var(--neutral-100);
+  --text-secondary: var(--neutral-200);
+  --text-muted: var(--neutral-600);
+  --track: var(--neutral-700);
+  --icon-bg: var(--neutral-700);
+  --logo-accent: var(--blue-400);
+  --icon-color: var(--neutral-0);
+  --focus-ring: var(--blue-400);
+
+  --card-ink: var(--neutral-900);
+
+  --bg-noise: url("/assets/BG_Noise.png");
+  --bg-noise-opacity: 1;
+}
+
+[data-theme="light"] {
+  --bg: var(--neutral-0);
+  --surface: var(--neutral-100);
+  --surface-border: var(--neutral-200);
+  --text-primary: var(--neutral-900);
+  --text-heading: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-600);
+  --track: var(--neutral-200);
+  --icon-bg: var(--neutral-200);
+  --icon-color: var(--neutral-900);
+  --logo-accent: var(--blue-500);
+  --bg-noise: url("/assets/BG_Noise_white.png");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+  min-height: 100%;
+  position: relative;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

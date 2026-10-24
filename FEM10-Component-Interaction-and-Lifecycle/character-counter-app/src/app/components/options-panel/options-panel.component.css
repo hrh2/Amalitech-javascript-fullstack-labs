@@ -1,0 +1,87 @@
+.options-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-250) var(--spacing-300);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.checkbox-box {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-6);
+  border: 1.5px solid var(--text-muted);
+  flex-shrink: 0;
+  position: relative;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.checkbox-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: no-repeat center / 11px 11px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10' fill='none'%3E%3Cpath d='M1 5L4.5 8.5L11 1' stroke='%2312131A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.checkbox input:checked + .checkbox-box {
+  background-color: var(--blue-400);
+  border-color: var(--blue-400);
+}
+
+.checkbox input:checked + .checkbox-box::after {
+  opacity: 1;
+}
+
+.checkbox input:focus-visible + .checkbox-box {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.checkbox-label {
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 130%;
+  letter-spacing: -0.6px;
+  color: var(--text-secondary);
+}
+
+.limit-input {
+  width: 76px;
+  padding: var(--spacing-100) var(--spacing-150);
+  border-radius: var(--radius-8);
+  border: 1.5px solid var(--surface-border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 16px;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.limit-input:focus-visible {
+  outline: none;
+  border-color: var(--blue-400);
+}
+
+@media (max-width: 480px) {
+  .options-left {
+    gap: var(--spacing-150) var(--spacing-200);
+  }
+}

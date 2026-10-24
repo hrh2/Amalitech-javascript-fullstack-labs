@@ -1,0 +1,100 @@
+<section class="dessert-list" aria-labelledby="dessert-list-heading">
+  <div class="dessert-list__header">
+    <h1 id="dessert-list-heading" class="dessert-list__heading">Desserts</h1>
+
+    <div class="dessert-list__controls">
+      <label class="dessert-list__control">
+        Search
+        <input
+          type="search"
+          name="search"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchInput()"
+          placeholder="Search by name or category"
+          aria-label="Search desserts"
+        />
+      </label>
+
+      <label class="dessert-list__control">
+        Category
+        <select
+          [(ngModel)]="selectedCategory"
+          (ngModelChange)="applyFilters()"
+          aria-label="Filter by category"
+        >
+          <option [ngValue]="null">All</option>
+          <option *ngFor="let category of categories$ | async" [ngValue]="category">{{ category }}</option>
+        </select>
+      </label>
+
+      <label class="dessert-list__control">
+        Max price
+        <select
+          [(ngModel)]="maxPrice"
+          (ngModelChange)="applyFilters()"
+          aria-label="Filter by maximum price"
+        >
+          <option [ngValue]="null">Any price</option>
+          <option [ngValue]="5">Under $5</option>
+          <option [ngValue]="7">Under $7</option>
+          <option [ngValue]="10">Under $10</option>
+        </select>
+      </label>
+
+      <label class="dessert-list__control">
+        Sort by
+        <select
+          [(ngModel)]="sortOption"
+          (ngModelChange)="applyFilters()"
+          aria-label="Sort desserts"
+        >
+          <option value="default">Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A to Z</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div *ngIf="loadError$ | async as error" class="dessert-list__error" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="dessert-list__retry" (click)="reload()">Try again</button>
+  </div>
+
+  <ng-container *ngIf="viewModels$ | async as items; else loading">
+    <ul *ngIf="items.length > 0; else noDesserts" class="dessert-list__grid">
+      <app-dessert-card
+        *ngFor="let item of items; trackBy: trackByDessertId"
+        [dessert]="item.dessert"
+        [quantity]="item.quantity"
+        (add)="onAdd($event)"
+        (increment)="onIncrement($event)"
+        (decrement)="onDecrement($event)"
+      ></app-dessert-card>
+    </ul>
+  </ng-container>
+
+  <ng-template #loading>
+    <p class="dessert-list__empty" role="status">Loading desserts…</p>
+  </ng-template>
+
+  <ng-template #noDesserts>
+    <p *ngIf="!(loadError$ | async)" class="dessert-list__empty" role="status">
+      No desserts match the selected filters.
+    </p>
+  </ng-template>
+
+  <details class="dessert-list__dev-tools">
+    <summary>Dev tools</summary>
+    <label class="dessert-list__control">
+      <input
+        type="checkbox"
+        [(ngModel)]="simulateFailure"
+        (ngModelChange)="toggleSimulateFailure()"
+      />
+      Simulate a failed load
+    </label>
+    <button type="button" class="dessert-list__retry" (click)="reload()">Reload catalog</button>
+  </details>
+</section>

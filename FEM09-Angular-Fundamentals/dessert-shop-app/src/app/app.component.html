@@ -1,0 +1,29 @@
+<a class="skip-link" href="#dessert-list-heading">Skip to desserts</a>
+
+<div class="layout">
+  <main class="layout__main">
+    <app-dessert-list
+      [desserts]="desserts"
+      [quantityMap]="quantities"
+      (add)="addToCart($event)"
+      (increment)="incrementQuantity($event)"
+      (decrement)="decrementQuantity($event)"
+    ></app-dessert-list>
+  </main>
+
+  <aside class="layout__cart" aria-label="Shopping cart">
+    <app-cart
+      [cartLines]="cartLines"
+      [orderTotal]="orderTotal"
+      (removeItem)="removeFromCart($event)"
+      (confirmOrder)="confirmOrder()"
+    ></app-cart>
+  </aside>
+</div>
+
+<app-order-confirmation-modal
+  *ngIf="isOrderConfirmed"
+  [cartLines]="cartLines"
+  [orderTotal]="orderTotal"
+  (startNewOrder)="startNewOrder()"
+></app-order-confirmation-modal>

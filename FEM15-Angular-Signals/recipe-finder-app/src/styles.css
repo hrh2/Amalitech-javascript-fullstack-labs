@@ -1,0 +1,41 @@
+/* Global design tokens — from the Recipe Finder style guide (Style Guide Colors / Typography) */
+:root {
+  --color-primary: #f6b100;
+  --color-primary-100: #ffe6ad;
+  --color-primary-50: #fff6e0;
+  --color-secondary: #181a20;
+
+  --color-white: #ffffff;
+  --color-lotion: #fcfcfc;
+  --color-whitesmoke: #f5f5f5;
+  --color-bright-gray: #eeeeee;
+  --color-quick-silver: #9f9f9f;
+
+  --font-family-base: 'Urbanist', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  background: var(--color-lotion);
+  color: var(--color-secondary);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}

@@ -1,0 +1,23 @@
+<div class="editor-card" [class.is-over-limit]="isOverLimit">
+  <textarea
+    id="text-input"
+    class="editor-textarea"
+    placeholder="Start typing here… (or paste your text)"
+    aria-label="Text to analyze"
+    aria-describedby="limit-warning"
+    rows="6"
+    [value]="text"
+    (input)="onInput($event)"
+  ></textarea>
+</div>
+
+<p class="limit-warning" id="limit-warning" role="alert" [hidden]="!isOverLimit">
+  @if (isOverLimit) {
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4" />
+      <rect x="7.25" y="6.5" width="1.5" height="5" rx="0.75" fill="currentColor" />
+      <rect x="7.25" y="3.75" width="1.5" height="1.5" rx="0.75" fill="currentColor" />
+    </svg>
+    <span>Limit reached! Maximum {{ limitValue }} characters.</span>
+  }
+</p>

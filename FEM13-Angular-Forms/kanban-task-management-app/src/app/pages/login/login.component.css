@@ -1,0 +1,18 @@
+.login-card {
+  max-width: 420px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.login-card p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.login-card code {
+  background: var(--color-surface-hover);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}

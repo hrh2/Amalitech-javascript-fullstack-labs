@@ -1,0 +1,20 @@
+<section class="dessert-list" aria-labelledby="dessert-list-heading">
+  <h1 id="dessert-list-heading" class="dessert-list__heading">Desserts</h1>
+
+  <ul *ngIf="desserts.length > 0; else noDesserts" class="dessert-list__grid">
+    <app-dessert-card
+      *ngFor="let dessert of desserts; trackBy: trackByDessertId"
+      [dessert]="dessert"
+      [quantity]="quantityFor(dessert)"
+      (add)="add.emit($event)"
+      (increment)="increment.emit($event)"
+      (decrement)="decrement.emit($event)"
+    ></app-dessert-card>
+  </ul>
+
+  <ng-template #noDesserts>
+    <p class="dessert-list__empty" role="status">
+      No desserts are available right now. Please check back soon!
+    </p>
+  </ng-template>
+</section>

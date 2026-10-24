@@ -1,0 +1,28 @@
+<section class="density-section" aria-label="Letter density">
+  <h2 class="density-heading">Letter Density</h2>
+
+  <div class="density-list" aria-live="polite">
+    @if (density.length === 0) {
+      <p class="empty-state">No characters found. Start typing to see letter density.</p>
+    } @else {
+      @for (item of density; track item.letter) {
+        <div class="density-row" [hidden]="$index >= previewCount && !expanded">
+          <span class="density-letter">{{ item.letter }}</span>
+          <span class="density-track">
+            <span class="density-fill" [style.width.%]="item.percent"></span>
+          </span>
+          <span class="density-count">{{ item.count }} ({{ item.percent.toFixed(2) }}%)</span>
+        </div>
+      }
+
+      @if (density.length > previewCount) {
+        <button type="button" class="see-more" [class.is-expanded]="expanded" (click)="toggleExpanded()">
+          <span>{{ expanded ? 'See less' : 'See more' }}</span>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      }
+    }
+  </div>
+</section>

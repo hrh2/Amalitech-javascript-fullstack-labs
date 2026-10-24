@@ -1,0 +1,36 @@
+<div class="modal-overlay">
+  <div
+    #dialog
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="order-confirmed-heading"
+    tabindex="-1"
+  >
+    <img
+      src="assets/images/icon-order-confirmed.svg"
+      alt=""
+      aria-hidden="true"
+      class="modal__icon"
+    />
+    <h2 id="order-confirmed-heading" class="modal__heading">Order Confirmed</h2>
+    <p class="modal__subheading">We hope you enjoy your food!</p>
+
+    <ul class="modal__list">
+      <app-cart-item
+        *ngFor="let line of (cartService.cartLines$ | async); trackBy: trackByDessertId"
+        [line]="line"
+        variant="summary"
+      ></app-cart-item>
+    </ul>
+
+    <div class="modal__total-row">
+      <span>Order Total</span>
+      <span class="modal__total-amount">{{ cartService.orderTotal$ | async | currency }}</span>
+    </div>
+
+    <button type="button" class="btn btn--confirm" (click)="cartService.startNewOrder()">
+      Start New Order
+    </button>
+  </div>
+</div>

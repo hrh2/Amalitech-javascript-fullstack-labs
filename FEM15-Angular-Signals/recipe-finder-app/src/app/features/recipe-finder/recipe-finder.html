@@ -1,0 +1,47 @@
+<app-header
+  [searchTerm]="searchTerm()"
+  [favoritesOnly]="favoritesOnly()"
+  [hasFavorites]="hasFavorites()"
+  (searchTermChange)="onSearchTermChange($event)"
+  (favoritesOnlyToggle)="onFavoritesOnlyToggle()"
+/>
+
+<main class="page">
+  <section class="intro">
+    <h1 class="intro__title">Healthy Recipes</h1>
+    <p class="intro__subtitle">search &amp; filter, powered by signals</p>
+  </section>
+
+  <app-filter-toolbar
+    [maxCookTime]="maxCookTime()"
+    [maxCookTimeLimit]="maxCookTimeLimit"
+    [favoritesOnly]="favoritesOnly()"
+    [hasFavorites]="hasFavorites()"
+    (maxCookTimeChange)="onMaxCookTimeChange($event)"
+    (favoritesOnlyToggle)="onFavoritesOnlyToggle()"
+    (clear)="clearFilters()"
+  />
+
+  <p class="result-count" aria-live="polite">
+    {{ resultCount() }} {{ resultCount() === 1 ? 'recipe' : 'recipes' }} found
+  </p>
+
+  @if (filteredRecipes().length > 0) {
+    <section class="recipe-grid" aria-label="Recipe results">
+      @for (recipe of filteredRecipes(); track recipe.id) {
+        <app-recipe-card
+          [recipe]="recipe"
+          [isFavorited]="isFavorited(recipe.id)"
+          (toggleFavorite)="onToggleFavorite($event)"
+        />
+      }
+    </section>
+  } @else {
+    <section class="empty-state" role="status">
+      <p class="empty-state__emoji" aria-hidden="true">🍽️</p>
+      <p class="empty-state__title">No recipes match your search</p>
+      <p class="empty-state__body">Try a shorter search term or increase the max cook time.</p>
+      <button type="button" class="empty-state__clear" (click)="clearFilters()">Clear filters</button>
+    </section>
+  }
+</main>

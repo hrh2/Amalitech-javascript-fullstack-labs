@@ -1,0 +1,153 @@
+.dessert-card {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.dessert-card__media {
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 0.625rem;
+}
+
+.dessert-card__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Mobile source images are genuinely landscape (654x424 ≈ 1.54:1) —
+     forcing a 1:1 box here would crop content the design intends to show.
+     Tablet/desktop sources are ~1:1, overridden below. */
+  aspect-ratio: 1.54 / 1;
+  object-fit: cover;
+  border-radius: 0.625rem;
+  border: 2px solid transparent;
+}
+
+.dessert-card__media--selected .dessert-card__image {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px var(--red);
+}
+
+.dessert-card__cta {
+  position: absolute;
+  left: 50%;
+  bottom: -1.125rem;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: 10.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.btn--add-to-cart {
+  width: 100%;
+  padding: 0.7rem 1.25rem;
+  background-color: var(--white);
+  color: var(--rose-900);
+  border: 1px solid var(--rose-400);
+  font-size: 0.9375rem;
+}
+
+.btn--add-to-cart img {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn--add-to-cart:hover,
+.btn--add-to-cart:focus-visible {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.btn--add-to-cart:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
+}
+
+.quantity-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background-color: var(--red);
+  border-radius: 999px;
+}
+
+.quantity-stepper__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 1px solid var(--white);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.quantity-stepper__btn img {
+  width: 0.65rem;
+  height: 0.65rem;
+  pointer-events: none;
+}
+
+.quantity-stepper__btn:hover,
+.quantity-stepper__btn:focus-visible {
+  background-color: var(--white);
+}
+
+.quantity-stepper__btn:hover img,
+.quantity-stepper__btn:focus-visible img {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(54%) saturate(2500%) hue-rotate(340deg);
+}
+
+.quantity-stepper__btn:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+.quantity-stepper__value {
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.dessert-card__category {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--rose-500);
+}
+
+.dessert-card__name {
+  margin: 0.125rem 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--rose-900);
+}
+
+.dessert-card__price {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--red);
+}
+
+/* Tablet and desktop source images are ~1:1 (427x424 and 502x480
+   respectively) — switch the box to match once those images are the
+   ones actually being loaded via <picture>/<source> in the template. */
+@media (min-width: 600px) {
+  .dessert-card__image {
+    aspect-ratio: 1 / 1;
+  }
+}
