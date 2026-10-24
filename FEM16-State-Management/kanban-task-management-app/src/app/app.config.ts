@@ -26,6 +26,6 @@ export const appConfig: ApplicationConfig = {
     provideEffects([BoardEffects]),
     // logOnly in production: DevTools stays wired up for inspection but
     // won't accept dispatches from the extension outside a dev build.
-    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode(), connectInZone: true }),
+    provideStoreDevtools({ maxAge: 25, logOnly: false, connectInZone: true }),
   ]
 };
