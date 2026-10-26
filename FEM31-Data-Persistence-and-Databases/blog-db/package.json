@@ -1,0 +1,17 @@
+{
+  "name": "blog-db",
+  "version": "1.0.0",
+  "description": "FEM31 hands-on challenge: a blog data layer with Mongoose (User, Post, and populate).",
+  "main": "demo.js",
+  "private": true,
+  "scripts": {
+    "start": "node demo.js",
+    "test": "node --test --test-reporter=spec --test-concurrency=1"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "mongoose": "^9.11.4"
+  }
+}
