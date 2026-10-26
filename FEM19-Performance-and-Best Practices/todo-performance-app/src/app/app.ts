@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subscription, of } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TodoService } from './core/services/todo.service';
 
 @Component({
   selector: 'app-root',
@@ -33,15 +34,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border border-gray-200">
         <div class="flex justify-around items-center text-center mb-4">
           <div class="p-2">
-            <div class="text-3xl font-bold text-gray-800">{{ getStats().total }}</div>
+            <div class="text-3xl font-bold text-gray-800">{{ todoService.total() }}</div>
             <div class="text-sm text-gray-500">Total</div>
           </div>
           <div class="p-2">
-            <div class="text-3xl font-bold text-green-600">{{ getStats().completed }}</div>
+            <div class="text-3xl font-bold text-green-600">{{ todoService.completedCount() }}</div>
             <div class="text-sm text-gray-500">Completed</div>
           </div>
           <div class="p-2">
-            <div class="text-3xl font-bold text-red-500">{{ getStats().pending }}</div>
+            <div class="text-3xl font-bold text-red-500">{{ todoService.pendingCount() }}</div>
             <div class="text-sm text-gray-500">Pending</div>
           </div>
         </div>
@@ -49,35 +50,34 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
         <div class="mt-4">
           <div class="flex justify-between items-center mb-1">
             <span class="text-sm font-medium text-gray-700">Progress</span>
-            <span class="text-sm font-semibold text-gray-700">{{ getProgressPercentage() }}</span>
+            <span class="text-sm font-semibold text-gray-700">{{ todoService.progress() }}%</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2.5">
             <div
               class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300"
-              [style.width]="getProgressPercentage()"
+              [style.width.%]="todoService.progress()"
             ></div>
           </div>
         </div>
       </div>
 
-      <h2 class="text-xl font-semibold text-gray-800 mb-4">Active ({{ getStats().pending }})</h2>
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Active ({{ todoService.pendingCount() }})</h2>
       <div class="space-y-3 mb-8">
-        @for (todo of todos; track todo.id) {
+        @for (todo of todoService.activeTodos(); track todo.id) {
           <div
-            *ngIf="!todo.completed"
             class="flex items-center justify-between bg-white p-4 rounded-xl shadow-md transition duration-150 border border-gray-100 hover:shadow-lg"
           >
             <label class="flex items-center cursor-pointer flex-grow">
               <input
                 type="checkbox"
                 [checked]="todo.completed"
-                (change)="toggleCompleted(todo)"
+                (change)="todoService.toggleCompleted(todo.id)"
                 class="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mr-4"
               />
               <span class="text-gray-700" [innerHTML]="todo.description"></span>
             </label>
             <button
-              (click)="deleteTask(todo.id)"
+              (click)="todoService.deleteTask(todo.id)"
               class="ml-4 text-sm text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 transition duration-150"
             >
               Delete
@@ -85,7 +85,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
           </div>
         }
         <div
-          *ngIf="getStats().pending === 0 && getStats().total > 0"
+          *ngIf="todoService.pendingCount() === 0 && todoService.total() > 0"
           class="text-center text-gray-500 p-4"
         >
           All caught up!
@@ -93,25 +93,24 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
       </div>
 
       <h2 class="text-xl font-semibold text-gray-800 mb-4">
-        Completed ({{ getStats().completed }})
+        Completed ({{ todoService.completedCount() }})
       </h2>
       <div class="space-y-3">
-        @for (todo of todos; track todo.id) {
+        @for (todo of todoService.completedTodos(); track todo.id) {
           <div
-            *ngIf="todo.completed"
             class="flex items-center justify-between bg-white p-4 rounded-xl shadow-md transition duration-150 border border-gray-100 opacity-70"
           >
             <label class="flex items-center cursor-pointer flex-grow">
               <input
                 type="checkbox"
                 [checked]="todo.completed"
-                (change)="toggleCompleted(todo)"
+                (change)="todoService.toggleCompleted(todo.id)"
                 class="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mr-4"
               />
               <span class="text-gray-700 line-through" [innerHTML]="todo.description"></span>
             </label>
             <button
-              (click)="deleteTask(todo.id)"
+              (click)="todoService.deleteTask(todo.id)"
               class="ml-4 text-sm text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 transition duration-150"
             >
               Delete
@@ -119,7 +118,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
           </div>
         }
         <div
-          *ngIf="getStats().completed === 0 && getStats().total > 0"
+          *ngIf="todoService.completedCount() === 0 && todoService.total() > 0"
           class="text-center text-gray-500 p-4"
         >
           No completed tasks yet.
@@ -160,11 +159,10 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 })
 export class App implements OnInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
+  protected readonly todoService = inject(TodoService);
 
-  public todos: any = [];
-  public newTaskDescription: string = '';
+  public newTaskDescription = signal('');
   public welcomeMessage: SafeHtml = 'Todo App';
-  private nextId: number = 3;
 
   private welcomeSub: Subscription | undefined;
 
@@ -180,11 +178,6 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.todos = [
-      { id: 1, description: 'Build a project', completed: false },
-      { id: 2, description: 'Learn React', completed: true },
-    ];
-
     this.welcomeSub = this.simulateFetchWelcomeMessage().subscribe((message: string) => {
       this.welcomeMessage = this.sanitizer.bypassSecurityTrustHtml(message);
     });
@@ -197,53 +190,9 @@ export class App implements OnInit, OnDestroy {
     }
   }
 
-  public getStats(): { total: number; completed: number; pending: number } {
-    const total = this.todos.length;
-    const completed = this.todos.filter((t: any) => t.completed).length;
-    const pending = total - completed;
-
-    for (let i = 0; i < 10000; i++) {}
-
-    return { total, completed, pending };
-  }
-
-  public getProgressPercentage(): string {
-    const stats = this.getStats();
-    if (stats.total === 0) return '0%';
-
-    const percentage = Math.round((stats.completed / stats.total) * 100);
-    return `${percentage}%`;
-  }
-
   public addTask(): void {
-    if (!this.newTaskDescription.trim()) {
-      return;
+    if (this.todoService.addTask(this.newTaskDescription())) {
+      this.newTaskDescription.set('');
     }
-
-    let description = this.newTaskDescription.trim();
-    if (description.toLowerCase().includes('<script>')) {
-      description = `<span style="color: red;">[Script Detected]</span> ` + description;
-    }
-
-    const newTodo: any = {
-      id: this.nextId++,
-      description: description,
-      completed: false,
-    };
-
-    this.todos.push(newTodo);
-    this.newTaskDescription = '';
-  }
-
-  public toggleCompleted(todo: any): void {
-    const index = this.todos.findIndex((t: any) => t.id === todo.id);
-    if (index !== -1) {
-      this.todos[index].completed = !this.todos[index].completed;
-      this.todos = [...this.todos];
-    }
-  }
-
-  public deleteTask(id: number): void {
-    this.todos = this.todos.filter((t: any) => t.id !== id);
   }
 }
