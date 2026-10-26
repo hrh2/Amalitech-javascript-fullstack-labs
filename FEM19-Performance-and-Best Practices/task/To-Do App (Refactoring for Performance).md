@@ -4,7 +4,7 @@
 
 In this lab, you will take the provided legacy To-Do application and refactor it to meet modern Angular performance and architectural standards. The existing code contains severe anti-patterns that lead to poor performance, unnecessary change detection cycles, and poor maintainability. Your goal is to transform the application into a high-performance, maintainable, and architecturally sound Angular application.
 
-Project Code:  [GitHub]( abdulrashid232/performance-and-best-practices-angular)
+Project Code:  [GitHub](https://github.com/abdulrashid232/performance-and-best-practices-angular)
 
 ---
 

@@ -1,0 +1,52 @@
+{
+  "label": "refactored",
+  "url": "http://localhost:4200",
+  "todosInList": 52,
+  "results": [
+    {
+      "name": "mouse moved 200 times over the list",
+      "templateRuns": 0,
+      "getStatsCalls": 0,
+      "scriptMs": 10.9,
+      "byTemplate": {}
+    },
+    {
+      "name": "typed 30 characters in the input",
+      "templateRuns": 24,
+      "getStatsCalls": 0,
+      "scriptMs": 5.1,
+      "byTemplate": {
+        "AddTodoFormComponent_Template": 12,
+        "App_Template": 12
+      }
+    },
+    {
+      "name": "ticked one task as done",
+      "templateRuns": 60,
+      "getStatsCalls": 0,
+      "scriptMs": 2.6,
+      "byTemplate": {
+        "AddTodoFormComponent_Template": 1,
+        "TodoItemComponent_Template": 2,
+        "TodoSectionComponent_For_4_Template": 53,
+        "TodoSectionComponent_Template": 2,
+        "TodoStatsComponent_Template": 1,
+        "App_Template": 1
+      }
+    },
+    {
+      "name": "added one task",
+      "templateRuns": 65,
+      "getStatsCalls": 0,
+      "scriptMs": 1.3,
+      "byTemplate": {
+        "AddTodoFormComponent_Template": 3,
+        "TodoItemComponent_Template": 2,
+        "TodoSectionComponent_For_4_Template": 54,
+        "TodoSectionComponent_Template": 2,
+        "TodoStatsComponent_Template": 1,
+        "App_Template": 3
+      }
+    }
+  ]
+}
