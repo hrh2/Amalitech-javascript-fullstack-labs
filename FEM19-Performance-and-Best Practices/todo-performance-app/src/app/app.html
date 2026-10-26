@@ -1,0 +1,28 @@
+<div class="max-w-xl mx-auto p-4 bg-gray-50 min-h-screen">
+  <app-welcome-header />
+
+  <app-add-todo-form (add)="todoService.addTask($event)" />
+
+  <app-todo-stats
+    [total]="todoService.total()"
+    [completed]="todoService.completedCount()"
+    [pending]="todoService.pendingCount()"
+    [progress]="todoService.progress()"
+  />
+
+  <app-todo-section
+    heading="Active"
+    [todos]="todoService.activeTodos()"
+    [emptyMessage]="todoService.total() > 0 ? 'All caught up!' : ''"
+    (toggle)="todoService.toggleCompleted($event)"
+    (remove)="todoService.deleteTask($event)"
+  />
+
+  <app-todo-section
+    heading="Completed"
+    [todos]="todoService.completedTodos()"
+    [emptyMessage]="todoService.total() > 0 ? 'No completed tasks yet.' : ''"
+    (toggle)="todoService.toggleCompleted($event)"
+    (remove)="todoService.deleteTask($event)"
+  />
+</div>
