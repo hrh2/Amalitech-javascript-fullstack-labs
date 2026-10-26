@@ -1,0 +1,53 @@
+{
+  "label": "legacy",
+  "url": "http://localhost:4200",
+  "todosInList": 52,
+  "results": [
+    {
+      "name": "mouse moved 200 times over the list",
+      "templateRuns": 0,
+      "getStatsCalls": 0,
+      "scriptMs": 11,
+      "byTemplate": {}
+    },
+    {
+      "name": "typed 30 characters in the input",
+      "templateRuns": 4396,
+      "getStatsCalls": 252,
+      "scriptMs": 37.3,
+      "byTemplate": {
+        "App_ng_container_37_div_1_Template": 1428,
+        "App_ng_container_37_Template": 1456,
+        "App_ng_container_42_div_1_Template": 28,
+        "App_ng_container_42_Template": 1456,
+        "App_Template": 28
+      }
+    },
+    {
+      "name": "ticked one task as done",
+      "templateRuns": 629,
+      "getStatsCalls": 36,
+      "scriptMs": 7.8,
+      "byTemplate": {
+        "App_ng_container_37_div_1_Template": 202,
+        "App_ng_container_37_Template": 208,
+        "App_ng_container_42_div_1_Template": 7,
+        "App_ng_container_42_Template": 208,
+        "App_Template": 4
+      }
+    },
+    {
+      "name": "added one task",
+      "templateRuns": 957,
+      "getStatsCalls": 54,
+      "scriptMs": 5.2,
+      "byTemplate": {
+        "App_ng_container_37_div_1_Template": 305,
+        "App_ng_container_37_Template": 317,
+        "App_ng_container_42_div_1_Template": 12,
+        "App_ng_container_42_Template": 317,
+        "App_Template": 6
+      }
+    }
+  ]
+}
