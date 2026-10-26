@@ -1,7 +1,7 @@
+// The "M" in MVC: the Task schema and model. The schema describes what a task document must look like;
+// Mongoose checks it before saving and drops any field that is not listed here.
 const mongoose = require('mongoose');
 
-// The schema describes what a task document must look like.
-// Mongoose checks it before saving and drops any field that is not listed here.
 const taskSchema = new mongoose.Schema(
   {
     title: {
@@ -14,7 +14,7 @@ const taskSchema = new mongoose.Schema(
     completed: { type: Boolean, default: false },
   },
   {
-    timestamps: true, // adds createdAt and updatedAt, kept up to date by Mongoose
+    timestamps: true, // adds createdAt (when the task was created) and updatedAt, kept up to date by Mongoose
     toJSON: {
       versionKey: false, // hide __v
       transform(doc, ret) {

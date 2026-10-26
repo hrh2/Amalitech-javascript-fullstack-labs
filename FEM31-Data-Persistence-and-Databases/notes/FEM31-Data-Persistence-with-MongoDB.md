@@ -6,7 +6,7 @@ Two projects, one per activity:
 | Activity in the module | Project |
 |---|---|
 | Resource Book challenge: the "Blog" database (db.js, User and Post schemas, `author` as an ObjectId ref, create a user, create a linked post, `.populate('author')`) | `blog-db/` |
-| Hands-on Coding Lab: "CRUD API with Database": refactor the Module 2 API to replace the in-memory array with MongoDB (Mongoose) | `task-api-db/` |
+| Hands-on Coding Lab (and `task/Task-Tracker-Database.md`): refactor the Module 2 Task Tracker API to replace the in-memory array with MongoDB (Mongoose) | `task-api-db/` |
 
 **Choice: MongoDB + Mongoose** (the module allows PostgreSQL + Prisma or MongoDB + Mongoose; the resource book focuses on
 MongoDB). Prisma/PostgreSQL is only discussed conceptually in section 2; nothing was built with it.
@@ -62,7 +62,7 @@ queries, connection string) are the same; only the database and the tool differ.
   - a **Model**: a class made from the schema that you use to query (`Task.find()`, `Task.create()`...), and whose
     instances are **documents** with `.save()`;
   - validation, casting (`"true"` -> `true`), defaults, timestamps, middleware and `populate`.
-- **Connection string:** `mongodb://127.0.0.1:27017/task_api_dev` = protocol, host, port, **database name**. The database
+- **Connection string:** `mongodb://127.0.0.1:27017/task_tracker_db` = protocol, host, port, **database name**. The database
   is created automatically on first write. Atlas strings look like `mongodb+srv://user:password@cluster.../db`; the password
   is a secret and belongs in `.env`, never in code or git (`.env` is in `.gitignore`, `.env.example` shows the format).
 - **One connection per process.** `mongoose.connect()` is called once at start-up; every model uses it. Connecting takes
@@ -118,31 +118,46 @@ posts collections of the `blog_demo` database first so that it can be re-run (it
 
 ## 5. The CRUD API refactor (`task-api-db/`)
 
-### Before and after
+### Task folder requirements -> where (`task/Task-Tracker-Database.md`)
+
+| Lab requirement | Where |
+|---|---|
+| Connect Express to MongoDB | `config/db.js`, awaited in `server.js` before `listen` |
+| Create a database named `task_tracker_db` | the default `DB_URI` (`mongodb://127.0.0.1:27017/task_tracker_db`); MongoDB creates it on the first write (`npm run seed` or the first `POST`); I checked it exists with `mongosh` and holds the `tasks` collection |
+| Task record: `id`, `title` (required), `completed`, `createdAt` | `models/Task.js`: `_id` exposed as `id`, required `title`, Boolean `completed`, `timestamps: true` (adds `createdAt`, and `updatedAt`) |
+| CRUD with persistent storage | `controllers/taskController.js` |
+| Environment variables for database configuration | `DB_URI` / `PORT` in `.env` via dotenv; `.env` git-ignored, `.env.example` committed |
+| async/await and error handling | async controllers; errors reach `middleware/errors.js` (400 validation/cast, generic 500) |
+
+**Note:** the task file `Task-Tracker-Database.md` ends abruptly after "Create a database named: `task_tracker_db`" (it looks cut
+off), so only the requirements above could be checked against it. Anything that was meant to follow is not covered.
+
+### Before and after (FEM30 -> FEM31)
 ```js
-// FEM30 store.js (memory)                       // FEM31 store.js (MongoDB)
-get(id)    { return tasks.find(t => t.id === id); }      get(id) { return Task.findById(id); }
-create(x)  { tasks.push({ id: nextId++, ... }); }        create(x) { return Task.create(x); }
-remove(id) { tasks.splice(index, 1); }                   async remove(id) { (await Task.deleteOne({ _id: id })).deletedCount === 1 }
+// FEM30 models/taskModel.js (array)             // FEM31 controllers/taskController.js (MongoDB)
+get(id)  { return tasks.find(t => t.id === id); }     const task = await Task.findById(req.taskId);
+create(x){ tasks.push({ id: nextId++, ... }); }       const task = await Task.create(value);
+remove(id){ tasks.splice(index, 1); }                 const result = await Task.deleteOne({ _id: req.taskId });
 ```
-The function names and meanings stayed; only the inside changed. That is the **separation of concerns** payoff from
-FEM30: routes (HTTP), validation, store (data). The routes changed only by adding `async`/`await`.
+The behaviour stayed the same, only the storage code changed. That is the **MVC** payoff from FEM30: routes (URLs),
+controllers (HTTP decisions), model (data) and validation each have one job. The routes file did not change at all; the
+controller functions gained `async`/`await`; the model went from an array to a Mongoose schema.
 
 ### CRUD -> Mongoose
-| API | store function | Mongoose call |
+| API | Controller function | Mongoose call |
 |---|---|---|
-| `GET /tasks`, `?completed=` | `list(filter)` | `Task.find({ completed }).sort({ _id: 1 })` |
-| `GET /tasks/:id` | `get(id)` | `Task.findById(id)` (`null` if missing -> 404) |
-| `POST /tasks` | `create(data)` | `Task.create(data)` |
-| `PUT /tasks/:id` | `replace(id, data)` | `findById`, `task.set({ title, completed })`, `task.save()` |
-| `PATCH /tasks/:id` | `update(id, changes)` | `findById`, `task.set(changes)`, `task.save()` |
-| `DELETE /tasks/:id` | `remove(id)` | `Task.deleteOne({ _id })`, check `deletedCount` |
+| `GET /tasks`, `?completed=` | `getTasks` | `Task.find({ completed }).sort({ _id: 1 })` |
+| `GET /tasks/:id` | `getTask` | `Task.findById(id)` (`null` if missing -> 404) |
+| `POST /tasks` | `createTask` | `Task.create(data)` |
+| `PUT /tasks/:id` | `replaceTask` | `findById`, `task.set({ title, completed })`, `task.save()` |
+| `PATCH /tasks/:id` | `updateTask` | `findById`, `task.set(changes)`, `task.save()` |
+| `DELETE /tasks/:id` | `deleteTask` | `Task.deleteOne({ _id })`, check `deletedCount` |
 
-`replace`/`update` use find-then-save so that **schema validation and timestamps run** (`updatedAt` changes, `createdAt`
+`replaceTask`/`updateTask` use find-then-save so that **schema validation and timestamps run** (`updatedAt` changes, `createdAt`
 is kept; a test shows both). The alternative (`findByIdAndUpdate`) is one query but skips some of that unless
 `runValidators` is set.
 
-### The schema (`models/task.js`)
+### The schema (`models/Task.js`)
 `title` required/trimmed/1-200 characters, `completed` Boolean default false, `timestamps: true`, an index on
 `completed`, and a `toJSON` transform that renames `_id` to a string `id` and hides `__v` (Mongoose's internal version
 counter) so the API's JSON contract stays `{ id, title, completed }` plus the two timestamps.
@@ -163,7 +178,7 @@ counter) so the API's JSON contract stays `{ id, title, completed }` plus the tw
 - **Start-up order:** `server.js` connects first; if MongoDB is unreachable it prints
   `Could not connect to MongoDB (...)`, masks any `user:password@` in the URI, and exits with code 1. (`serverSelectionTimeoutMS: 5000`
   makes it fail in 5 s instead of the default 30 s.)
-- **Configuration:** `MONGODB_URI` and `PORT` from the environment or an optional `.env` (loaded with Node's built-in
+- **Configuration:** `DB_URI` and `PORT` from the environment or an optional `.env` (loaded with the `dotenv` package in `config/env.js`; formerly Node's built-in
   `process.loadEnvFile()`, so no `dotenv` package).
 - **Seeding:** `npm run seed` empties the `tasks` collection and inserts three samples (used by the tests too).
 
@@ -171,7 +186,7 @@ counter) so the API's JSON contract stays `{ id, title, completed }` plus the tw
 1. `npm run seed`, `npm start`, `POST /tasks {"title":"Survive a restart"}` -> 201.
 2. Stop the server (the process and its memory are gone), start it again, `GET /tasks` -> the new task is still listed
    (checked in a terminal; it is also an automated test that closes and reopens the connection).
-3. `mongosh task_api_dev --eval 'db.tasks.find()'` shows the documents in the database itself.
+3. `mongosh task_tracker_db --eval 'db.tasks.find()'` shows the documents in the database itself.
 
 ---
 
@@ -179,11 +194,11 @@ counter) so the API's JSON contract stays `{ id, title, completed }` plus the tw
 
 - The tests use a **real MongoDB**, not mocks, because the things that matter (schema validation, indexes, ObjectId
   casting, `populate`) are behaviours of the database/ODM; a mock would only test that I mocked it correctly.
-- **They must never touch real data**, so: a separate database `task_api_test` / `blog_test`; `test/setup.js` **throws** if
-  the database name doesn't end in `_test` (a test deletes all tasks, so a wrong `MONGODB_URI` must be a hard error); and
+- **They must never touch real data**, so: a separate database `task_tracker_db_test` / `blog_test`; `test/setup.js` **throws** if
+  the database name doesn't end in `_test` (a test deletes all tasks, so a wrong `DB_URI` must be a hard error); and
   the database is **dropped** after the run (`after(() => dropDatabase())`).
 - `--test-concurrency=1`: test files share one database, so files run one after another.
-- Each test starts from the same three seed tasks via `store.reset()`. MongoDB generates new ids every time, so the tests
+- Each test starts from the same three seed tasks via `seedTasks()`. MongoDB generates new ids every time, so the tests
   look ids up by title instead of hard-coding them.
 - 46 tests (`task-api-db`) cover everything FEM30 covered, adapted to ObjectIds, plus: persistence across a reconnect,
   schema defaults/trim, schema rejecting bad data when the API validation is bypassed, strict mode dropping unknown fields (also in
@@ -198,10 +213,10 @@ counter) so the API's JSON contract stays `{ id, title, completed }` plus the tw
 
 | Mistake | Symptom | Here |
 |---|---|---|
-| Forgetting `await` on a Mongoose call | you get a Query/Promise object (or nothing happens) | every store call is awaited; tests would fail |
+| Forgetting `await` on a Mongoose call | you get a Query/Promise object (or nothing happens) | every model call is awaited; tests would fail |
 | Connecting on every request | slow, connection leaks | one `connect()` at start-up |
 | `listen` before the database is connected | early requests fail | connect first, then listen |
-| Hard-coding the connection string/password | secrets in git | `MONGODB_URI` from env/`.env`, `.env` ignored, URI masked in logs |
+| Hard-coding the connection string/password | secrets in git | `DB_URI` from env/`.env`, `.env` ignored, URI masked in logs |
 | Trusting `isValidObjectId` | accepts 12-character strings | strict 24-hex regex |
 | Passing a bad id to `findById` | `CastError` -> 500 | validated first (400), plus CastError mapped to 400 |
 | Using `req.body` straight in `create` | clients set any field | validation copies known fields; schema strict mode drops the rest |
@@ -231,7 +246,7 @@ application's data consistent.
 **4. Schema vs model vs document?** Schema = the blueprint (fields and rules). Model = the class compiled from it
 (`Task`) used for queries. Document = one instance/record (`new Task(...)`, or a result of `find`).
 
-**5. How do you connect, and where?** `mongoose.connect(uri)` once at start-up in `db.js`; models share that
+**5. How do you connect, and where?** `mongoose.connect(uri)` once at start-up in `config/db.js`; models share that
 connection. `server.js` waits for it before `listen`, and exits with a clear message if MongoDB is unreachable.
 
 **6. How is a relationship modelled?** The Post stores the author's `_id` (`type: ObjectId, ref: 'User'`); `populate`
@@ -243,8 +258,7 @@ documents in the result. It is not a database JOIN and isn't atomic.
 **8. Reference or embed?** Reference when related data is large, grows, is shared, or needs separate queries (posts);
 embed when it is small, always read with the parent and owned by it (an address in a profile).
 
-**9. What changed in the Task API when you replaced the array?** `store.js` was rewritten with Mongoose (async), routes
-got `await`, ids became ObjectId strings (new id validator), Mongoose errors were mapped to 400, a connection and
+**9. What changed in the Task API when you replaced the array?** the model became a Mongoose schema and the controller functions became async (`await`), ids became ObjectId strings (new id validator), Mongoose errors were mapped to 400, a connection and
 start-up check were added. The endpoints, status codes and error format stayed the same.
 
 **10. Why does `findById` with `abc` need handling?** Mongoose can't cast it to an ObjectId and throws a `CastError`;
@@ -273,11 +287,11 @@ MongoDB (documented).
 **17. What does `unique: true` really do?** Creates a unique **index** in MongoDB; it is not a validator. A duplicate
 fails with `E11000` (code 11000) when written, which is why the test waits for `User.init()` to build the index first.
 
-**18. How are secrets handled?** The URI comes from `MONGODB_URI` / `.env` (git-ignored, `.env.example` committed);
+**18. How are secrets handled?** The URI comes from `DB_URI` / `.env` (git-ignored, `.env.example` committed);
 start-up errors mask `user:password@`; 500 responses never include driver messages.
 
 **19. What would change with PostgreSQL + Prisma?** A `schema.prisma` with a `Task` model, a migration to create the table,
-the generated `PrismaClient` in `store.js` (`prisma.task.findMany/create/update/delete`), integer or UUID ids instead of
+the generated `PrismaClient` in the controller (or a small repository file) (`prisma.task.findMany/create/update/delete`), integer or UUID ids instead of
 ObjectIds, and SQL constraints instead of Mongoose validation. Routes, API validation and error handling would stay the same.
 
 **20. Limitations?** Single local database, no auth, no pagination, no transactions, ids are not sequential, no

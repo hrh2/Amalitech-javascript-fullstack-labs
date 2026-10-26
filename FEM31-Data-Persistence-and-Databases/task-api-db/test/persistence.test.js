@@ -2,14 +2,14 @@ const { connect, disconnect } = require('./setup');
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const mongoose = require('mongoose');
-const store = require('../store');
-const Task = require('../models/task');
+const Task = require('../models/Task');
+const { seedTasks } = require('../seed');
 
 // The point of this module: data must survive the connection (and so the server process) going away.
 describe('data persistence', () => {
   before(async () => {
     await connect();
-    await store.reset();
+    await seedTasks();
   });
 
   after(async () => {
@@ -18,17 +18,17 @@ describe('data persistence', () => {
   });
 
   test('a task is still there after the connection is closed and opened again', async () => {
-    const created = await store.create({ title: 'I must survive a restart' });
+    const created = await Task.create({ title: 'I must survive a restart' });
     await disconnect(); // like stopping the server
     assert.equal(mongoose.connection.readyState, 0);
 
     await connect(); // like starting it again
-    const found = await store.get(created.id);
+    const found = await Task.findById(created.id);
     assert.equal(found.title, 'I must survive a restart');
   });
 
   test('the schema fills defaults and trims', async () => {
-    const task = await store.create({ title: '  trimmed  ' });
+    const task = await Task.create({ title: '  trimmed  ' });
     assert.equal(task.title, 'trimmed');
     assert.equal(task.completed, false);
   });
@@ -45,19 +45,17 @@ describe('data persistence', () => {
     assert.equal(raw.role, undefined); // not in the database either
   });
 
-  test('replace/update/remove return null or false for a missing id', async () => {
+  test('looking up or deleting an id that does not exist gives null / deletedCount 0 instead of throwing', async () => {
     const missing = '507f1f77bcf86cd799439011';
-    assert.equal(await store.get(missing), null);
-    assert.equal(await store.replace(missing, { title: 'x' }), null);
-    assert.equal(await store.update(missing, { completed: true }), null);
-    assert.equal(await store.remove(missing), false);
+    assert.equal(await Task.findById(missing), null);
+    assert.equal((await Task.deleteOne({ _id: missing })).deletedCount, 0);
   });
 
-  test('the list is a query result, so changing it does not change the data', async () => {
-    await store.reset();
-    const list = await store.list();
+  test('a query result is a plain copy: changing it does not change the data', async () => {
+    await seedTasks();
+    const list = await Task.find();
     list.pop();
-    assert.equal((await store.list()).length, 3);
+    assert.equal((await Task.find()).length, 3);
   });
 
   test('the completed index exists', async () => {

@@ -1,6 +1,7 @@
+require('./config/env'); // load .env first, before any other file reads process.env
 const express = require('express');
 const requestLogger = require('./middleware/request-logger');
-const tasksRouter = require('./routes/tasks');
+const tasksRouter = require('./routes/taskRoutes');
 const { notFound, errorHandler } = require('./middleware/errors');
 
 const app = express();

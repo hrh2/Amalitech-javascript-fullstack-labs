@@ -3,7 +3,8 @@ const { test, describe, before, beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { forEach } = require('./each');
 const app = require('../app');
-const store = require('../store');
+const Task = require('../models/Task');
+const { seedTasks } = require('../seed');
 
 let server;
 let base;
@@ -25,7 +26,7 @@ after(async () => {
 // Every test starts from the same three seed tasks. MongoDB generates fresh ids each time,
 // so the tests look them up instead of hard-coding them.
 beforeEach(async () => {
-  await store.reset();
+  await seedTasks();
   const all = await (await fetch(`${base}/tasks`)).json();
   ids = Object.fromEntries(all.map((task) => [task.title, task.id]));
 });
@@ -121,7 +122,7 @@ describe('POST /tasks', () => {
     const res = await call('POST', '/tasks', { id: MISSING, _id: MISSING, title: 'x', admin: true });
     assert.notEqual(res.json.id, MISSING);
     assert.equal(res.json.admin, undefined);
-    const stored = await store.get(res.json.id);
+    const stored = await Task.findById(res.json.id);
     assert.equal(stored.toObject().admin, undefined); // not stored in MongoDB either
   });
 
@@ -244,7 +245,7 @@ describe('errors and unknown routes', () => {
 
   test('a database failure is a JSON 500 that does not leak the internal message', async (t) => {
     t.mock.method(console, 'error', () => {});
-    t.mock.method(store, 'list', async () => {
+    t.mock.method(Task, 'find', () => {
       throw new Error('connect ECONNREFUSED mongodb://admin:hunter2@db.internal:27017');
     });
     const res = await call('GET', '/tasks');
