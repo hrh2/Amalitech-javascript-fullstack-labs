@@ -14,6 +14,24 @@ npm test           # Jest (60 tests)
 npm run build      # production build
 ```
 
+## Commit history
+
+One commit per refactoring step, oldest first (each of steps 1-6 builds on its own):
+
+| # | Commit | Step | What changed |
+|---|---|---|---|
+| 1 | `afcb11b` | Baseline | New project (Tailwind, Jest), the legacy component dropped in unchanged, `perf/measure.mjs` and the baseline results |
+| 2 | `b9a9af9` | Change detection | `OnPush` on the root; both `*ngFor` loops become `@for ... track todo.id` |
+| 3 | `ac19867` | State | `TodoService` with signals and `computed()` replaces `getStats()`/`getProgressPercentage()` and the `*ngIf` filters |
+| 4 | `bac8828` | RxJS | `async` pipe replaces manual subscribe/unsubscribe; `shareReplay` makes the welcome call run once |
+| 5 | `f6e0dcf` | Security | Pure `sanitizeHtml` pipe (`DomSanitizer`) replaces `bypassSecurityTrustHtml` and raw `[innerHTML]` |
+| 6 | `3523aba` | Modularity | Monolith split into a thin shell plus 5 presentational `OnPush` components |
+| 7 | `6c6da96` | Tests | 60 Jest tests for the service, pipe and components |
+| 8 | `112a7ce` | Docs | After-refactor measurements, profiler screenshots, notes |
+| 9 | this commit | Docs | This commit-history section |
+
+`git log --oneline -- "FEM19-Performance-and-Best Practices"` shows the same list.
+
 ## Structure
 
 ```
