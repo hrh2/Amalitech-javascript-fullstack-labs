@@ -7,6 +7,7 @@ server restarts.
 
 ```bash
 npm install
+cp .env.example .env     # optional: PORT
 npm start               # http://localhost:3000   (PORT=3001 npm start for another port)
 npm run dev             # restarts on file changes
 npm test                # 65 tests, no server needs to be running
@@ -39,20 +40,32 @@ curl -X PATCH -H "Content-Type: application/json" -d '{"completed":true}' localh
 curl -i -X DELETE localhost:3000/tasks/3
 ```
 
-## Structure
+## Structure (MVC)
 
 ```
-server.js               the only file that calls listen (and reports start-up errors)
-app.js                  builds and exports the Express app (middleware order lives here)
-store.js                the in-memory data and the functions that use it; knows nothing about HTTP
-validate-task.js        id parsing and body validation; returns { value } or { errors }
-routes/tasks.js         the /tasks router: HTTP in, HTTP out
-middleware/             request-logger.js (one line per request), errors.js (notFound + errorHandler)
-test/                   node:test suites (HTTP tests, and plain unit tests for store/validation)
-postman/                saved request collection (16 requests incl. 9 error cases)
-task-api-check.sh       the module's self-check script
-openapi.yaml            API description
+server.js                   the only file that calls listen (and reports start-up errors)
+app.js                      builds and exports the Express app (middleware order lives here)
+config/env.js               loads .env with dotenv and exports PORT / NODE_ENV
+models/taskModel.js         M: the in-memory data and the functions that use it; knows nothing about HTTP
+controllers/taskController.js  C: one function per request type (read request -> call the model -> send response)
+routes/taskRoutes.js        which URL + method goes to which controller function (and the :id check)
+validators/taskValidator.js id parsing and body validation; returns { value } or { errors }
+middleware/                 request-logger.js (one line per request), errors.js (notFound + errorHandler)
+test/                       node:test suites (HTTP tests, and plain unit tests for model/validation)
+postman/                    saved request collection (16 requests incl. 9 error cases)
+task-api-check.sh           the module's self-check script
+openapi.yaml                API description
+.env.example                the settings (copy to .env)
 ```
+
+**Where is the "V" (view)?** This is a JSON API, so there are no HTML templates: the JSON the controller sends *is* the
+view layer. Everything else is the usual MVC split.
+
+## Configuration (dotenv)
+
+Copy `.env.example` to `.env` and edit it (`PORT=3000`). `config/env.js` loads it with the `dotenv` package before anything
+else reads `process.env`. A real environment variable (`PORT=3001 npm start`) overrides the file, and `.env` is
+git-ignored.
 
 ## Request collection
 

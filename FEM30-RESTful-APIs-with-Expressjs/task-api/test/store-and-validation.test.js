@@ -1,8 +1,8 @@
 const { test, describe, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 const { forEach } = require('./each');
-const store = require('../store');
-const { parseId, validateTask } = require('../validate-task');
+const store = require('../models/taskModel');
+const { parseId, validateTask } = require('../validators/taskValidator');
 
 // These are unit tests: plain functions, no HTTP and no server.
 

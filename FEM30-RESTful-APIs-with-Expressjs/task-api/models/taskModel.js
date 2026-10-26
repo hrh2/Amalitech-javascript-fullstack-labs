@@ -1,4 +1,5 @@
-// In-memory data store. The data lives only as long as the process does.
+// The "M" in MVC: the Task data and the only code allowed to touch it.
+// In-memory storage (a plain array), so the data lives only as long as the process does.
 // It knows nothing about HTTP: it takes plain values and returns plain values.
 let tasks = [];
 let nextId = 1;

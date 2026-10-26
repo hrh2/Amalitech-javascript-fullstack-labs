@@ -1,6 +1,5 @@
+const { PORT } = require('./config/env');
 const app = require('./app');
-
-const PORT = process.env.PORT || 3000;
 
 // In Express 5 the listen callback also receives start-up errors
 // (for example EADDRINUSE: the port is already taken), so check it before announcing success.

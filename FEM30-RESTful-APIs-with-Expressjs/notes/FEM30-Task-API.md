@@ -1,8 +1,24 @@
 # FEM30 — RESTful APIs with Express.js: The RESTful Task Tracker
 
 Project: `FEM30-RESTful-APIs-with-Expressjs/task-api/`
-Specification: `notes/Module02.md` (hands-on lab) and Section 8 of `Backend-Module2-RESTful-APIs-with-Express.md`
-(final project, contract table, acceptance criteria). This module has no separate task file.
+Specification: `task/Enterprise-Grade.md` (the lab overview), plus `notes/Module02.md` (hands-on lab) and Section 8 of
+`Backend-Module2-RESTful-APIs-with-Express.md` (contract table and acceptance criteria).
+
+### Which lab in the task folder
+
+`task/Enterprise-Grade.md` lists three labs. Only **Lab 3, "RESTful Task Tracker"** is the Express.js / JavaScript lab for this
+stack, so that is what `task-api/` implements. Lab 1 (a Django + DRF URL-shortener microservice with PostgreSQL, Redis, Celery
+and Docker) and Lab 2 (a "SwiftPay QA Review" testing exercise) are different tracks (Python and QA) and were **not** done.
+
+| Lab 3 item | Where |
+|---|---|
+| Express.js, JavaScript / Node.js | the whole project |
+| **MVC architecture** | `models/`, `controllers/`, `routes/` (section 3) |
+| In-memory array storage, no database | `models/taskModel.js` |
+| REST APIs and CRUD | five operations, REST status codes (section 2) |
+| Middleware | JSON parser, request logger, `notFound`, error handler |
+| Error handling | `middleware/errors.js`, validation, JSON errors everywhere |
+| **dotenv** | `config/env.js` loads `.env` (`PORT`) with the `dotenv` package; `.env.example` committed, `.env` ignored |
 
 **Result:** a modular Express 5 API with the full CRUD contract, validation, request logging, central JSON error
 handling, 65 automated tests, a saved request collection and an OpenAPI description. `task-api-check.sh` reports
@@ -71,23 +87,37 @@ because it means "nothing above matched"; the error handler is last because Expr
 handlers defined after the failing code. `app.js` only **builds** the app and exports it; `server.js` calls `listen`.
 Separating them is what lets the tests start the app on a free port.
 
-### `routes/tasks.js` — HTTP in, HTTP out
-- `express.Router()` is a mini-app mounted at `/tasks`, so routes inside are written as `'/'` and `'/:id'`.
+### MVC in this project
+- **Model** (`models/taskModel.js`): the data and the only code that touches it. No `req`/`res`.
+- **Controller** (`controllers/taskController.js`): one function per request type. Each does the same three things: validate the
+  input, call the model, turn the result into a response. `return res...` is used so no code runs after the response is sent.
+- **Routes** (`routes/taskRoutes.js`): wiring only, which URL and method goes to which controller function.
+- **View:** this is a JSON API, so the JSON the controller sends is the view; there are no templates.
+Each layer can be read, tested and replaced on its own (FEM31 swaps the model for MongoDB and the controller barely changes).
+
+### `routes/taskRoutes.js` — wiring
+- `express.Router()` is a mini-app mounted at `/tasks`, so routes inside are written as `'/'` and `'/:id'`;
+  `router.route('/:id').get(...).put(...).patch(...).delete(...)` groups the methods of one URL.
 - `router.param('id', ...)` runs for every route containing `:id`, so the id is validated **once**, stored in
-  `req.taskId`, and bad ids get a 400 before any route code runs.
-- Each handler does the same three things: validate the input -> call the store -> turn the result into a response.
-  `return res...` is used so no code runs after the response is sent.
+  `req.taskId`, and bad ids get a 400 before any controller runs.
+
+### `controllers/taskController.js` — HTTP in, HTTP out
 - `res.status(201).location('/tasks/4').json(task)` — chained: status, a header, then the JSON body (this also sets
   `Content-Type: application/json`).
 - `res.sendStatus(204)` for delete: status only, empty body.
 
-### `store.js` — the data, with no HTTP in it
+### `models/taskModel.js` — the data, with no HTTP in it
 An array and an id counter in module scope, with `list/get/create/replace/update/remove/reset`. It takes and returns
 plain values, never `req`/`res`. Details: `list()` returns a **copy** so callers can't change the data behind its
 back; ids come from a counter, so they are **never reused** after a delete (a test checks it);
 `replace` builds a **new** object (PUT semantics: unspecified fields reset) while `update` merges (PATCH semantics).
 
-### `validate-task.js` — validation as plain functions
+### `config/env.js` — dotenv
+`require('dotenv').config()` reads the `.env` file into `process.env` before anything else uses it, and the file exports `PORT`
+(default 3000). Real environment variables win over the file, so a host can override a setting without editing anything.
+`.env` is in `.gitignore`; `.env.example` shows the names. Secrets and per-machine settings belong here, not in code.
+
+### `validators/taskValidator.js` — validation as plain functions
 - `parseId('42')` -> `42`, everything else -> `null`. A regular expression is used because `Number('')` is `0` and
   `Number('1e3')` is `1000`, both of which would wrongly pass.
 - `validateTask(body, { partial })` returns `{ value }` or `{ errors }`. `partial: true` is PATCH mode.
@@ -107,12 +137,12 @@ request hang**. Output: `POST /tasks 201 8.5ms`.
   though `next` is rarely used). Rules implemented: if headers were already sent, delegate to Express; use `err.status`
   when it is a 4xx (body-parser sets 400 for malformed JSON and 413 for too large); for anything else send a generic
   `500 Internal Server Error` and log the real error **only on the server**, so internals never leak (a test throws
-  `"secret database password…"` from inside the store and checks it is absent from the response).
+  `"secret database password…"` from inside the model and checks it is absent from the response).
 - Express 5 forwards errors thrown in route handlers (including rejected promises from `async` handlers) to this
   handler automatically; Express 4 needed `try/catch` + `next(err)`.
 
 ### `server.js`
-Reads `PORT` from the environment (default 3000). In Express 5 the `listen` callback also receives start-up errors, so it
+Reads `PORT` from `config/env.js` (so from `.env` or the real environment; default 3000). In Express 5 the `listen` callback also receives start-up errors, so it
 checks `error` first: a port that's already in use prints a one-line fix and exits with code 1 instead of falsely
 printing "listening". (I hit exactly this while testing: the first version printed both messages.)
 
@@ -121,14 +151,14 @@ printing "listening". (I hit exactly this while testing: the first version print
 ## 4. Testing the API (Objective 5)
 
 ### Automated: `npm test` (65 tests, Node's built-in runner, no extra packages)
-- `test/tasks.test.js` starts the real app on **port 0** and uses `fetch`. `beforeEach(store.reset)` gives every test the
+- `test/tasks.test.js` starts the real app on **port 0** and uses `fetch`. `beforeEach(Task.reset)` gives every test the
   same three seed tasks, so tests are independent.
 - Covered: every endpoint's success path; filters; every error path (bad id values such as `abc 0 -1 1.5 1e3`, blank or
   non-string title, wrong `completed` type, array body, JSON primitives, malformed JSON, form-encoded body, no body, 413
   too large, unknown route); `Location` header; `204` empty body; **idempotency** of PUT and non-idempotency of POST;
   ids not reused; PUT resets defaults and can't change the id; PATCH changes only supplied fields; the **500 doesn't
   leak** and is logged; and "no response is ever HTML".
-- `test/store-and-validation.test.js`: plain unit tests of `parseId`, `validateTask` and the store, no HTTP.
+- `test/store-and-validation.test.js`: plain unit tests of `parseId`, `validateTask` and the model, no HTTP.
 - `test/each.js`: `node:test` has no table-driven helper, so a 10-line `forEach(cases, title, fn)` registers one
   test per case.
 
@@ -167,7 +197,7 @@ optional stretch, and would add a dependency). You can paste the file into https
 | Sending two responses / code after `res.json` | "Cannot set headers after they are sent" | `return res...` everywhere |
 | Putting `listen` in `app.js` | tests can't start their own server | `app.js` exports, `server.js` listens |
 | Error handler with three params | never called | four parameters |
-| Mutating the array returned by `list()` | store corrupted | `list()` returns a copy |
+| Mutating the array returned by `list()` | data corrupted | `list()` returns a copy |
 | Test depending on previous test | passes alone, fails together | `reset()` before each test |
 
 ---
@@ -211,8 +241,8 @@ automatically.
 **12. Why separate `app.js` and `server.js`?** So tests can import the app and listen on a free port; only
 `server.js` binds the real port.
 
-**13. Why keep `store.js` free of Express?** Separation of concerns: HTTP in the router, data in the store,
-rules in validation. Each can be understood and unit-tested alone, and the store could later be swapped for a database
+**13. Why keep the model (`taskModel.js`) free of Express?** Separation of concerns (MVC): HTTP in the controller, data in the model,
+rules in validation. Each can be understood and unit-tested alone, and the model could later be swapped for a database
 without touching the routes.
 
 **14. What is `router.param('id')` for?** Runs once for every route with `:id`: validates and parses the id in one
@@ -222,7 +252,7 @@ place.
 secrets). The real error is logged on the server; the client gets a generic message (tested).
 
 **16. How do you stop a client setting the task id?** Validation copies only `title` and `completed` into the value;
-ids come from the store's counter.
+ids come from the model's counter.
 
 **17. What are the limits of this API?** Data is lost on restart and not shared between processes; no authentication;
 no pagination; ids are a simple counter; no CORS (a browser app on another origin couldn't call it without adding it);

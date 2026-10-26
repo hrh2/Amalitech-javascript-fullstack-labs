@@ -4,7 +4,7 @@ const { test, describe, before, beforeEach, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { forEach } = require('./each');
 const app = require('../app');
-const store = require('../store');
+const store = require('../models/taskModel');
 
 let server;
 let base;
