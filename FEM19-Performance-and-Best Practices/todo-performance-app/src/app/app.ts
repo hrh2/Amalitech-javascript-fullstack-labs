@@ -1,17 +1,18 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SanitizeHtmlPipe } from './core/pipes/sanitize-html.pipe';
 import { TodoService } from './core/services/todo.service';
 import { WelcomeService } from './core/services/welcome.service';
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, CommonModule, FormsModule],
+  imports: [AsyncPipe, CommonModule, FormsModule, SanitizeHtmlPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="max-w-xl mx-auto p-4 bg-gray-50 min-h-screen">
       <header class="text-center mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-800" [innerHTML]="(welcomeMessage$ | async) ?? 'Todo App'"></h1>
+        <h1 class="text-3xl font-extrabold text-gray-800" [innerHTML]="(welcomeMessage$ | async) ?? 'Todo App' | sanitizeHtml"></h1>
         <p class="text-gray-500 mt-1">A legacy app built for refactoring practice</p>
       </header>
 
@@ -73,7 +74,7 @@ import { WelcomeService } from './core/services/welcome.service';
                 (change)="todoService.toggleCompleted(todo.id)"
                 class="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mr-4"
               />
-              <span class="text-gray-700" [innerHTML]="todo.description"></span>
+              <span class="text-gray-700" [innerHTML]="todo.description | sanitizeHtml"></span>
             </label>
             <button
               (click)="todoService.deleteTask(todo.id)"
@@ -106,7 +107,7 @@ import { WelcomeService } from './core/services/welcome.service';
                 (change)="todoService.toggleCompleted(todo.id)"
                 class="form-checkbox h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 mr-4"
               />
-              <span class="text-gray-700 line-through" [innerHTML]="todo.description"></span>
+              <span class="text-gray-700 line-through" [innerHTML]="todo.description | sanitizeHtml"></span>
             </label>
             <button
               (click)="todoService.deleteTask(todo.id)"
