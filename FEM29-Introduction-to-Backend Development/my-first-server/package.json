@@ -1,0 +1,16 @@
+{
+  "name": "my-first-server",
+  "version": "1.0.0",
+  "description": "A first Node.js web server built with only the native http module.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "check": "bash project-check.sh"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "ISC"
+}
