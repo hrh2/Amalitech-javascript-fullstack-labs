@@ -1,0 +1,150 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`TaskFormComponent matches its structural snapshot (create mode) 1`] = `
+<form
+  class="modal-panel task-form ng-untouched ng-pristine ng-invalid"
+  novalidate=""
+>
+  <h2>
+    Add New Task
+  </h2>
+  <div
+    class="field"
+  >
+    <label
+      for="task-title"
+    >
+      Title
+    </label>
+    <input
+      aria-invalid="false"
+      class="ng-untouched ng-pristine ng-invalid"
+      formcontrolname="title"
+      id="task-title"
+      type="text"
+    />
+    
+  </div>
+  <div
+    class="field"
+  >
+    <label
+      for="task-description"
+    >
+      Description
+    </label>
+    <textarea
+      aria-invalid="false"
+      class="ng-untouched ng-pristine ng-valid"
+      formcontrolname="description"
+      id="task-description"
+      rows="3"
+    />
+    
+  </div>
+  <div
+    class="field-row"
+  >
+    <div
+      class="field"
+    >
+      <label
+        for="task-status"
+      >
+        Status
+      </label>
+      <select
+        aria-invalid="false"
+        class="ng-untouched ng-pristine ng-valid"
+        formcontrolname="status"
+        id="task-status"
+      >
+        <option
+          value="todo"
+        >
+          Todo
+        </option>
+        <option
+          value="in-progress"
+        >
+          Doing
+        </option>
+        <option
+          value="done"
+        >
+          Done
+        </option>
+      </select>
+      
+    </div>
+    <div
+      class="field"
+    >
+      <label
+        for="task-due-date"
+      >
+        Due date 
+        <span
+          class="field-optional"
+        >
+          (optional)
+        </span>
+      </label>
+      <input
+        aria-invalid="false"
+        class="ng-untouched ng-pristine ng-valid"
+        formcontrolname="dueDate"
+        id="task-due-date"
+        type="date"
+      />
+      
+    </div>
+  </div>
+  <div
+    class="field subtasks ng-untouched ng-pristine ng-valid"
+    formarrayname="subtasks"
+  >
+    <label>
+      Subtasks 
+      <span
+        class="field-optional"
+      >
+        (optional)
+      </span>
+    </label>
+    
+    <p
+      class="empty-state empty-state--inline"
+    >
+      No subtasks yet.
+    </p>
+    
+    <button
+      class="btn btn--secondary btn--block"
+      type="button"
+    >
+      + Add New Subtask
+    </button>
+  </div>
+  
+  <div
+    class="task-form__actions"
+  >
+    <button
+      class="btn btn--primary btn--block"
+      disabled=""
+      type="submit"
+    >
+       Create Task 
+    </button>
+    
+    <button
+      class="btn btn--secondary btn--block"
+      type="button"
+    >
+      Cancel
+    </button>
+    
+  </div>
+</form>
+`;

@@ -1,0 +1,13 @@
+<div class="modal-backdrop" *ngIf="form" (click)="cancel()">
+  <app-task-form
+    [form]="form"
+    mode="edit"
+    heading="Edit Task"
+    submitLabel="Save Changes"
+    [isSaving]="isSaving()"
+    [errorMessage]="saveError()"
+    (formSubmit)="save()"
+    (formDelete)="delete()"
+    (formCancel)="cancel()"
+  ></app-task-form>
+</div>
