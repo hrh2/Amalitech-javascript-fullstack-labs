@@ -1,0 +1,19 @@
+{
+  "name": "task-api",
+  "version": "1.0.0",
+  "description": "A RESTful Task Tracker API built with Express (in-memory data, no database).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test --test-reporter=spec",
+    "check": "bash task-api-check.sh"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Task API
+  version: 1.0.0
+  description: In-memory RESTful task tracker (FEM30). Data is lost when the server restarts.
+servers:
+  - url: http://localhost:3000
+paths:
+  /tasks:
+    get:
+      summary: List tasks
+      parameters:
+        - name: completed
+          in: query
+          required: false
+          schema: { type: string, enum: ['true', 'false'] }
+      responses:
+        '200':
+          description: The tasks (filtered when `completed` is given)
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Task' } }
+        '400': { $ref: '#/components/responses/Error' }
+    post:
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location: { schema: { type: string, example: /tasks/4 } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/Error' }
+  /tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      summary: Get one task
+      responses:
+        '200':
+          description: The task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    put:
+      summary: Replace a task (idempotent). `title` is required; `completed` defaults to false.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '200':
+          description: The replaced task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      summary: Change some fields of a task. At least one of `title`, `completed` is required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskPatch' }
+      responses:
+        '200':
+          description: The updated task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    delete:
+      summary: Delete a task
+      responses:
+        '204': { description: Deleted (no body) }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+components:
+  schemas:
+    Task:
+      type: object
+      required: [id, title, completed]
+      properties:
+        id: { type: integer, example: 4 }
+        title: { type: string, example: Learn Express }
+        completed: { type: boolean, example: false }
+    TaskInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+        completed: { type: boolean, default: false }
+    TaskPatch:
+      type: object
+      minProperties: 1
+      properties:
+        title: { type: string, minLength: 1 }
+        completed: { type: boolean }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        details: { type: array, items: { type: string } }
+  responses:
+    Error:
+      description: Error (always JSON)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
