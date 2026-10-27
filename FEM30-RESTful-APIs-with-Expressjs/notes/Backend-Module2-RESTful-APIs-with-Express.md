@@ -85,7 +85,9 @@ This module assumes **Module 1**. If these are comfortable, begin; if not, revis
 
 *(Module lesson 1 — Video + Reading. Outcome: explain REST, HTTP methods, and status codes.)*
 
-> 🎥 **Optional video (not watched):** the module lists a Fireship video as "a rapid-fire introduction to the concepts of resources, HTTP verbs, and status codes, followed by a quick coding demo." It matches Sections 1 and 2 of this document.
+> 📺 **Video for this lesson — [Fireship](https://www.youtube.com/watch?v=-MTSQjw5DrM)**
+> Your module file describes it as: *"A rapid-fire introduction to the concepts of resources, HTTP verbs, and status codes, followed by a quick coding demo."* *(I have not watched it; the description is quoted from your file.)*
+> It covers this section (resources, HTTP verbs, status codes) and then Section 2 (the quick coding demo).
 
 ### 1.1 What is REST?
 
@@ -254,6 +256,10 @@ Many production "REST" APIs follow only part of the style. A common yardstick is
 ## 2. Introduction to Express
 
 *(Module lesson 2 — Video + Reading. Outcome: construct a basic Express server.)*
+
+> 📺 **Video for this lesson — [Fireship](https://www.youtube.com/watch?v=-MTSQjw5DrM)**
+> Your module file describes it as: *"A rapid-fire introduction to the concepts of resources, HTTP verbs, and status codes, followed by a quick coding demo."* *(I have not watched it; the description is quoted from your file.)*
+> The "quick coding demo" part of this video corresponds to this section; its first half is Section 1.
 
 ### 2.1 What is Express?
 
@@ -714,6 +720,14 @@ app.listen(PORT, (error) => {
 
 *(Module lesson 3 — Video + Reading. Outcome: implement route handlers for all common HTTP methods.)*
 
+> 📺 **Video for this lesson — Programming with Mosh** *(no link: your module file lists this entry as plain text, "Play Video – Programming with Mosh", without a URL — send me the link and I will add it)*
+> Your module file describes it as: *"This comprehensive tutorial covers everything from setting up the environment to handling GET/POST/PUT/DELETE requests, input validation, and using Postman for testing."* *(not watched by me)*
+> Relevant here: handling GET/POST/PUT/DELETE requests.
+
+> 📖 **Reading for this lesson — [How to create a REST API with Node.js and Express — Postman Blog](https://blog.postman.com/how-to-create-a-rest-api-with-node-js-and-express/)**
+> Your module file notes: *"A text-based guide reinforcing the concepts of routing and middleware."*
+> I read it in full. Use it for **routing, router files, middleware and the error handler** only — see the warning at the top of this document about its authentication and password code.
+
 ### 3.1 What is routing?
 
 **Routing** means choosing which code runs for a given **method + path**. In Express each route is `app.METHOD(path, handler)`:
@@ -967,6 +981,13 @@ If no route matches, the request falls through to whatever you registered **last
 ## 4. Middleware
 
 *(Module lesson 4 — Video + Reading. Outcome: utilize built-in and custom middleware for request processing — request parsing, logging and error handling.)*
+
+> 📖 **Reading for this lesson — [How to create a REST API with Node.js and Express — Postman Blog](https://blog.postman.com/how-to-create-a-rest-api-with-node-js-and-express/)**
+> Your module file notes: *"A text-based guide reinforcing the concepts of routing and middleware."*
+> I read it in full. Use it for **routing, router files, middleware and the error handler** only — see the warning at the top of this document about its authentication and password code.
+> Its middleware and error-handler steps match Sections 4.2 and 4.6.
+
+> 📺 The **Programming with Mosh** entry (no link in your file — see Section 3) is also described as covering input validation, which Sections 5 and 8 practise.
 
 ### 4.1 What is middleware?
 
@@ -1392,6 +1413,14 @@ An error handler must be registered **after** the routes whose errors it should 
 
 *(Module Resource Book, section 4. **Scenario:** you are building the backend for a productivity app. **Prerequisites:** Node.js installed; Postman (or Thunder Client). **Intro Session — "Building Your First API":** this section is the build-from-scratch walkthrough.)*
 
+> 📺 **Video for this lesson — Programming with Mosh** *(no link: your module file lists this entry as plain text, "Play Video – Programming with Mosh", without a URL — send me the link and I will add it)*
+> Your module file describes it as: *"This comprehensive tutorial covers everything from setting up the environment to handling GET/POST/PUT/DELETE requests, input validation, and using Postman for testing."* *(not watched by me)*
+> It is the module's "complete API" tutorial, so it is the natural companion for this challenge.
+
+> 📖 **Reading for this lesson — [How to create a REST API with Node.js and Express — Postman Blog](https://blog.postman.com/how-to-create-a-rest-api-with-node-js-and-express/)**
+> Your module file notes: *"A text-based guide reinforcing the concepts of routing and middleware."*
+> I read it in full. Use it for **routing, router files, middleware and the error handler** only — see the warning at the top of this document about its authentication and password code.
+
 ### 5.1 The tasks, mapped to this section
 
 | Task from the module | Where it happens |
@@ -1571,6 +1600,15 @@ Read it top to bottom — the API's whole life in seven calls:
 ## 6. Testing API Endpoints
 
 *(Module learning objective: test API endpoints effectively using a tool like Postman or Insomnia.)*
+
+> 📺 **Video for this lesson — Programming with Mosh** *(no link: your module file lists this entry as plain text, "Play Video – Programming with Mosh", without a URL — send me the link and I will add it)*
+> Your module file describes it as: *"This comprehensive tutorial covers everything from setting up the environment to handling GET/POST/PUT/DELETE requests, input validation, and using Postman for testing."* *(not watched by me)*
+> Relevant here: using Postman for testing.
+
+> 📖 **Reading for this lesson — [How to create a REST API with Node.js and Express — Postman Blog](https://blog.postman.com/how-to-create-a-rest-api-with-node-js-and-express/)**
+> Your module file notes: *"A text-based guide reinforcing the concepts of routing and middleware."*
+> I read it in full. Use it for **routing, router files, middleware and the error handler** only — see the warning at the top of this document about its authentication and password code.
+> Its Postman tips (collections, environments, test scripts) match this section.
 
 ### 6.1 What does "testing an endpoint" mean?
 
@@ -1885,7 +1923,11 @@ When a request misbehaves, the server's terminal is your second tool: with a log
 
 ## 7. Documenting Your API with OpenAPI (Swagger)
 
-*(Module Resource Book, section 3 — "Documentation & Standards". The module's video, by Maksim Ivanov, is described as showing how to document API endpoints using Swagger (OpenAPI) "making it easier for frontend developers to consume your backend." I have **not watched it**; this section is built from running the tools.)*
+*(Module Resource Book, section 3 — "Documentation & Standards".)*
+
+> 📺 **Video for this lesson — [Maksim Ivanov](https://www.youtube.com/watch?v=S8kmHtQeflo)**
+> Your module file describes it as: *"Learn how to document your API endpoints using Swagger (OpenAPI), making it easier for frontend developers to consume your backend."* *(I have not watched it; the description is quoted from your file.)*
+> This section is built from running the tools themselves, not from the video.
 
 ### 7.1 Why document an API?
 
@@ -2845,10 +2887,10 @@ Databases · authentication, authorization and password hashing · validation li
 
 | Module topic | Resource | How it was used |
 |---|---|---|
-| REST & Express basics (video) | **Fireship** video | **Not watched.** The module describes a fast introduction to resources, HTTP verbs, status codes and a quick coding demo — it matches Sections 1–2 |
+| REST & Express basics (video) | [**Fireship** video](https://www.youtube.com/watch?v=-MTSQjw5DrM) | **Not watched.** The module describes a fast introduction to resources, HTTP verbs, status codes and a quick coding demo — it matches Sections 1–2 |
 | Building a complete API (video) | **Programming with Mosh** | **Not watched; the module gives no link.** Described as covering setup, GET/POST/PUT/DELETE, input validation and Postman testing — it matches Sections 3, 5, 6 and 8 |
-| Building a complete API (reading) | **How to create a REST API with Node.js and Express — Postman Blog** | **Read.** Used for the router-file layout, middleware and error-handler ideas, and the Postman workflow. **Its auth and database sections are outside this module, and two details in its code should not be copied** (SHA-256 password hashing; a hard-coded JWT secret and returning the stored password hash) — see the note at the top |
-| Documentation & standards (video) | **Maksim Ivanov** video | **Not watched.** The module describes documenting endpoints with Swagger (OpenAPI) for frontend developers — Section 7 covers the same ground by running the tools |
+| Building a complete API (reading) | [**How to create a REST API with Node.js and Express — Postman Blog**](https://blog.postman.com/how-to-create-a-rest-api-with-node-js-and-express/) | **Read.** Used for the router-file layout, middleware and error-handler ideas, and the Postman workflow. **Its auth and database sections are outside this module, and two details in its code should not be copied** (SHA-256 password hashing; a hard-coded JWT secret and returning the stored password hash) — see the note at the top |
+| Documentation & standards (video) | [**Maksim Ivanov** video](https://www.youtube.com/watch?v=S8kmHtQeflo) | **Not watched.** The module describes documenting endpoints with Swagger (OpenAPI) for frontend developers — Section 7 covers the same ground by running the tools |
 
 ### How the facts in this document were established
 
