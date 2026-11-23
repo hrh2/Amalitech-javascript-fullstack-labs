@@ -1,0 +1,1 @@
+This is a text file. The API must reject it (only jpeg, png and pdf are allowed).

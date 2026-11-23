@@ -1,0 +1,877 @@
+{
+  "info": {
+    "name": "Media Library API",
+    "description": "Tests for every Media Library API endpoint: status codes, response structure ({status,data} / {status,message}) and required fields.\n\nRun the 'Media (run in order)' folder top to bottom: the first request saves {{MEDIA_ID}}.\nFile uploads use the files in postman/fixtures: in Postman set the working directory to the postman folder (Settings > General > Working directory), or run with Newman: npx newman run postman/media-library-api.postman_collection.json -e postman/development.postman_environment.json --working-dir postman",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Content-Type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.match(/application\\/json/); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Body is { status: \"ok\", uptime, timestamp }', function () {",
+                  "  pm.expect(body.status).to.eql('ok');",
+                  "  pm.expect(body.uptime).to.be.a('number');",
+                  "  pm.expect(new Date(body.timestamp).toISOString()).to.eql(body.timestamp);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/health",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Liveness check used for deployment monitoring."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media (run in order)",
+      "item": [
+        {
+          "name": "POST /media - upload a PNG",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Content-Type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.match(/application\\/json/); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"success\", data }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'success');",
+                  "  pm.expect(body).to.have.property('data');",
+                  "});",
+                  "pm.test('Required fields are present', function () {",
+                  "  const m = body.data.media;",
+                  "  ['id','title','tags','category','filePath','originalName','mimeType','fileSize','createdAt','updatedAt'].forEach(function (f) {",
+                  "    pm.expect(m, f).to.have.property(f);",
+                  "  });",
+                  "});",
+                  "pm.test('Metadata and file information are stored', function () {",
+                  "  const m = body.data.media;",
+                  "  pm.expect(m.title).to.eql('Postman test image');",
+                  "  pm.expect(m.tags).to.eql(['postman', 'test']);",
+                  "  pm.expect(m.category).to.eql('design');",
+                  "  pm.expect(m.mimeType).to.eql('image/png');",
+                  "  pm.expect(m.originalName).to.eql('sample.png');",
+                  "  pm.expect(m.fileSize).to.be.above(0);",
+                  "});",
+                  "pm.test('Location header points to the new item', function () {",
+                  "  pm.expect(pm.response.headers.get('Location')).to.eql('/media/' + body.data.media.id);",
+                  "});",
+                  "pm.environment.set('MEDIA_ID', body.data.media.id); // used by the requests below"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "fixtures/sample.png"
+                },
+                {
+                  "key": "title",
+                  "value": "Postman test image",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "postman,test",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "design",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Multipart upload: file + title, tags, category. Saves the new id in {{MEDIA_ID}}."
+          }
+        },
+        {
+          "name": "POST /media - missing title -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Field-level error for title', function () {",
+                  "  pm.expect(body.message).to.eql('Validation failed');",
+                  "  pm.expect(body.details).to.deep.include({ field: 'title', message: 'Title is required' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "fixtures/sample.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /media - invalid category -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Error names the category field', function () { pm.expect(body.details.map(d => d.field)).to.include('category'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "fixtures/sample.png"
+                },
+                {
+                  "key": "title",
+                  "value": "Bad category",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "memes",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /media - unsupported file type -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Message explains the allowed types', function () { pm.expect(body.message).to.include('Unsupported file type'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "fixtures/notes.txt"
+                },
+                {
+                  "key": "title",
+                  "value": "A text file",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /media - no file -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "No file",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media - list with pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Content-Type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.match(/application\\/json/); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"success\", data }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'success');",
+                  "  pm.expect(body).to.have.property('data');",
+                  "});",
+                  "pm.test('Results are a list and pagination metadata exists', function () {",
+                  "  pm.expect(body.data.results).to.be.an('array');",
+                  "  const p = body.data.pagination;",
+                  "  ['total','page','limit','totalPages'].forEach(function (f) { pm.expect(p, f).to.have.property(f); });",
+                  "  pm.expect(p.page).to.eql(1);",
+                  "  pm.expect(p.limit).to.eql(10);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media - filter by category, tags and search",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"success\", data }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'success');",
+                  "  pm.expect(body).to.have.property('data');",
+                  "});",
+                  "pm.test('Filters return the uploaded item, and only matching items', function () {",
+                  "  const results = body.data.results;",
+                  "  pm.expect(results.map(m => m.id)).to.include(pm.environment.get('MEDIA_ID'));",
+                  "  results.forEach(function (m) { pm.expect(m.category).to.eql('design'); pm.expect(m.tags).to.include('postman'); });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media?category=design&tags=postman&search=image&sortBy=title&order=asc&page=1&limit=5",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "design"
+                },
+                {
+                  "key": "tags",
+                  "value": "postman"
+                },
+                {
+                  "key": "search",
+                  "value": "image"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "title"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media - invalid query -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Error names the limit field', function () { pm.expect(body.details[0].field).to.eql('limit'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media?limit=999",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "999"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media/:id - existing item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Content-Type is JSON', function () { pm.expect(pm.response.headers.get('Content-Type')).to.match(/application\\/json/); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"success\", data }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'success');",
+                  "  pm.expect(body).to.have.property('data');",
+                  "});",
+                  "pm.test('Required fields are present', function () {",
+                  "  const m = body.data.media;",
+                  "  ['id','title','tags','category','filePath','originalName','mimeType','fileSize','createdAt','updatedAt'].forEach(function (f) {",
+                  "    pm.expect(m, f).to.have.property(f);",
+                  "  });",
+                  "});",
+                  "pm.test('Returns the requested item', function () { pm.expect(body.data.media.id).to.eql(pm.environment.get('MEDIA_ID')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media/:id - unknown id -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media/aaaaaaaaaaaaaaaaaaaaaaaa",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "aaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media/:id - malformed id -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media/not-an-id",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "not-an-id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /media/:id - update metadata",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"success\", data }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'success');",
+                  "  pm.expect(body).to.have.property('data');",
+                  "});",
+                  "pm.test('Required fields are present', function () {",
+                  "  const m = body.data.media;",
+                  "  ['id','title','tags','category','filePath','originalName','mimeType','fileSize','createdAt','updatedAt'].forEach(function (f) {",
+                  "    pm.expect(m, f).to.have.property(f);",
+                  "  });",
+                  "});",
+                  "pm.test('Metadata is updated, file information is unchanged', function () {",
+                  "  const m = body.data.media;",
+                  "  pm.expect(m.title).to.eql('Postman test image (renamed)');",
+                  "  pm.expect(m.tags).to.eql(['postman', 'renamed']);",
+                  "  pm.expect(m.category).to.eql('product');",
+                  "  pm.expect(m.originalName).to.eql('sample.png');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman test image (renamed)\",\n  \"tags\": [\n    \"postman\",\n    \"renamed\"\n  ],\n  \"category\": \"product\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /media/:id - invalid body -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Error names the category field', function () { pm.expect(body.details.map(d => d.field)).to.include('category'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"nope\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /media/:id - empty body -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PUT /media/:id - unknown id -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/media/aaaaaaaaaaaaaaaaaaaaaaaa",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "aaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "DELETE /media/:id - delete the item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"success\", data }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'success');",
+                  "  pm.expect(body).to.have.property('data');",
+                  "});",
+                  "pm.test('Returns the deleted id', function () { pm.expect(body.data.id).to.eql(pm.environment.get('MEDIA_ID')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /media/:id - after delete -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /media/:id - already deleted -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 Not Found', function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Response structure: { status: \"error\", message }', function () {",
+                  "  pm.expect(body).to.have.property('status', 'error');",
+                  "  pm.expect(body.message).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.environment.unset('MEDIA_ID');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/media/{{MEDIA_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "media",
+                "{{MEDIA_ID}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
