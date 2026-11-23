@@ -5,13 +5,13 @@ Two projects, one per activity:
 
 | Activity in the module | Project |
 |---|---|
-| Resource Book challenge: the "Blog" database (db.js, User and Post schemas, `author` as an ObjectId ref, create a user, create a linked post, `.populate('author')`) | `blog-db/` |
+| Resource Book challenge: the "Blog" database (db.js, User and Post schemas, `author` as an ObjectId ref, create a user, create a linked post, `.populate('author')`) | **not included**: the practice project was removed from the repository (it is not part of the graded lab); the ideas are kept in section 4 |
 | Hands-on Coding Lab (and `task/Task-Tracker-Database.md`): refactor the Module 2 Task Tracker API to replace the in-memory array with MongoDB (Mongoose) | `task-api-db/` |
 
 **Choice: MongoDB + Mongoose** (the module allows PostgreSQL + Prisma or MongoDB + Mongoose; the resource book focuses on
 MongoDB). Prisma/PostgreSQL is only discussed conceptually in section 2; nothing was built with it.
 
-**Result:** `blog-db` 12 tests and `task-api-db` 46 tests pass against a real local MongoDB 7 (in separate `_test`
+**Result:** `task-api-db` 46 tests pass against a real local MongoDB 7 (in separate `_test`
 databases). `bash task-api-check.sh` reports 14/14, the saved request collection passes 24/24 assertions, and data was
 shown to survive a server restart.
 
@@ -71,7 +71,10 @@ queries, connection string) are the same; only the database and the tool differ.
 
 ---
 
-## 4. The Blog challenge (`blog-db/`)
+## 4. The Blog challenge (concepts only: the code is no longer in the repository)
+
+The module's practice project, described here as it was built before it was removed. Its code is in the git history (commit `9978e91`,
+folder `blog-db/`) if you want to look at it again.
 
 ```
 db.js            mongoose.connect(...) helper                           (task: "connection in a db.js file")
@@ -108,11 +111,6 @@ embedded user. If the referenced user was deleted, `populate` gives `null` (test
 - **Reference vs embed:** embedding (putting posts inside the user document) is fast to read but duplicates data and can
   grow without limit; referencing keeps one copy and lets posts be queried alone. A blog's posts are many and
   independent, so reference.
-
-### Running it
-`npm start` in `blog-db/` prints each step: the created user (email lower-cased by the schema), the post with just the
-author id, the same post found without and with `populate`, and a user with their posts. It **empties** the users and
-posts collections of the `blog_demo` database first so that it can be re-run (it never touches other databases).
 
 ---
 
@@ -204,8 +202,8 @@ counter) so the API's JSON contract stays `{ id, title, completed }` plus the tw
   schema defaults/trim, schema rejecting bad data when the API validation is bypassed, strict mode dropping unknown fields (also in
   the stored document), timestamps (`updatedAt` moves, `createdAt` doesn't), the `completed` index, malformed ids
   (including the 12-character trap), and 500s not leaking.
-- 12 tests (`blog-db`): defaults and normalisation, unique-email error 11000, required fields, the stored `author` being an
-  ObjectId reference, populate with and without field selection, deleted-author `null`, finds by author, virtual populate.
+- The removed `blog-db` practice project had 12 tests of its own (unique-email error 11000, the stored `author` being an ObjectId
+  reference, populate, deleted-author `null`, virtual populate); they are in the git history with it.
 
 ---
 
