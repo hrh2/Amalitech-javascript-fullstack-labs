@@ -117,3 +117,19 @@ src/tests/                 unit/ and integration/
 server.js                  start-up: validate env, handlers, database, listen
 jest.config.js  vercel.json  .env.example
 ```
+
+## Commit history (suggested groups from the lab)
+
+| Commit | Group | What |
+|---|---|---|
+| `10f121b` | Initial setup | project from FEM33: layers, models, schemas, Jest / Supertest dependencies |
+| `c136a62` | Environment configuration | dotenv-flow, per-environment files, start-up validation, `.env.example` |
+| `2625d8c` | Feature implementation | Winston logging, `GET /health`, lazy DB connection, process handlers |
+| `b886543` | Test suite | 192 unit + integration tests, 98% coverage, separate test database |
+| `1785670` | Test suite | Postman collection and environments |
+| `7577e56` | CI pipeline | GitHub Actions workflow |
+| `6f4eac6` | Deployment configuration | `vercel.json`, `.vercelignore` |
+| `e940a96` | Documentation | README and learning notes |
+
+(The files of the first commits were copied from FEM33 and finished in later commits, so an individual early commit does not run on its
+own; the last one does.)
