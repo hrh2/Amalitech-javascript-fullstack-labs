@@ -9,7 +9,7 @@ for release, so `media-library-api/` here starts as a copy of FEM33's and adds w
 | Lab requirement | Where |
 |---|---|
 | **1. Postman collection "Media Library API"**, all 5 endpoints, assertions on status code, body structure, required fields | `postman/media-library-api.postman_collection.json` (19 requests, 57 assertions incl. 400 / 404 cases and `/health`) |
-| Two Postman environments (Development, Production) with `{{BASE_URL}}`, `{{MEDIA_ID}}`; collection exported under `/postman` | `postman/development.postman_environment.json`, `production.postman_environment.json` (production URL is a placeholder until you deploy) |
+| Two Postman environments (Development, Production) with `{{BASE_URL}}`, `{{MEDIA_ID}}`; collection exported under `/postman` | `postman/development.postman_environment.json`, `production.postman_environment.json` (production `BASE_URL` = the live Vercel URL) |
 | **2. Unit tests**: mediaService pagination, validate middleware, catchAsync, AppError (`statusCode`, `message`, `status`) | `src/tests/unit/` (also env, logger, schemas, process handlers). `AppError` gained a `status` field (`fail` for 4xx, `error` for 5xx) because the lab asks to test it |
 | **3. Integration tests with Supertest**: every endpoint's required cases, separate test database, never affecting dev data | `src/tests/integration/media.test.js` etc. Test DB = `media_library_test`, refused otherwise (section 4) |
 | `package.json` scripts `test` and `test:coverage` | present (with a Node flag, section 3) |
@@ -17,15 +17,15 @@ for release, so `media-library-api/` here starts as a copy of FEM33's and adds w
 | **4. Environment files** `.env.development`, `.env.test`, `.env.production`, `.env.example`; dotenv-flow; required variables; `.env*` ignored; validate at start-up (descriptive error + exit) | `src/config/env.js`, `.env.example`, `.gitignore`, `server.js`; `src/tests/unit/env.test.js` and `integration/server.test.js` |
 | **5. Git / GitHub workflow**, **CI** `ci.yml`: checkout, Node, `npm ci`, `npm test`; bonus coverage artifact | `.github/workflows/ci.yml` (repository root, section 6) |
 | Feature branches, pull requests, required CI checks (branch protection) | **not done** (section 8) |
-| **6. Vercel**: `vercel.json`, env vars in dashboard, deploy, verify, run Postman against production, document limitations | `vercel.json` done; limitations documented (section 7). **Not deployed** (section 8) |
+| **6. Vercel**: `vercel.json`, env vars in dashboard, deploy, verify, run Postman against production, document limitations | `vercel.json`, deployed to **https://media-library-api-hope.vercel.app** (section 7); Postman run against it: 57/57 pass; limitations documented |
 | **7. Structured logging** with Winston or Pino: pretty in development, JSON in production, respects `LOG_LEVEL`, the 7 required events | `src/utils/logger.js` (Winston), `src/middlewares/requestLogger.js`, `errorHandler.js`, `mediaController.js`; `integration/logging.test.js` |
 | **8. `GET /health`** `{ status, uptime, timestamp }` | `src/routes/healthRoutes.js`, `integration/health.test.js` |
 | **9. Monitoring (bonus)** | **not done** |
 
 **Result:** 192 tests pass against a real MongoDB; 19 Postman requests / 57 assertions pass with Newman (Postman's own
 command-line runner) against a local server; the CI steps were run on a fresh copy of the project without any `.env.*` file,
-with only the variables the workflow sets (`npm ci`, `npm run test:coverage`: 192 pass, coverage met); the Vercel path
-(only `src/app.js`, no `server.js`) was simulated locally. Seven deliberate code breakages were each caught by the tests.
+with only the variables the workflow sets (`npm ci`, `npm run test:coverage`: 192 pass, coverage met); and the app is **live on Vercel**
+(Postman collection against production: 19 requests, 57 assertions, 0 failures). Seven deliberate code breakages were each caught by the tests.
 
 ## 1. Why test, and what kinds?
 
@@ -171,6 +171,19 @@ Express app. Two consequences, both handled:
    `npx newman run postman/media-library-api.postman_collection.json -e postman/production.postman_environment.json --working-dir postman`.
    All 57 assertions should pass.
 
+### Live deployment
+
+- URL: **https://media-library-api-hope.vercel.app** (`/health`, `/media`). The project `media-library-api-hope` was created with
+  `vercel link`; the seven production variables were added with `vercel env add ... production` (`DATABASE_URL` and `JWT_SECRET`
+  as secrets, never in Git); deployed with `vercel --prod` from `media-library-api/`.
+- Database: MongoDB Atlas (`media_library_prod`).
+- Verified: `GET /health` -> 200 `{ status: "ok", uptime, timestamp }`; the whole Postman collection against the Production
+  environment passes (19 requests, 57 assertions, 0 failures; it deletes the item it creates).
+- The long per-deployment URL (`...-hrhs-projects.vercel.app`) is protected by Vercel Authentication (302 to a login page); the short
+  project URL above is the public one.
+- The 4.5 MB limit was **measured**, not just read: a 3.9 MB upload returned 201, a 4.7 MB upload was answered by Vercel itself with
+  `413 FUNCTION_PAYLOAD_TOO_LARGE` before reaching the API, so the API's own "File too large" message cannot appear above that size.
+
 ### Vercel limitations (be upfront in review)
 
 | Limit | Effect on this API | What I would do in production |
@@ -186,16 +199,15 @@ ephemeral on free plans.
 
 ## 8. Not done / known limits (be upfront in review)
 
-- **Not deployed.** The Vercel CLI here is not logged in, and a production database is needed (Atlas). Everything for it is
-  prepared (`vercel.json`, `.vercelignore`, env table, steps above). So the "Postman production tests" requirement is **not yet
-  met**: the production environment has a placeholder URL, and nothing was run against a live deployment. The Vercel path was
-  simulated locally (only `src/app.js` loaded, JSON production logs, `UPLOAD_DIR=/tmp/...`).
-- **CI not yet seen running on GitHub**, and **branch protection / required checks / pull-request flow are not set up** (GitHub
+- **Uploaded files on Vercel are not durable** (section 7 table): the live API stores metadata in Atlas but files only in `/tmp`.
+  Upload and delete work in the Postman run, but a stored file is not guaranteed to exist later. Cloud storage is the fix and was not built.
+- **CI** runs on GitHub (push to `dev`: Node 20 and 22 both pass). **Branch protection / required checks / pull-request flow are not set up** (GitHub
   settings; I did not change your repository settings). Commits go to `dev`.
 - **Monitoring (bonus)** not done: after deploying, add `GET /health` to UptimeRobot or Better Uptime (a free monitor that calls the
   URL every few minutes and alerts on failure).
 - **In-memory database** not used (section 3).
-- The Postman collection was run with Newman, not the desktop app.
+- The Postman collection was run with Newman (locally and against production), not the desktop app.
+- Vercel project settings were done with the CLI; the lab's "dashboard" step is the same thing done by command.
 - `JWT_SECRET` is validated but unused (no authentication in this API).
 - The file-type limits from FEM33 remain: the declared MIME type is trusted; files are on local disk (see the Vercel table).
 

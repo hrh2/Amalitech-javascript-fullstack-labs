@@ -101,7 +101,7 @@ tests with coverage (MongoDB service container), coverage report uploaded as an 
 
 `vercel.json` is the one from the lab (`src/app.js` with `@vercel/node`, every route to it). `src/app.js` exports the Express app
 and connects to MongoDB on the first request (`ensureDb` middleware), because there is no `server.js` on Vercel.
-Steps and limitations: `../notes/FEM34-Testing-and-Deployment.md`, section 7.
+**Live:** https://media-library-api-hope.vercel.app (`/health`). Steps, measured limits and the S3 / Cloudinary plan: `../notes/FEM34-Testing-and-Deployment.md`, section 7.
 
 ## Structure
 
