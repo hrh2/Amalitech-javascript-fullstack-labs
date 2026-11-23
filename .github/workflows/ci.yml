@@ -1,0 +1,76 @@
+# CI for the Media Library API (FEM34).
+# This repository holds many lab projects, so the workflow lives at the repository root (GitHub only reads
+# .github/workflows from there) and is limited to this project: it runs only when its files change.
+name: CI - Media Library API
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'FEM34:Testing-and-Deployment/media-library-api/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'FEM34:Testing-and-Deployment/media-library-api/**'
+      - '.github/workflows/ci.yml'
+
+defaults:
+  run:
+    working-directory: 'FEM34:Testing-and-Deployment/media-library-api'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20, 22]
+
+    # A real MongoDB for the tests (they use a database whose name ends in _test)
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # The .env.* files are not committed, so CI provides the required variables itself.
+    env:
+      NODE_ENV: test
+      PORT: 4001
+      DATABASE_URL: mongodb://127.0.0.1:27017/media_library_test
+      JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-1234
+      MAX_FILE_SIZE_MB: 5
+      UPLOAD_DIR: uploads-test
+      LOG_LEVEL: error
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: 'FEM34:Testing-and-Deployment/media-library-api/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage (fails below 80%)
+        run: npm run test:coverage
+
+      # Bonus: keep the coverage report with the workflow run
+      - name: Upload coverage report
+        if: matrix.node-version == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: 'FEM34:Testing-and-Deployment/media-library-api/coverage'
+          if-no-files-found: error
